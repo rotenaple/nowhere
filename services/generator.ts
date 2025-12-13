@@ -66,8 +66,15 @@ export const getCapacity = (params: GenerationParams): string => {
   else if (lang === Language.Indonesian) val = getIndonesianCapacity('id');
   else if (lang === Language.Malay) val = getIndonesianCapacity('ms');
   else if (lang === Language.Tagalog) val = getTagalogCapacity();
-  else if (lang === Language.Arabic) val = getArabicCapacity();
-  
+  else if (lang === Language.Arabic) {
+      if (params.arabicStyle === 'mixed') {
+          // If mixed, we have access to the full 'standard' pool (which includes everything)
+          val = getArabicCapacity('standard');
+      } else {
+          // Pass the specific style ('egyptian', 'gulf', etc.) to get filtered capacity
+          val = getArabicCapacity(params.arabicStyle as any);
+      }
+  }  
   return val > 1000 ? (val / 1000).toFixed(1) + "k" : val.toString();
 };
 

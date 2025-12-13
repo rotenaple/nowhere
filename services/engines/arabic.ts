@@ -1,23 +1,47 @@
-
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
 import { AR_HEADS, AR_ROOTS, AR_ADJECTIVES, ArabicComponent } from "../dictionaries/arabicDict";
 
-export const getArabicCapacity = () => {
-  // 1. Al-[Root]
+/**
+ * Helper to filter heads based on the selected region style.
+ * Logic: 
+ * - If style is 'standard', return everything.
+ * - If style is specific (e.g., 'egyptian'), return:
+ *    1. Heads with NO tags (Generic)
+ *    2. Heads WITH the 'egyptian' tag
+ *    3. EXCLUDE heads that have tags but NOT 'egyptian' (e.g., exclude 'maghreb' specific terms)
+ */
+const getHeadsForStyle = (style: string): ArabicComponent[] => {
+  if (style === 'standard') return AR_HEADS;
+
+  return AR_HEADS.filter(h => {
+    // Include generic heads (no specific region tags)
+    if (!h.tags || h.tags.length === 0) return true;
+    
+    // Include heads that match the requested style
+    // (e.g. 'Kafr' has ['egypt', 'levant'], so it works for both)
+    if (h.tags.includes(style)) return true;
+
+    // Exclude everything else (e.g., 'Oued' [maghreb] should not appear in 'gulf')
+    return false;
+  });
+};
+
+export const getArabicCapacity = (style: 'standard' | 'egyptian' | 'levantine' | 'gulf' | 'maghrebi' = 'standard') => {
+  const validHeads = getHeadsForStyle(style);
+
+  // 1. Al-[Root] (Does not depend on heads)
   const c1 = AR_ROOTS.length;
   // 2. [Head] [Root] (Idafa)
-  const c2 = AR_HEADS.length * AR_ROOTS.length;
+  const c2 = validHeads.length * AR_ROOTS.length;
   // 3. [Head] [Adjective]
-  const c3 = AR_HEADS.length * AR_ADJECTIVES.length;
-  // 4. [Root] [Adjective]
+  const c3 = validHeads.length * AR_ADJECTIVES.length;
+  // 4. [Root] [Adjective] (Does not depend on heads)
   const c4 = AR_ROOTS.length * AR_ADJECTIVES.length;
   
   return c1 + c2 + c3 + c4;
 }
 
-// Maps Roman characters to Arabic script for Sun Letter detection logic mostly
-// But we have the 'sun' property in the dictionary now.
 const getDefiniteArticle = (word: ArabicComponent, style: string): { ar: string, rom: string } => {
   let rom = 'Al-';
   
@@ -48,7 +72,6 @@ const inflectAdjective = (adj: ArabicComponent, nounGender: 'm' | 'f'): { ar: st
     return { ar: adj.ar, rom: adj.rom };
   }
   // Feminine: usually add Ta Marbuta (a / ah / at)
-  // Logic: if ends in long vowel like 'i', becomes 'iyya' or 'iya'
   let ar = adj.ar + 'ة';
   let rom = adj.rom;
   
@@ -62,22 +85,8 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   let wordAr = "";
   let wordRom = "";
 
-  // Weighted selection for heads based on style
-  // If specific style, boost specific heads, but fall back to generic if pool too small
-  let heads = AR_HEADS;
-  if (style === 'egyptian') {
-      const specialized = AR_HEADS.filter(h => h.tags?.includes('egypt'));
-      if (Math.random() < 0.6) heads = specialized;
-  } else if (style === 'levantine') {
-      const specialized = AR_HEADS.filter(h => h.tags?.includes('levant'));
-      if (Math.random() < 0.6) heads = specialized;
-  } else if (style === 'gulf') {
-      const specialized = AR_HEADS.filter(h => h.tags?.includes('gulf'));
-      if (Math.random() < 0.6) heads = specialized;
-  } else if (style === 'maghrebi') {
-      const specialized = AR_HEADS.filter(h => h.tags?.includes('maghreb'));
-      if (Math.random() < 0.6) heads = specialized;
-  }
+  // Get the filtered pool based on the requested style
+  const heads = getHeadsForStyle(style);
 
   // === PLACE MODE ===
   const type = Math.random();
@@ -85,9 +94,9 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   // Pattern 1: [Head] [Root] (Idafa Construction - Genitive)
   // e.g. Sharm El-Sheikh, Kafr El-Sheikh, Deir Al-Balah
   if (type < 0.40) {
-    const head = getRandomElement(heads.length > 0 ? heads : AR_HEADS);
+    const head = getRandomElement(heads);
     const root = getRandomElement(AR_ROOTS);
-    const article = getDefiniteArticle(root, style); // The second part of Idafa is usually definite
+    const article = getDefiniteArticle(root, style); 
     
     wordAr = `${head.ar} ${article.ar}${root.ar}`;
     wordRom = `${head.rom} ${article.rom}${root.rom}`;
@@ -105,13 +114,11 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   // Pattern 3: [Head] [Adjective] (Noun-Adjective)
   // e.g. Bahr Ahmar (Red Sea), Al-Madina Al-Munawwarah
   else if (type < 0.80) {
-    const head = getRandomElement(heads.length > 0 ? heads : AR_HEADS);
+    const head = getRandomElement(heads);
     const adj = getRandomElement(AR_ADJECTIVES);
     
     // Agreement
     const inflectedAdj = inflectAdjective(adj, head.gender || 'm');
-    
-    // Indefinite (No Al-) or Definite (Both Al-)
     
     if (Math.random() < 0.5) {
        // Indefinite
@@ -119,7 +126,6 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
        wordRom = `${head.rom} ${inflectedAdj.rom}`;
     } else {
        // Definite
-       // Check head sun letter manually for romanization prefix construction
        const headFirstChar = head.rom.charAt(0).toLowerCase();
        const headSun = ['t','th','d','dh','r','z','s','sh','n'].includes(headFirstChar);
        
@@ -140,13 +146,13 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
     }
   }
   
-  // Pattern 4: [Root] + [Adjective] (e.g. Petra... no. e.g. Riyadh Al-Khabra)
+  // Pattern 4: [Root] + [Adjective] 
+  // e.g. Riyadh Al-Khabra
   else {
     const root = getRandomElement(AR_ROOTS);
     const adj = getRandomElement(AR_ADJECTIVES);
     const inflectedAdj = inflectAdjective(adj, root.gender || 'm');
     
-    // Usually definite for major places: Al-Jouf Al-Gharbi
     const artRoot = getDefiniteArticle(root, style);
     const artAdj = getDefiniteArticle({ ...adj, ...inflectedAdj }, style);
     
