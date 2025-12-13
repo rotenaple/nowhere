@@ -1,0 +1,5 @@
+{
+  "name": "nowhere",
+  "description": "A nonce placename generator, designed to be better than NS's built-in generator.",
+  "requestFramePermissions": []
+}
