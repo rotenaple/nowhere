@@ -1,4 +1,3 @@
-
 import { GeneratedResult } from "../../types";
 import { getRandomElement, transliterateSwedishToAscii } from "../utils";
 import { GERMANIC_DATA } from "../dictionaries/germanicDict";
@@ -24,7 +23,8 @@ export const generateSwedishPlace = (): GeneratedResult => {
   const roots = getPool('root');
 
   const type = Math.random();
-  // 1. Prefix + Suffix (e.g., Storvik)
+
+  // Pattern 1: Prefix + Suffix (e.g., Storvik)
   if (type < 0.30) {
     const pre = getRandomElement(getPool('prefix'));
     const suf = getRandomElement(getPool('suffix'));
@@ -32,12 +32,11 @@ export const generateSwedishPlace = (): GeneratedResult => {
     if (pre.sv!.toLowerCase() === suf.sv!.toLowerCase()) return generateSwedishPlace();
     
     let p = pre.sv!;
-    // Adjective inflection: Stor -> Stora often in place names if separate, but Storvik is correct.
-    // If usage is 'Stora' + Root, handled below.
     
-    word = p + suf.sv;
+    word = p + suf.sv!.toLowerCase();
   }
-  // 2. Root + Suffix (e.g., Stockholm, Jönköping)
+  
+  // Pattern 2: Root + Suffix (e.g., Stockholm, Jönköping)
   else if (type < 0.70) {
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
@@ -48,32 +47,36 @@ export const generateSwedishPlace = (): GeneratedResult => {
     if (r.toLowerCase() === s.toLowerCase()) return generateSwedishPlace();
     
     let connector = "";
-    // If suffix starts with consonant and root ends in vowel, sometimes 's'.
-    // e.g. Skogsby (Forest Village) -> Skog + s + by.
-    if (['by', 'torp', 'holm', 'berg'].includes(s) && !r.endsWith('s')) {
+    // Genitive 's': Skogsby (Forest Village) -> Skog + s + by.
+    if (['by', 'torp', 'holm', 'berg'].includes(s.toLowerCase()) && !r.endsWith('s')) {
        if (Math.random() < 0.3) connector = 's'; 
     }
     
-    word = r + connector + s;
+    word = r + connector + s.toLowerCase();
   }
-  // 3. Adjective + Root (e.g. Stora Höga)
+  
+  // Pattern 3: Adjective + Root (e.g. Stora Höga vs Nybro)
   else if (type < 0.85) {
       const pre = getRandomElement(getPool('prefix'));
       const root = getRandomElement(roots);
       
       let p = pre.sv!;
-      // Inflect for definite article if separate
+      
+      // Inflect for definite article (Separate words = Both Capitalized)
       if (['Stor', 'Lill', 'Ny', 'Gammal', 'Hög', 'Låg', 'Röd', 'Svart', 'Vit'].includes(p)) {
           if (p === 'Lill') p = 'Lilla';
           else if (p === 'Gammal') p = 'Gamla';
           else p += 'a';
           
+          // "Stora Höga" -> Keep root Capitalized because it's a separate word
           word = `${p} ${root.sv}`;
       } else {
-          word = p + root.sv;
+          // "Nybro" -> Fused word, so lowercase the root
+          word = p + root.sv!.toLowerCase();
       }
   }
-  // 4. Root + Root (Compound)
+  
+  // Pattern 4: Root + Root (Compound)
   else {
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
@@ -85,6 +88,8 @@ export const generateSwedishPlace = (): GeneratedResult => {
     word = root1.sv + connector + root2.sv!.toLowerCase();
   }
 
+  // Ensure first letter is Cap (just in case)
   word = word.charAt(0).toUpperCase() + word.slice(1);
+  
   return { word: word, ascii: transliterateSwedishToAscii(word) };
 };
