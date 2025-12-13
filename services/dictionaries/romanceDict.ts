@@ -1,7 +1,7 @@
 
 export interface RomanceComponent {
   id: string;
-  type: 'adjective' | 'root' | 'suffix' | 'prefix' | 'river' | 'country_suffix' | 'name';
+  type: 'adjective' | 'root' | 'suffix' | 'prefix' | 'river' | 'country_suffix' | 'name' | 'civic';
   es?: string; // Spanish
   it?: string; // Italian
   fr?: string; // French
