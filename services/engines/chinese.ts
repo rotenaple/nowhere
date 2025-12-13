@@ -1,4 +1,3 @@
-
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
 import { EA_COMPONENTS, EastAsianComponent, RegionCode } from "../dictionaries/eastAsianDict";
@@ -27,28 +26,53 @@ export const getChineseCapacity = (romanization: 'pinyin' | 'wadegiles' | 'canto
 }
 
 const getChar = (component: EastAsianComponent, mode: 'pinyin' | 'wadegiles' | 'cantonese'): string => {
-  if ((mode === 'cantonese' || mode === 'wadegiles') && component.hanziTraditional) {
-    return component.hanziTraditional;
+  if ((mode === 'pinyin') && component.hans) {
+    return component.hans;
   }
-  return component.hanzi;
+  return component.han;
 }
 
 const formatChineseName = (parts: EastAsianComponent[], mode: 'pinyin' | 'wadegiles' | 'cantonese'): GeneratedResult => {
   const hanzi = parts.map(p => getChar(p, mode)).join('');
   
+  // Decide whether to anglicize the suffix
+  const lastPart = parts[parts.length - 1];
+  const useEnglishSuffix = !!lastPart.english && Math.random() < 0.35; 
+
+  let ascii = '';
+
+  // Helper to capitalize first letter
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
   if (mode === 'pinyin') {
-    const romanized = parts.map(p => p.pinyin).join('');
-    const capitalized = romanized.charAt(0).toUpperCase() + romanized.slice(1);
-    return { word: hanzi, ascii: capitalized };
+    const nameParts = useEnglishSuffix ? parts.slice(0, -1) : parts;
+    const prefix = nameParts.map(p => p.pinyin).join('');
+    
+    ascii = capitalize(prefix);
+    if (useEnglishSuffix && lastPart.english) {
+      ascii += ` ${lastPart.english}`;
+    }
+
   } else if (mode === 'wadegiles') {
-    const romanized = parts.map(p => p.wadegiles).join('-');
-    const capitalized = romanized.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('-');
-    return { word: hanzi, ascii: capitalized };
+    const nameParts = useEnglishSuffix ? parts.slice(0, -1) : parts;
+    const prefix = nameParts.map(p => p.wadegiles).join('-');
+    
+    ascii = prefix.split('-').map(capitalize).join('-');
+    if (useEnglishSuffix && lastPart.english) {
+      ascii += ` ${lastPart.english}`;
+    }
+
   } else {
-    const romanized = parts.map(p => p.cantonese).join(' ');
-    const capitalized = romanized.split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
-    return { word: hanzi, ascii: capitalized };
+    const nameParts = useEnglishSuffix ? parts.slice(0, -1) : parts;
+    const prefix = nameParts.map(p => p.cantonese).join(' ');
+    
+    ascii = prefix.split(' ').map(capitalize).join(' ');
+    if (useEnglishSuffix && lastPart.english) {
+      ascii += ` ${lastPart.english}`;
+    }
   }
+
+  return { word: hanzi, ascii: ascii };
 };
 
 const getStructure = (region: RegionCode): EastAsianComponent[] => {
@@ -57,7 +81,7 @@ const getStructure = (region: RegionCode): EastAsianComponent[] => {
   const getComp = (types: string[], exclude?: EastAsianComponent, singleOnly: boolean = false) => {
     let candidates = pool.filter(c => types.includes(c.type) && c !== exclude);
     if (singleOnly) {
-       candidates = candidates.filter(c => c.hanzi.length === 1);
+       candidates = candidates.filter(c => c.han.length === 1);
     }
     return getRandomElement(candidates);
   };
@@ -66,33 +90,36 @@ const getStructure = (region: RegionCode): EastAsianComponent[] => {
 
   // === PLACE MODE ===
   const usePrefix = Math.random() < 0.3;
-  const isCoreComposite = Math.random() < 0.4;
 
   if (usePrefix) {
     parts.push(getComp(['prefix', 'direction']));
   }
 
+  // If prefix is used, force core to be simple (1 element) to avoid over-length names.
+  const isCoreComposite = !usePrefix && Math.random() < 0.4;
+
   if (isCoreComposite) {
     const coreA = getComp(['adjective', 'number', 'direction', 'nature'], undefined, true);
-    const coreB = getComp(['noun', 'nature'], coreA, true);
+    // civic_built (like Bridge/Pass) behaves like a noun here, so we allow it in Core B
+    const coreB = getComp(['noun', 'nature', 'civic_built'], coreA, true);
     parts.push(coreA, coreB);
   } else {
-    parts.push(getComp(['noun', 'nature', 'adjective']));
+    parts.push(getComp(['noun', 'nature', 'adjective', 'civic_built']));
   }
 
   const lastPart = parts[parts.length - 1];
-  const isLastPartCivic = lastPart.type === 'civic' || lastPart.type === 'suffix';
-  const isLastPartBigCivic = ['guo', 'sheng', 'zhou'].includes(lastPart.pinyin);
 
   let allowedSuffixTypes: string[] = ['civic', 'suffix', 'nature'];
   let useSuffix = Math.random() < 0.9; 
 
-  if (isLastPartCivic || isLastPartBigCivic) {
-    useSuffix = false; 
+  if (lastPart.type === 'civic_major') {
+    useSuffix = false;
   }
-
-  if (['qiao', 'pu', 'tou', 'matou', 'zhan'].includes(lastPart.pinyin)) {
-     allowedSuffixTypes = ['civic']; 
+  else if (lastPart.type === 'civic_built') {
+    allowedSuffixTypes = ['civic']; 
+  }
+  else if (lastPart.type === 'civic' || lastPart.type === 'suffix') {
+    useSuffix = false;
   }
 
   if (useSuffix) {
@@ -112,14 +139,23 @@ const getStructure = (region: RegionCode): EastAsianComponent[] => {
     }
   }
 
-  const totalLength = parts.reduce((sum, p) => sum + p.hanzi.length, 0);
+  const totalLength = parts.reduce((sum, p) => sum + p.han.length, 0);
   if (totalLength < 2) return getStructure(region);
 
-  for (let i = 0; i < parts.length - 1; i++) {
-    if (parts[i].hanzi === parts[i+1].hanzi) return getStructure(region);
-  }
+  // === VALIDATION ===
+  
+  // 1. Check for duplicate adjacent Directions (e.g., North South)
   for (let i = 0; i < parts.length - 1; i++) {
     if (parts[i].type === 'direction' && parts[i+1].type === 'direction') return getStructure(region);
+  }
+
+  // 2. Check for ANY character reduplication across the whole name
+  // Example: Reject "Baiyun" (White Cloud) + "Bai" (White) -> "Baiyunbai"
+  const fullString = parts.map(p => p.han).join('');
+  const uniqueChars = new Set(fullString.split(''));
+  
+  if (uniqueChars.size !== fullString.length) {
+    return getStructure(region);
   }
 
   return parts;
