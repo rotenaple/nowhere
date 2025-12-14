@@ -194,8 +194,6 @@ export const inflectSlavicAdjective = (
     let femEndingRom: string;
     let neutEndingSrc: string;
     let neutEndingRom: string;
-    let pluralEndingSrc: string; // If you later expand to plural inflection
-    let pluralEndingRom: string;
 
     switch (lang) {
         case 'bg': // Bulgarian adjectives usually end in -en/-ak/-ok (masc)
