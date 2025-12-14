@@ -1,8 +1,11 @@
+// tagalogDict.ts
 
 export interface TagalogComponent {
   val: string;
   type: 'root' | 'prefix' | 'suffix' | 'adjective';
   def: string;
+  es?: boolean; // Set to true if the component is Spanish in origin
+  // tags?: string[]; // Could add for more nuanced filtering if needed, e.g., 'isProperNoun'
 }
 
 export const TL_PREFIXES: TagalogComponent[] = [
@@ -14,7 +17,7 @@ export const TL_PREFIXES: TagalogComponent[] = [
   { val: 'Mag', type: 'prefix', def: 'Action' },
   { val: 'Sang', type: 'prefix', def: 'One/Whole' },
   { val: 'Tag', type: 'prefix', def: 'Season/From' },
-  { val: 'Cala', type: 'prefix', def: 'Place (Spanish spelling of Ka-)' }, 
+  { val: 'Cala', type: 'prefix', def: 'Place (Spanish spelling of Ka-)', es: true }, // Marked as Spanish origin
   { val: 'Pala', type: 'prefix', def: 'Fond of' },
   { val: 'Mala', type: 'prefix', def: 'Like/Semi' },
   { val: 'Hina', type: 'prefix', def: 'Destined' },
@@ -76,7 +79,7 @@ export const TL_ROOTS: TagalogComponent[] = [
   { val: 'Taas', type: 'root', def: 'Height' },
   { val: 'Baba', type: 'root', def: 'Low' },
   { val: 'Lalim', type: 'root', def: 'Depth' },
-  
+
   // Flora
   { val: 'Kahoy', type: 'root', def: 'Wood/Tree' },
   { val: 'Narra', type: 'root', def: 'Narra tree' },
@@ -132,7 +135,7 @@ export const TL_ROOTS: TagalogComponent[] = [
   { val: 'Rattan', type: 'root', def: 'Rattan' },
   { val: 'Nipa', type: 'root', def: 'Nipa palm' },
   { val: 'Anahaw', type: 'root', def: 'Fan palm' },
-  
+
   // Fauna
   { val: 'Kalabaw', type: 'root', def: 'Carabao' },
   { val: 'Agila', type: 'root', def: 'Eagle' },
@@ -171,7 +174,7 @@ export const TL_ROOTS: TagalogComponent[] = [
   { val: 'Talaba', type: 'root', def: 'Oyster' },
   { val: 'Tahong', type: 'root', def: 'Mussel' },
   { val: 'Kuhol', type: 'root', def: 'Snail' },
-  
+
   // Objects / Materials / Concepts
   { val: 'Ganda', type: 'root', def: 'Beauty' },
   { val: 'Liwanag', type: 'root', def: 'Light' },
@@ -227,20 +230,20 @@ export const TL_ROOTS: TagalogComponent[] = [
   { val: 'Pawis', type: 'root', def: 'Sweat' },
   { val: 'Luha', type: 'root', def: 'Tears' },
   { val: 'Ngiti', type: 'root', def: 'Smile' },
-  
-  // Tagalogized Spanish/Archaic/Named Places
-  { val: 'Krus', type: 'root', def: 'Cross' },
-  { val: 'Santo', type: 'root', def: 'Saint' },
-  { val: 'Rosa', type: 'root', def: 'Rose' },
-  { val: 'Cavite', type: 'root', def: 'Hook (Kawit)' },
-  { val: 'Laguna', type: 'root', def: 'Lake (Sp)' },
-  { val: 'Rizal', type: 'root', def: 'Hero Name' },
-  { val: 'Bonifacio', type: 'root', def: 'Hero Name' },
-  { val: 'Magsaysay', type: 'root', def: 'Hero Name' },
-  { val: 'Quezon', type: 'root', def: 'Hero Name' },
-  { val: 'Mabini', type: 'root', def: 'Hero Name' },
-  { val: 'Del Pilar', type: 'root', def: 'Hero Name' },
-  { val: 'Silang', type: 'root', def: 'Rising/East' },
+
+  // Tagalogized Spanish/Archaic/Named Places - MARK THESE WITH 'es: true'
+  { val: 'Krus', type: 'root', def: 'Cross', es: true },
+  { val: 'Santo', type: 'root', def: 'Saint', es: true },
+  { val: 'Rosa', type: 'root', def: 'Rose', es: true },
+  { val: 'Cavite', type: 'root', def: 'Hook (Kawit)', es: true }, // Place name, often treated as proper
+  { val: 'Laguna', type: 'root', def: 'Lake (Sp)', es: true },
+  { val: 'Rizal', type: 'root', def: 'Hero Name', es: true },
+  { val: 'Bonifacio', type: 'root', def: 'Hero Name', es: true },
+  { val: 'Magsaysay', type: 'root', def: 'Hero Name', es: true },
+  { val: 'Quezon', type: 'root', def: 'Hero Name', es: true },
+  { val: 'Mabini', type: 'root', def: 'Hero Name', es: true },
+  { val: 'Del Pilar', type: 'root', def: 'Hero Name', es: true },
+  { val: 'Silang', type: 'root', def: 'Rising/East' }, // Native word that became part of a name
   { val: 'Indang', type: 'root', def: 'Town name' },
   { val: 'Kawit', type: 'root', def: 'Hook' },
   { val: 'Imus', type: 'root', def: 'Point of land' },
@@ -259,26 +262,26 @@ export const TL_ROOTS: TagalogComponent[] = [
   { val: 'Balintawak', type: 'root', def: 'Area' },
   { val: 'Caloocan', type: 'root', def: 'Area' },
   { val: 'Diliman', type: 'root', def: 'Area' },
-  { val: 'Ermita', type: 'root', def: 'Hermitage' },
-  { val: 'Intramuros', type: 'root', def: 'Walled City' },
-  { val: 'Malate', type: 'root', def: 'Salty' },
+  { val: 'Ermita', type: 'root', def: 'Hermitage', es: true },
+  { val: 'Intramuros', type: 'root', def: 'Walled City', es: true },
+  { val: 'Malate', type: 'root', def: 'Salty', es: true }, // From Spanish 'malate' 'bad quality'
   { val: 'Mandaluyong', type: 'root', def: 'Area' },
-  { val: 'Manila', type: 'root', def: 'Mangrove' },
+  { val: 'Manila', type: 'root', def: 'Mangrove', es: true }, // Hispaniola/Maynila
   { val: 'Muntinlupa', type: 'root', def: 'Small Land' },
-  { val: 'Navotas', type: 'root', def: 'Pierced' },
-  { val: 'Paco', type: 'root', def: 'Fern' },
+  { val: 'Navotas', type: 'root', def: 'Pierced' }, // from 'nabutas' (pierced)
+  { val: 'Paco', type: 'root', def: 'Fern', es: true }, // from 'helecho' in Spanish
   { val: 'Pandacan', type: 'root', def: 'Area' },
   { val: 'Paranaque', type: 'root', def: 'Area' },
   { val: 'Pasay', type: 'root', def: 'Area' },
-  { val: 'Pateros', type: 'root', def: 'Duck raisers' },
+  { val: 'Pateros', type: 'root', def: 'Duck raisers', es: true }, // from Spanish 'pato' (duck)
   { val: 'Quiapo', type: 'root', def: 'Water lily' },
   { val: 'Sampaloc', type: 'root', def: 'Tamarind' },
-  { val: 'San Juan', type: 'root', def: 'St John' },
-  { val: 'Santa Ana', type: 'root', def: 'St Anne' },
-  { val: 'Santa Cruz', type: 'root', def: 'Holy Cross' },
-  { val: 'Santa Mesa', type: 'root', def: 'Holy Table' },
+  { val: 'San Juan', type: 'root', def: 'St John', es: true },
+  { val: 'Santa Ana', type: 'root', def: 'St Anne', es: true },
+  { val: 'Santa Cruz', type: 'root', def: 'Holy Cross', es: true },
+  { val: 'Santa Mesa', type: 'root', def: 'Holy Table', es: true },
   { val: 'Tondo', type: 'root', def: 'Area' },
-  { val: 'Valenzuela', type: 'root', def: 'Hero Name' },
+  { val: 'Valenzuela', type: 'root', def: 'Hero Name', es: true },
 ];
 
 export const TL_SUFFIXES: TagalogComponent[] = [
@@ -288,12 +291,13 @@ export const TL_SUFFIXES: TagalogComponent[] = [
   { val: 'hin', type: 'suffix', def: '' },
   { val: 'on', type: 'suffix', def: '' }, // Visayan influence
   { val: 'ay', type: 'suffix', def: '' }, // Visayan influence
-  { val: 'ng', type: 'suffix', def: '' }, 
+  { val: 'ng', type: 'suffix', def: '' },
   { val: 'g', type: 'suffix', def: '' },
 ];
-
+// Adjectives typically don't have Es origin, as they are part of TL grammar patterns
 export const TL_ADJECTIVES: TagalogComponent[] = [
-  { val: 'Bago', type: 'adjective', def: 'New' }, 
+  // ... (all TL_ADJECTIVES remain as they are, no `es: true`)
+  { val: 'Bago', type: 'adjective', def: 'New' },
   { val: 'Luma', type: 'adjective', def: 'Old' },
   { val: 'Malaki', type: 'adjective', def: 'Big' },
   { val: 'Maliit', type: 'adjective', def: 'Small' },
