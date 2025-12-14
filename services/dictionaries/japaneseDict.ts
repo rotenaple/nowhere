@@ -6,7 +6,6 @@ export interface JaComponent {
   def?: string; // New field for definition
   onReading?: string; // For Sino-Japanese compounds
   kunReading?: string; // For Native compounds
-  canRendaku?: boolean; // Can this trigger voicing in the next char? usually no, usually it GETS voiced.
   rendaku?: { kana: string, romaji: string }; // The voiced version of this component
 }
 
