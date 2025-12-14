@@ -1,38 +1,46 @@
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
-import { EA_COMPONENTS, EastAsianComponent, RegionCode } from "../dictionaries/eastAsianDict";
+import { ZH_COMPONENTS, ChineseComponent, RegionCode } from "../dictionaries/chineseDict";
 
-const filterComponents = (pool: EastAsianComponent[], region: RegionCode) => {
+const filterComponents = (pool: ChineseComponent[], region: RegionCode) => {
   return pool.filter(c => {
-    // Check exclusions
-    if (c.excludeRegions?.includes(region)) return false;
-    // Check explicit inclusions
-    if (c.onlyRegions && !c.onlyRegions.includes(region)) return false;
-    return true;
+    // In the new format, if the romanization property (cn, tw, hk)
+    // is undefined or an empty string, it implies exclusion.
+    switch (region) {
+      case 'cn':
+        return !!c.cn; // Returns true if c.cn exists and is not empty
+      case 'tw':
+        return !!c.tw;
+      case 'hk':
+        return !!c.hk;
+      default:
+        // Handle unexpected regions or return false
+        return false;
+    }
   });
 };
 
 const getEastAsianCapacity = (region: RegionCode) => {
-  const pool = filterComponents(EA_COMPONENTS, region);
+  const pool = filterComponents(ZH_COMPONENTS, region);
   const len = pool.length;
   return Math.pow(len, 2) + Math.pow(len, 3);
 };
 
-export const getChineseCapacity = (romanization: 'pinyin' | 'wadegiles' | 'cantonese') => {
+export const getChineseCapacity = (romanization: 'cn' | 'tw' | 'hk') => {
   let region: RegionCode = 'cn';
-  if (romanization === 'cantonese') region = 'hk';
-  if (romanization === 'wadegiles') region = 'tw';
+  if (romanization === 'hk') region = 'hk';
+  if (romanization === 'tw') region = 'tw';
   return getEastAsianCapacity(region);
 }
 
-const getChar = (component: EastAsianComponent, mode: 'pinyin' | 'wadegiles' | 'cantonese'): string => {
-  if ((mode === 'pinyin') && component.hans) {
+const getChar = (component: ChineseComponent, mode: 'cn' | 'tw' | 'hk'): string => {
+  if ((mode === 'cn') && component.hans) {
     return component.hans;
   }
   return component.han;
 }
 
-const formatChineseName = (parts: EastAsianComponent[], mode: 'pinyin' | 'wadegiles' | 'cantonese'): GeneratedResult => {
+const formatChineseName = (parts: ChineseComponent[], mode: 'cn' | 'tw' | 'hk'): GeneratedResult => {
   const hanzi = parts.map(p => getChar(p, mode)).join('');
   
   // Decide whether to anglicize the suffix
@@ -44,18 +52,18 @@ const formatChineseName = (parts: EastAsianComponent[], mode: 'pinyin' | 'wadegi
   // Helper to capitalize first letter
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-  if (mode === 'pinyin') {
+  if (mode === 'cn') {
     const nameParts = useEnglishSuffix ? parts.slice(0, -1) : parts;
-    const prefix = nameParts.map(p => p.pinyin).join('');
+    const prefix = nameParts.map(p => p.cn).join('');
     
     ascii = capitalize(prefix);
     if (useEnglishSuffix && lastPart.english) {
       ascii += ` ${lastPart.english}`;
     }
 
-  } else if (mode === 'wadegiles') {
+  } else if (mode === 'tw') {
     const nameParts = useEnglishSuffix ? parts.slice(0, -1) : parts;
-    const prefix = nameParts.map(p => p.wadegiles).join('-');
+    const prefix = nameParts.map(p => p.tw).join('-');
     
     ascii = prefix.split('-').map(capitalize).join('-');
     if (useEnglishSuffix && lastPart.english) {
@@ -64,7 +72,7 @@ const formatChineseName = (parts: EastAsianComponent[], mode: 'pinyin' | 'wadegi
 
   } else {
     const nameParts = useEnglishSuffix ? parts.slice(0, -1) : parts;
-    const prefix = nameParts.map(p => p.cantonese).join(' ');
+    const prefix = nameParts.map(p => p.hk).join(' ');
     
     ascii = prefix.split(' ').map(capitalize).join(' ');
     if (useEnglishSuffix && lastPart.english) {
@@ -75,10 +83,10 @@ const formatChineseName = (parts: EastAsianComponent[], mode: 'pinyin' | 'wadegi
   return { word: hanzi, ascii: ascii };
 };
 
-const getStructure = (region: RegionCode): EastAsianComponent[] => {
-  const pool = filterComponents(EA_COMPONENTS, region);
+const getStructure = (region: RegionCode): ChineseComponent[] => {
+  const pool = filterComponents(ZH_COMPONENTS, region);
 
-  const getComp = (types: string[], exclude?: EastAsianComponent, singleOnly: boolean = false) => {
+  const getComp = (types: string[], exclude?: ChineseComponent, singleOnly: boolean = false) => {
     let candidates = pool.filter(c => types.includes(c.type) && c !== exclude);
     if (singleOnly) {
        candidates = candidates.filter(c => c.han.length === 1);
@@ -86,7 +94,7 @@ const getStructure = (region: RegionCode): EastAsianComponent[] => {
     return getRandomElement(candidates);
   };
 
-  const parts: EastAsianComponent[] = [];
+  const parts: ChineseComponent[] = [];
 
   // === PLACE MODE ===
   const usePrefix = Math.random() < 0.3;
@@ -127,7 +135,7 @@ const getStructure = (region: RegionCode): EastAsianComponent[] => {
     let attempts = 0;
     while (attempts < 5) {
         const isBadCombo = 
-           (lastPart.type === 'noun' && candidate.pinyin === 'guo') || 
+           (lastPart.type === 'noun' && candidate.cn === 'guo') || 
            (lastPart.type === 'nature' && candidate.type === 'nature'); 
 
         if (!isBadCombo) break;
@@ -161,10 +169,10 @@ const getStructure = (region: RegionCode): EastAsianComponent[] => {
   return parts;
 }
 
-export const generateChinesePlace = (mode: 'pinyin' | 'wadegiles' | 'cantonese'): GeneratedResult => {
+export const generateChinesePlace = (mode: 'cn' | 'tw' | 'hk'): GeneratedResult => {
   let region: RegionCode = 'cn';
-  if (mode === 'cantonese') region = 'hk';
-  if (mode === 'wadegiles') region = 'tw';
+  if (mode === 'hk') region = 'hk';
+  if (mode === 'tw') region = 'tw';
 
   const parts = getStructure(region);
   return formatChineseName(parts, mode);

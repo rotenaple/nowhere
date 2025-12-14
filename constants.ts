@@ -38,9 +38,9 @@ export const DEFAULT_MIX_SETTINGS: Record<string, number> = {
 };
 
 export const DEFAULT_CHINESE_MIX: Record<string, number> = {
-  'pinyin': 60,
-  'wadegiles': 15,
-  'cantonese': 25
+  'cn': 60,
+  'tw': 15,
+  'hk': 25
 };
 
 export const DEFAULT_ARABIC_MIX: Record<string, number> = {

@@ -46,7 +46,7 @@ export const getCapacity = (params: GenerationParams): string => {
   else if (lang === Language.Italian) val = getItalianCapacity();
   else if (lang === Language.Japanese) val = getJapaneseCapacity();
   else if (lang === Language.Chinese) {
-      if (params.romanizationStyle === 'mixed') val = getChineseCapacity('pinyin') + getChineseCapacity('wadegiles') + getChineseCapacity('cantonese');
+      if (params.romanizationStyle === 'mixed') val = getChineseCapacity('cn') + getChineseCapacity('tw') + getChineseCapacity('hk');
       else val = getChineseCapacity(params.romanizationStyle);
   }
   else if (lang === Language.Korean) val = getKoreanCapacity();
@@ -164,10 +164,10 @@ export const generateNonceWords = async (params: GenerationParams): Promise<Plac
         break;
       case Language.Chinese: 
         // Ensure style is valid for generation function
-        if (style === 'mixed') style = 'pinyin'; // Fallback safely if loop logic somehow failed
-        generated = generateChinesePlace(style as 'pinyin' | 'wadegiles' | 'cantonese');
-        if (style === 'cantonese') displayLang = 'zh-HK';
-        else if (style === 'wadegiles') displayLang = 'zh-TW';
+        if (style === 'mixed') style = 'cn'; // Fallback safely if loop logic somehow failed
+        generated = generateChinesePlace(style as 'cn' | 'tw' | 'hk');
+        if (style === 'hk') displayLang = 'zh-HK';
+        else if (style === 'tw') displayLang = 'zh-TW';
         else displayLang = 'zh-CN';
         break;
       case Language.Korean: 

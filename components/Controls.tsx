@@ -154,9 +154,9 @@ const Controls: React.FC<ControlsProps> = ({ params, setParams }) => {
                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs py-1.5 px-2 focus:ring-1 focus:ring-brand-500 outline-none"
             >
                <option value="mixed">Mixed (Configurable)</option>
-               <option value="pinyin">Mainland (Pinyin)</option>
-               <option value="wadegiles">Taiwan (Wade-Giles)</option>
-               <option value="cantonese">Hong Kong (Cantonese)</option>
+               <option value="cn">China (Pinyin)</option>
+               <option value="tw">Taiwan (Wade-Giles)</option>
+               <option value="hk">Hong Kong (Cantonese)</option>
             </select>
             {params.romanizationStyle === 'mixed' && (
                 <button 

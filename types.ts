@@ -45,7 +45,7 @@ export type GenerationParams = {
   count: number;
   minLength: number;
   maxLength: number;
-  romanizationStyle: 'pinyin' | 'wadegiles' | 'cantonese' | 'mixed';
+  romanizationStyle: 'cn' | 'tw' | 'hk' | 'mixed';
   arabicStyle: 'standard' | 'egyptian' | 'levantine' | 'gulf' | 'maghrebi' | 'mixed';
   englishStyle: 'modern' | 'old' | 'mixed';
   mixSettings: Record<string, number>; // Weights for Global Mixed mode

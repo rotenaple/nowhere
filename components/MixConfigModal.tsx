@@ -22,9 +22,9 @@ const PALETTE = [
 const LABEL_MAP: Record<string, string> = {
   'modern': 'Phonetic',
   'old': 'Dictionary',
-  'wadegiles': 'Wade-Giles',
-  'pinyin': 'Pinyin',
-  'cantonese': 'Cantonese',
+  'tw': 'Taiwan (Wade-Giles)',
+  'cn': 'China (Pinyin)',
+  'hk': 'Hong Kong (Cantonese)',
   'standard': 'Standard',
   'egyptian': 'Egyptian',
   'levantine': 'Levantine',
