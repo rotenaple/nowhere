@@ -3,7 +3,7 @@
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
 // Import TagalogComponent for type checking in filters
-import { TL_ROOTS, TL_PREFIXES, TL_SUFFIXES, TL_ADJECTIVES, TagalogComponent } from "../dictionaries/tagalogDict";
+import { TL_ROOTS, TL_PREFIXES, TL_SUFFIXES, TL_ADJECTIVES } from "../dictionaries/tagalogDict";
 import { ROMANCE_DATA, getRomData, RomanceComponent } from "../dictionaries/romanceDict";
 
 // Specific Philippine historical figures or local names that won't appear in a generic Romance dictionary
