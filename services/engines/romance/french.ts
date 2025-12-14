@@ -1,7 +1,6 @@
-
 import { GeneratedResult } from "../../../types";
 import { getRandomElement, transliterateFrenchToAscii } from "../../utils";
-import { ROMANCE_DATA } from "../../dictionaries/romanceDict";
+import { ROMANCE_DATA, getRomData, RomanceEntry } from "../../dictionaries/romanceDict";
 
 export const getFrenchCapacity = () => {
   const roots = ROMANCE_DATA.filter(c => c.fr && c.type === 'root');
@@ -9,17 +8,50 @@ export const getFrenchCapacity = () => {
   const prefixes = ROMANCE_DATA.filter(c => c.fr && c.type === 'prefix');
   const adjectives = ROMANCE_DATA.filter(c => c.fr && c.type === 'adjective');
 
-  // 1. Prefix + Root
   const c1 = prefixes.length * roots.length;
-  // 2. Root + Suffix
   const c2 = roots.length * suffixes.length;
-  // 3. Root + Adjective (e.g. Châteauneuf, Grand-Fougeray)
   const c3 = roots.length * adjectives.length;
-  // 4. Root + de + Root (e.g. Pont-de-Vaux)
   const c4 = roots.length * roots.length;
   
   return c1 + c2 + c3 + c4;
 }
+
+// Helper to extract French Adjective data specifically
+// Returns { m: string, f: string }
+export const getFrAdj = (entry: RomanceEntry | undefined): { m: string, f: string } => {
+  if (!entry) return { m: '', f: '' };
+  
+  // 1. Handle Tuple [Masc, Fem] (Explicit Override)
+  if (Array.isArray(entry) && entry.length === 2) {
+      const second = entry[1];
+      // If it looks like a gender tag, this is a Noun used as Adj. Fallback to 'e' rule on base.
+      if (second === 'm' || second === 'f' || second === 'n') {
+          const val = entry[0];
+          return { m: val, f: val.endsWith('e') ? val : val + 'e' };
+      }
+      // Otherwise it's [Masc, Fem]
+      return { m: entry[0], f: second };
+  }
+  
+  // 2. Handle String (Smart Defaults)
+  const val = typeof entry === 'string' ? entry : entry[0];
+  let f = "";
+
+  // Standard French Ending Rules
+  if (val.endsWith('e')) {
+      f = val; 
+  } else if (val.endsWith('x')) {
+      f = val.slice(0, -1) + 'se'; 
+  } else if (val.endsWith('f')) {
+      f = val.slice(0, -1) + 've'; 
+  } else if (val.endsWith('er')) {
+      f = val.slice(0, -2) + 'ère'; 
+  } else {
+      f = val + 'e'; 
+  }
+
+  return { m: val, f };
+};
 
 export const generateFrenchPlace = (): GeneratedResult => {
   let word = "";
@@ -28,87 +60,110 @@ export const generateFrenchPlace = (): GeneratedResult => {
   const roots = getPool('root');
 
   const type = Math.random();
-  // 1. Prefix + Hyphen + Root (e.g. Saint-Malo, Le Havre)
+
+  // 1. Prefix + Hyphen + Root
+  // e.g. Saint-Malo, La Rochelle, Les-Cochons
   if (type < 0.25) {
-    const prefix = getRandomElement(getPool('prefix'));
-    const root = getRandomElement(roots);
+    const prefixObj = getRandomElement(getPool('prefix'));
+    const rootObj = getRandomElement(roots);
     
-    let p = prefix.fr!;
-    let r = root.fr!;
+    const rData = getRomData(rootObj.fr);
+    let rootVal = rData.val;
+    const gender = rData.gender || 'm';
     
-    // Gender check for Saint/Sainte, Le/La
-    if (root.gender === 'f') {
-        if (p === 'Saint') p = 'Sainte';
-        if (p === 'Le') p = 'La';
-        if (p === 'Beau') p = 'Belle';
-        if (p === 'Vieux') p = 'Vieille';
-        if (p === 'Nouveau') p = 'Nouvelle';
+    let p = "";
+
+    // Resolve Prefix Gender
+    const prefixEntry = prefixObj.fr;
+    // Data-driven check for explicit gendered forms in tuple
+    if (Array.isArray(prefixEntry) && prefixEntry.length === 2 && prefixEntry[1].length > 1) {
+        p = (gender === 'f') ? prefixEntry[1] : prefixEntry[0];
+    } 
+    // Fallback for simple strings
+    else {
+        p = getRomData(prefixEntry).val;
+        // Basic gender swaps if tuple missing (Optional fallback logic)
+        if (gender === 'f') {
+            if (p === 'Le') p = 'La';
+            if (p === 'Saint') p = 'Sainte';
+            if (p === 'Beau') p = 'Belle';
+            if (p === 'Vieux') p = 'Vieille';
+            if (p === 'Nouveau') p = 'Nouvelle';
+        } else {
+            if (p === 'La') p = 'Le';
+            if (p === 'Sainte') p = 'Saint';
+            if (p === 'Belle') p = 'Beau';
+            if (p === 'Vieille') p = 'Vieux';
+            if (p === 'Nouvelle') p = 'Nouveau';
+        }
+    }
+
+    // FIX: Pluralize Root based on TAG, not string "Les"
+    if (prefixObj.tags?.includes('plural')) {
+        if (rootVal.endsWith('eau') || rootVal.endsWith('eu')) rootVal += 'x';
+        else if (!['s', 'x', 'z'].includes(rootVal.slice(-1))) rootVal += 's';
     }
     
-    // Elision
-    if (['A','E','I','O','U','Y','É','È'].includes(r.charAt(0).toUpperCase()) && (p === 'Le' || p === 'La' || p === 'Sainte')) {
-        if (p === 'Sainte') {
-           // Sainte does not elide as commonly as Le/La in modern spelling but keeps hyphen e.g. Sainte-Adresse
-        } else {
-           p = "L'";
-           word = `${p}${r}`;
-        }
+    // Elision Logic
+    const firstChar = rootVal.charAt(0).toUpperCase();
+    // Only elide singular articles (Le/La), never plural (Les -> Les-Arbres)
+    if (['A','E','I','O','U','Y','É','È'].includes(firstChar) && ['Le', 'La'].includes(p)) {
+         p = "L'";
+         word = `${p}${rootVal}`;
     } 
-    
-    if (!word) {
-       word = `${p}-${r}`;
+    else {
+         word = `${p}-${rootVal}`;
     }
   }
-  // 2. Root + Suffix (e.g. Montpellier, Bordeaux - simulated)
+  
+  // 2. Root + Suffix
   else if (type < 0.50) {
-    const root = getRandomElement(roots);
-    const suffix = getRandomElement(getPool('suffix'));
+    const rootObj = getRandomElement(roots);
+    const suffixObj = getRandomElement(getPool('suffix'));
     
-    let base = root.fr!.toLowerCase();
-    // Truncate logic
+    let base = getRomData(rootObj.fr).val.toLowerCase();
+    const sVal = getRomData(suffixObj.fr).val;
+    
     if (base.length > 4 && Math.random() < 0.5) base = base.slice(0, 4);
-    
-    if (['a','e','i','o','u','y'].includes(base.slice(-1)) && ['a','e','i','o','u','y'].includes(suffix.fr!.charAt(0))) {
+
+    if (['a','e','i','o','u','y'].includes(base.slice(-1)) && ['a','e','i','o','u','y'].includes(sVal.charAt(0))) {
         base = base.slice(0, -1);
     }
     
-    word = base + suffix.fr;
+    word = base + sVal;
     word = word.charAt(0).toUpperCase() + word.slice(1);
   }
-  // 3. Root + Adjective (e.g. Châteauneuf, Maison-Rouge)
+  
+  // 3. Root + Adjective
   else if (type < 0.75) {
-      const root = getRandomElement(roots);
-      const adj = getRandomElement(getPool('adjective'));
+      const rootObj = getRandomElement(roots);
+      const adjObj = getRandomElement(getPool('adjective'));
       
-      let r = root.fr!;
-      let a = adj.fr!;
+      const rData = getRomData(rootObj.fr);
+      let r = rData.val;
+      const gender = rData.gender || 'm';
       
-      let gender = root.gender || 'm';
+      // Data-Driven Adjective Agreement via Tuple or Smart Default
+      const aData = getFrAdj(adjObj.fr);
+      let a = (gender === 'f') ? aData.f : aData.m;
       
-      // Adjective agreement
-      if (gender === 'f') {
-          if (a.endsWith('f')) a = a.slice(0, -1) + 've';
-          else if (a.endsWith('x')) a = a.slice(0, -1) + 'se';
-          else if (!a.endsWith('e')) a += 'e';
-          
-          if (a.startsWith('Beau')) a = 'Belle';
-          if (a.startsWith('Vieux')) a = 'Vieille';
-          if (a.startsWith('Nouveau')) a = 'Nouvelle';
+      // Position: Pre-nominal (BAGS) or Post-nominal
+      if (adjObj.tags?.includes('pre')) {
+          word = `${a}-${r}`;
+      } else {
+          word = `${r}-${a}`;
       }
-      
-      // Post-nominal adjective is standard in French place names often with hyphen
-      word = `${r}-${a}`;
   }
-  // 4. Root + de + Root (e.g. Pont-de-Vaux, Fort-de-France)
+  
+  // 4. Root + de + Root
   else {
-    const head = getRandomElement(roots);
-    const tail = getRandomElement(roots);
+    const headObj = getRandomElement(roots);
+    const tailObj = getRandomElement(roots);
     
-    let h = head.fr!;
-    let t = tail.fr!;
+    let h = getRomData(headObj.fr).val;
+    let t = getRomData(tailObj.fr).val;
     
     let link = "-de-";
-    // Elision
     if (['A','E','I','O','U','Y','É','È'].includes(t.charAt(0).toUpperCase())) {
         link = "-d'";
     }

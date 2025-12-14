@@ -1,18 +1,14 @@
-
 import { GeneratedResult } from "../../../types";
 import { getRandomElement, transliteratePortugueseToAscii } from "../../utils";
-import { ROMANCE_DATA } from "../../dictionaries/romanceDict";
+import { ROMANCE_DATA, getRomData } from "../../dictionaries/romanceDict";
 
 export const getPortugueseCapacity = () => {
   const roots = ROMANCE_DATA.filter(c => c.pt && c.type === 'root');
   const adjectives = ROMANCE_DATA.filter(c => c.pt && c.type === 'adjective');
   const prefixes = ROMANCE_DATA.filter(c => c.pt && c.type === 'prefix');
   
-  // 1. Prefix + Root
   const c1 = prefixes.length * roots.length;
-  // 2. Root + Adjective
   const c2 = roots.length * adjectives.length;
-  // 3. Root + de + Root
   const c3 = roots.length * roots.length;
   
   return c1 + c2 + c3;
@@ -26,29 +22,33 @@ export const generatePortuguesePlace = (): GeneratedResult => {
 
   const type = Math.random();
   
-  // 1. Prefix + Root (e.g. São Paulo, Vila Real)
+  // 1. Prefix + Root
   if (type < 0.3) {
-      const prefix = getRandomElement(getPool('prefix'));
-      // Special logic: Vila/Porto/Cabo often act as prefixes
-      const specialPrefixes = roots.filter(r => ['Vila', 'Porto', 'Cabo', 'Monte', 'Vale', 'Rio'].includes(r.pt!));
+      const prefixObj = getRandomElement(getPool('prefix'));
       
-      let p = prefix.pt!;
-      if (Math.random() < 0.6 && specialPrefixes.length > 0) {
-          p = getRandomElement(specialPrefixes).pt!;
+      // Use roots tagged as 'common_prefix' (Vila, Porto, Cabo) instead of hardcoded list
+      const commonPrefixRoots = roots.filter(r => r.tags?.includes('common_prefix'));
+      
+      let p = getRomData(prefixObj.pt).val;
+      if (Math.random() < 0.6 && commonPrefixRoots.length > 0) {
+          const rootAsPrefix = getRandomElement(commonPrefixRoots);
+          p = getRomData(rootAsPrefix.pt).val;
       }
       
-      let r = getRandomElement(roots).pt!;
+      let r = getRomData(getRandomElement(roots).pt).val;
       word = `${p} ${r}`;
   }
-  // 2. Root + Adjective (e.g. Castelo Branco, Rio Grande, Mata Atlântica)
+  
+  // 2. Root + Adjective
   else if (type < 0.6) {
-      const root = getRandomElement(roots);
-      const adj = getRandomElement(getPool('adjective'));
+      const rootObj = getRandomElement(roots);
+      const adjObj = getRandomElement(getPool('adjective'));
       
-      let r = root.pt!;
-      let a = adj.pt!;
+      const rData = getRomData(rootObj.pt);
+      let r = rData.val;
+      let a = getRomData(adjObj.pt).val;
       
-      let gender = root.gender || 'm';
+      let gender = rData.gender || 'm';
       
       if (gender === 'f') {
           if (a.endsWith('o')) a = a.slice(0, -1) + 'a';
@@ -57,40 +57,35 @@ export const generatePortuguesePlace = (): GeneratedResult => {
           if (a === 'São') a = 'Santa';
           if (a === 'Novo') a = 'Nova';
           if (a === 'Belo') a = 'Bela';
-      } else {
-          // Masculine
-          if (a.endsWith('a') && !['Azul', 'Verde', 'Grande', 'Forte'].includes(a)) {
-             // Keep it if invariant, but usually revert to 'o' if dict form was 'a' (unlikely)
-          }
       }
       
       word = `${r} ${a}`;
   }
-  // 3. Root + de + Root (e.g. Vale do Lobo, Serra da Estrela)
+  
+  // 3. Root + de + Root
   else {
-      // Pick a "Head" noun (often nature)
-      const heads = roots.filter(r => ['Vale', 'Serra', 'Monte', 'Campo', 'Ilha', 'Praia', 'Cabo'].includes(r.pt!) || Math.random() < 0.1);
-      const r1 = getRandomElement(heads.length > 0 ? heads : roots);
+      // Pick Head: Nature/Common Prefix
+      const heads = roots.filter(r => r.tags?.includes('nature') || r.tags?.includes('common_prefix') || Math.random() < 0.1);
+      const r1Obj = getRandomElement(heads.length > 0 ? heads : roots);
       
-      // Pick a "Tail" noun (often animal, tree, or civic)
-      const tails = roots.filter(r => r.tags?.includes('animal') || r.tags?.includes('tree') || r.tags?.includes('civic') || Math.random() < 0.2);
-      const r2 = getRandomElement(tails.length > 0 ? tails : roots);
+      // Pick Tail: Animal/Tree/Civic
+      const tails = roots.filter(r => r.tags?.includes('animal') || r.tags?.includes('tree') || r.tags?.includes('civic'));
+      const r2Obj = getRandomElement(tails.length > 0 ? tails : roots);
+      
+      const r1 = getRomData(r1Obj.pt).val;
+      const r2Data = getRomData(r2Obj.pt);
       
       let connector = 'de';
       
-      // Contraction logic
-      // Assume r2 gender. 
-      const gender2 = r2.gender || 'm';
-      if (gender2 === 'm') connector = 'do';
-      else if (gender2 === 'f') connector = 'da';
+      // Contraction Logic
+      if (r2Data.gender === 'm') connector = 'do';
+      else if (r2Data.gender === 'f') connector = 'da';
       
-      // If proper noun-ish or specific types, sometimes just 'de'
       if (Math.random() < 0.2) connector = 'de';
 
-      word = `${r1.pt} ${connector} ${r2.pt}`;
+      word = `${r1} ${connector} ${r2Data.val}`;
   }
 
-  // Cleanup
   word = word.charAt(0).toUpperCase() + word.slice(1);
   return { word: word, ascii: transliteratePortugueseToAscii(word) };
 };
