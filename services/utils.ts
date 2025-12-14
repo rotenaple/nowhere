@@ -152,26 +152,85 @@ export const transliterateRomanianToAscii = (word: string): string => {
   return word.split('').map(c => map[c] || c).join('');
 };
 
+// ==========================================
+// TYPES & DATA EXTRACTION
+// ==========================================
+
 export type ScriptedValue = readonly [string] | readonly [string, string];
-export type SlavicEntry = ScriptedValue | readonly [ScriptedValue, 'm' | 'f' | 'n'];
 
-export const getSlavicData = (entry: SlavicEntry | undefined): { src: string, rom?: string, gender?: 'm' | 'f' | 'n' } => {
-  if (!entry) return { src: '' };
+// Extended type to support Gender AND Number (Singular/Plural)
+// Format: [Value] OR [Value, Gender] OR [Value, Gender, Number]
+export type SlavicEntry = 
+  | ScriptedValue 
+  | readonly [ScriptedValue, 'm' | 'f' | 'n']
+  | readonly [ScriptedValue, 'm' | 'f' | 'n', 'sg' | 'pl'];
 
-  let scriptVal: ScriptedValue;
-  let genderValue: 'm' | 'f' | 'n' | undefined;
+export const getSlavicData = (entry: SlavicEntry | undefined): { 
+  src: string, 
+  rom?: string, 
+  gender?: 'm' | 'f' | 'n', 
+  number: 'sg' | 'pl' 
+} => {
+  if (!entry) return { src: '', number: 'sg' }; // Default to singular
 
-  if (Array.isArray(entry) && (entry.length === 2 && (entry[1] === 'm' || entry[1] === 'f' || entry[1] === 'n'))) {
-    genderValue = entry[1];
-    scriptVal = entry[0] as ScriptedValue;
-  } else {
-    scriptVal = entry as ScriptedValue;
-  }
+  // DIFFERENTIATE TYPES:
+  // If entry[0] is an Array, we have the Complex Tuple: [ScriptedValue, Gender, ?Number]
+  // If entry[0] is a String, we have the Simple Tuple: [String] or [String, String]
+  
+  if (Array.isArray(entry[0])) {
+    // Cast to the complex types
+    const complexEntry = entry as readonly [ScriptedValue, 'm' | 'f' | 'n'] | readonly [ScriptedValue, 'm' | 'f' | 'n', 'sg' | 'pl'];
+    
+    const scriptVal = complexEntry[0];
+    const genderValue = complexEntry[1];
+    
+    // Check if 3rd element exists
+    const numberValue = complexEntry.length === 3 ? complexEntry[2] : 'sg';
 
+    const srcValue = scriptVal[0];
+    const romValue = scriptVal.length > 1 ? scriptVal[1] : undefined;
+
+    return { src: srcValue, rom: romValue, gender: genderValue, number: numberValue };
+  } 
+  
+  // Simple Case
+  const scriptVal = entry as ScriptedValue;
   const srcValue = scriptVal[0];
   const romValue = scriptVal.length > 1 ? scriptVal[1] : undefined;
 
-  return { src: srcValue, rom: romValue, gender: genderValue };
+  return { src: srcValue, rom: romValue, gender: undefined, number: 'sg' };
+};
+
+export const hasLanguageEntry = (entry: SlavicEntry | undefined): boolean => {
+  return entry !== undefined;
+};
+
+/** 
+ * Determines composite attributes (Gender & Number). 
+ * Suffix attributes take precedence. If no suffix, use root.
+ */
+export const getCompositeAttributes = (
+  rootEntry: SlavicEntry | undefined, 
+  suffixEntry: SlavicEntry | undefined, ): { gender: 'm' | 'f' | 'n', number: 'sg' | 'pl' } => {
+  const rootData = getSlavicData(rootEntry);
+  
+  if (suffixEntry) {
+    const sufData = getSlavicData(suffixEntry);
+    // Suffix determines gender and number if present
+    if (sufData.gender) {
+        return { gender: sufData.gender, number: sufData.number };
+    }
+  }
+  
+  return { gender: rootData.gender || 'm', number: rootData.number };
+};
+
+// Deprecated wrapper for backward compatibility if needed, though engines use getCompositeAttributes now
+export const getCompositeGender = (
+    rootEntry: SlavicEntry | undefined, 
+    suffixEntry: SlavicEntry | undefined, 
+  ): 'm' | 'f' | 'n' => {
+    return getCompositeAttributes(rootEntry, suffixEntry).gender;
 };
 
 // ==========================================
@@ -181,13 +240,70 @@ export const getSlavicData = (entry: SlavicEntry | undefined): { src: string, ro
 export const inflectSlavicAdjective = (
     adjEntry: SlavicEntry, 
     targetGender: 'm' | 'f' | 'n',
-    lang: 'bg' | 'ru' | 'uk' | 'cs' | 'pl' | 'sk' 
+    lang: 'bg' | 'ru' | 'uk' | 'cs' | 'pl' | 'sk',
+    targetNumber: 'sg' | 'pl' = 'sg'
 ): { src: string, rom?: string } => {
 
     const adjInfo = getSlavicData(adjEntry);
     let inflectedSrc = adjInfo.src;
     let inflectedRom = adjInfo.rom;
 
+    // --- PLURAL HANDLING ---
+    if (targetNumber === 'pl') {
+        switch (lang) {
+            case 'bg': 
+                // Remove -en/-ak/-ok ending if present, add -i
+                if (inflectedSrc.endsWith('ен') || inflectedSrc.endsWith('ък') || inflectedSrc.endsWith('ок')) {
+                    inflectedSrc = inflectedSrc.slice(0, -2);
+                    if (inflectedRom) inflectedRom = inflectedRom.slice(0, -2); // Approx
+                }
+                // If it ends in consonant, add -i
+                inflectedSrc += 'и';
+                if (inflectedRom) inflectedRom += 'i';
+                return { src: inflectedSrc, rom: inflectedRom };
+
+            case 'ru': 
+                // -iy/-yy -> -ye/-iye
+                inflectedSrc = inflectedSrc.replace(/(ый|ий)$/, 'ые');
+                if (inflectedRom) inflectedRom = inflectedRom.replace(/(iy|yy)$/, 'ye');
+                return { src: inflectedSrc, rom: inflectedRom };
+
+            case 'uk':
+                // -iy -> -i
+                inflectedSrc = inflectedSrc.replace(/ий$/, 'і');
+                if (inflectedRom) inflectedRom = inflectedRom.replace(/(yy|iy)$/, 'i');
+                return { src: inflectedSrc, rom: inflectedRom };
+
+            case 'cs':
+                // Soft (í) stays í. Hard (ý) changes.
+                // Places (inanimate): M/F -> -é, N -> -á.
+                if (inflectedSrc.endsWith('í')) return { src: inflectedSrc, rom: inflectedRom };
+                
+                if (targetGender === 'n') {
+                    inflectedSrc = inflectedSrc.replace(/ý$/, 'á');
+                    if (inflectedRom) inflectedRom = inflectedRom.replace(/y$/, 'a');
+                } else {
+                    inflectedSrc = inflectedSrc.replace(/ý$/, 'é');
+                    if (inflectedRom) inflectedRom = inflectedRom.replace(/y$/, 'e');
+                }
+                return { src: inflectedSrc, rom: inflectedRom };
+
+            case 'sk':
+                // Hard: ý -> é
+                inflectedSrc = inflectedSrc.replace(/ý$/, 'é'); 
+                if (inflectedRom) inflectedRom = inflectedRom.replace(/y$/, 'e');
+                return { src: inflectedSrc, rom: inflectedRom };
+
+            case 'pl':
+                // Nom Plural Non-Virile: -e
+                inflectedSrc = inflectedSrc.replace(/(y|i)$/, 'e');
+                if (inflectedRom) inflectedRom = inflectedRom.replace(/(y|i)$/, 'e');
+                return { src: inflectedSrc, rom: inflectedRom };
+        }
+    }
+
+    // --- SINGULAR HANDLING ---
+    
     let mascEndingSrc: string | RegExp;
     let mascEndingRom: string | RegExp;
     let femEndingSrc: string;
@@ -197,7 +313,6 @@ export const inflectSlavicAdjective = (
 
     switch (lang) {
         case 'bg': 
-            // Handles both -en/-ak/-ok and -ar (Mokar -> Mokra)
             mascEndingSrc = /ен|ък|ок|ър$/; 
             mascEndingRom = /en|ak|ok|ar$/;
             femEndingSrc = 'на'; femEndingRom = 'na';
@@ -214,13 +329,11 @@ export const inflectSlavicAdjective = (
             neutEndingSrc = 'е'; neutEndingRom = 'e'; 
             break;
         case 'cs':
-            // Check for soft adjectives (Severní, Horní) which end in 'í' and are invariant in Nom.
             if (adjInfo.src.endsWith('í')) {
                 mascEndingSrc = 'í'; mascEndingRom = 'i';
                 femEndingSrc = 'í'; femEndingRom = 'i';
                 neutEndingSrc = 'í'; neutEndingRom = 'i';
             } else {
-                // Hard adjectives (Nový -> Nová -> Nové)
                 mascEndingSrc = /(ý|í)$/; mascEndingRom = /(y|i)$/;
                 femEndingSrc = 'á'; femEndingRom = 'a';
                 neutEndingSrc = 'é'; neutEndingRom = 'e';
@@ -241,7 +354,6 @@ export const inflectSlavicAdjective = (
     }
 
     if (targetGender === 'f') {
-        // Standard inflection for Feminine
         if (inflectedSrc.match(mascEndingSrc)) {
             inflectedSrc = inflectedSrc.replace(mascEndingSrc, femEndingSrc);
             if (inflectedRom && mascEndingRom) {
@@ -250,45 +362,41 @@ export const inflectSlavicAdjective = (
         } 
         // Special Case: Bulgarian fleeting vowels
         else if (lang === 'bg') {
-            // -ak/-ok -> -ka (Malak -> Malka)
             if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ка';
                 inflectedRom = adjInfo.rom!.slice(0, -2) + 'ka';
             }
-            // -ar -> -ra (Mokar -> Mokra)
             else if (adjInfo.src.endsWith('ър')) {
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ра';
                 inflectedRom = adjInfo.rom!.slice(0, -2) + 'ra';
             }
+            else {
+                inflectedSrc += 'а';
+                if (inflectedRom) inflectedRom += 'a';
+            }
         } 
-        // Special Case: Ukrainian soft stems (simplified)
         else if (lang === 'uk' && adjInfo.src.endsWith('ий')) { 
              inflectedSrc = adjInfo.src.replace('ий', 'а');
              if (inflectedRom && mascEndingRom) inflectedRom = inflectedRom.replace(mascEndingRom, femEndingRom);
         }
 
     } else if (targetGender === 'n') {
-        // Standard inflection for Neuter
         if (inflectedSrc.match(mascEndingSrc)) {
             inflectedSrc = inflectedSrc.replace(mascEndingSrc, neutEndingSrc);
             if (inflectedRom && mascEndingRom) {
                 inflectedRom = inflectedRom.replace(mascEndingRom, neutEndingRom);
             }
         } 
-        // Special Case: Bulgarian fleeting vowels
         else if (lang === 'bg') {
-            // -ak/-ok -> -ko (Malak -> Malko)
             if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ко'; 
                 inflectedRom = adjInfo.rom!.slice(0, -2) + 'ko'; 
             }
-             // -ar -> -ro (Mokar -> Mokro)
              else if (adjInfo.src.endsWith('ър')) {
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ро';
                 inflectedRom = adjInfo.rom!.slice(0, -2) + 'ro';
             }
         } 
-        // Special Case: Ukrainian soft stems (simplified)
         else if (lang === 'uk' && adjInfo.src.endsWith('ий')) {
              inflectedSrc = adjInfo.src.replace('ий', 'е');
              if (inflectedRom && mascEndingRom) inflectedRom = inflectedRom.replace(mascEndingRom, neutEndingRom);
@@ -298,25 +406,42 @@ export const inflectSlavicAdjective = (
     return { src: inflectedSrc, rom: inflectedRom };
 };
 
-export const hasLanguageEntry = (entry: SlavicEntry | undefined): boolean => {
-  return entry !== undefined;
-};
+import { LOWERCASE_PARTICLES } from "./dictionaries/slavicDict";
 
-/** 
- * Determines gender of a composite word. 
- * Suffix gender takes precedence. If no suffix, uses root gender.
+/**
+ * Capitalizes a Slavic place name according to specific language rules.
+ * Ensures prepositions (na, nad, pod) remain lowercase in the middle of the name.
+ * Handles both Space and Hyphen separators.
  */
-export const getCompositeGender = (
-  rootEntry: SlavicEntry | undefined, 
-  suffixEntry: SlavicEntry | undefined, 
-  lang: 'bg'|'cs'|'pl'|'ru'|'sk'|'uk'
-): 'm' | 'f' | 'n' => {
-  const rootData = getSlavicData(rootEntry);
-  
-  if (suffixEntry) {
-    const sufData = getSlavicData(suffixEntry);
-    if (sufData.gender) return sufData.gender;
-  }
-  
-  return rootData.gender || 'm';
+export const capitalizeSlavicName = (
+    text: string, 
+    lang: 'bg' | 'cs' | 'pl' | 'ru' | 'sk' | 'uk'
+): string => {
+    // Get the blocklist for this language, default to empty
+    const particles = LOWERCASE_PARTICLES[lang] || [];
+
+    // Split by space OR hyphen, but capture the separator using parentheses
+    // "Rostov-na-Donu" -> ["Rostov", "-", "na", "-", "Donu"]
+    // "Ústí nad Labem" -> ["Ústí", " ", "nad", " ", "Labem"]
+    const parts = text.split(/([ -])/);
+
+    return parts.map((part, index) => {
+        // If it's a separator, return as is
+        if (part === ' ' || part === '-') return part;
+        if (part === '') return part;
+
+        // Is it the very first word? (Index 0)
+        // Always capitalize the first word.
+        if (index === 0) {
+            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        }
+
+        // Check if this part is a particle (case-insensitive check)
+        if (particles.includes(part.toLowerCase())) {
+            return part.toLowerCase();
+        }
+
+        // Otherwise, Title Case
+        return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    }).join('');
 };

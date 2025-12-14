@@ -1,6 +1,7 @@
 import { GeneratedResult } from "../../../types";
-import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, getCompositeGender, transliterateUkrainianToAscii } from "../../utils"; 
+import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, getCompositeAttributes, transliterateUkrainianToAscii } from "../../utils"; 
 import { SLAVIC_DATA, SlavicComponent } from "../../dictionaries/slavicDict"; 
+import { capitalizeSlavicName } from "../../utils";
 
 export const getUkrainianCapacity = () => {
    const roots = SLAVIC_DATA.filter(c => hasLanguageEntry(c.uk) && (c.type === 'root' || c.type === 'stem'));
@@ -8,11 +9,7 @@ export const getUkrainianCapacity = () => {
    const adjectives = SLAVIC_DATA.filter(c => hasLanguageEntry(c.uk) && c.type === 'adjective');
    const rivers = SLAVIC_DATA.filter(c => hasLanguageEntry(c.uk) && c.type === 'river');
 
-   const path1 = adjectives.length * roots.length * suffixes.length;
-   const path2 = roots.length * suffixes.length;
-   const path3 = roots.length * rivers.length;
-
-   return path1 + path2 + path3;
+   return (adjectives.length * roots.length * suffixes.length) + (roots.length * suffixes.length) + (roots.length * rivers.length);
 }
 
 export const generateUkrainianPlace = (): GeneratedResult => {
@@ -39,8 +36,9 @@ export const generateUkrainianPlace = (): GeneratedResult => {
          isDerived = true;
       }
       
-      const effectiveGender = getCompositeGender(selectedRootComponent.uk, selectedSuffix?.uk, 'uk');
-      const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.uk!, effectiveGender, 'uk');
+      // UPDATED
+      const { gender, number } = getCompositeAttributes(selectedRootComponent.uk, selectedSuffix?.uk);
+      const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.uk!, gender, 'uk', number);
 
       const rootInfo = getSlavicData(selectedRootComponent.uk);
       let finalNounSrc = rootInfo.src;
@@ -118,6 +116,5 @@ export const generateUkrainianPlace = (): GeneratedResult => {
       wordAscii = `${basePartRom} na ${riverRom}`;
   }
 
-  const capitalize = (s: string) => s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  return { word: capitalize(wordCyrillic), ascii: capitalize(wordAscii) };
+  return { word: capitalizeSlavicName(wordCyrillic, 'uk'), ascii: capitalizeSlavicName(wordAscii, 'uk') };
 };

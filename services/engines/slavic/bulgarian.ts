@@ -1,6 +1,7 @@
 import { GeneratedResult } from "../../../types";
-import { getRandomElement, transliterateBulgarianToAscii, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, getCompositeGender } from "../../utils";
+import { getRandomElement, transliterateBulgarianToAscii, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, getCompositeAttributes } from "../../utils";
 import { SLAVIC_DATA, SlavicComponent } from "../../dictionaries/slavicDict";
+import { capitalizeSlavicName } from "../../utils";
 
 export const getBulgarianCapacity = () => {
    const roots = SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && (c.type === 'root' || c.type === 'stem'));
@@ -8,13 +9,11 @@ export const getBulgarianCapacity = () => {
    const adjectives = SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && c.type === 'adjective');
    const rivers = SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && c.type === 'river');
 
-   const path1_adj_root = adjectives.length * roots.length;
-   const path1_adj_rootsuf = adjectives.length * roots.length * suffixes.length;
-   const path2_rootsuf = roots.length * suffixes.length;
-   const path3_root_river = roots.length * rivers.length;
-   const path3_rootsuf_river = roots.length * suffixes.length * rivers.length;
+   const path1 = adjectives.length * roots.length * suffixes.length; // Approximation
+   const path2 = roots.length * suffixes.length;
+   const path3 = roots.length * rivers.length;
 
-   return path1_adj_root + path1_adj_rootsuf + path2_rootsuf + path3_root_river + path3_rootsuf_river;
+   return path1 + path2 + path3;
 }
 
 export const generateBulgarianPlace = (): GeneratedResult => {
@@ -25,7 +24,6 @@ export const generateBulgarianPlace = (): GeneratedResult => {
   const adjectives = getPool('adjective');
   const suffixes = getPool('suffix');
   const rootsAndStems = [...getPool('root'), ...getPool('stem'), ...getPool('river')];
-  // Although BG is analytic, using river_loc maintains consistency with other engines
   const riversLoc = getPool('river_loc'); 
 
   const typeRoll = Math.random();
@@ -42,8 +40,11 @@ export const generateBulgarianPlace = (): GeneratedResult => {
          isDerived = true;
       }
       
-      const effectiveGender = getCompositeGender(selectedRootComponent.bg, selectedSuffix?.bg, 'bg');
-      const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.bg!, effectiveGender, 'bg');
+      // UPDATED: Get Gender AND Number
+      const { gender, number } = getCompositeAttributes(selectedRootComponent.bg, selectedSuffix?.bg);
+      
+      // UPDATED: Pass number to inflector
+      const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.bg!, gender, 'bg', number);
 
       const rootInfo = getSlavicData(selectedRootComponent.bg);
       let finalNounSrc = rootInfo.src;
@@ -116,12 +117,10 @@ export const generateBulgarianPlace = (): GeneratedResult => {
       
       const riverInfo = getSlavicData(selectedRiver.bg!);
       wordCyrillic = `${basePartSrc} на ${riverInfo.src}`;
-      // Assuming 'na' is universal
       wordAscii = `${basePartRom} na ${riverInfo.rom || transliterateBulgarianToAscii(riverInfo.src)}`; 
   }
 
   if (!wordAscii || wordAscii.includes('undefined')) wordAscii = transliterateBulgarianToAscii(wordCyrillic);
 
-  const capitalize = (s: string) => s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  return { word: capitalize(wordCyrillic), ascii: capitalize(wordAscii) };
+  return { word: capitalizeSlavicName(wordCyrillic, 'bg'), ascii: capitalizeSlavicName(wordAscii, 'bg') };
 };

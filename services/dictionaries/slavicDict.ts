@@ -1,29 +1,57 @@
-export type ScriptedValue = readonly [string] | readonly [string, string];
-export type SlavicEntry = ScriptedValue | readonly [ScriptedValue, 'm' | 'f' | 'n'];
+// ==========================================
+// TYPES & DATA HELPERS
+// ==========================================
 
-export const getSlavicData = (entry: SlavicEntry | undefined): { src: string, rom?: string, gender?: 'm' | 'f' | 'n' } => {
-  if (!entry) return { src: '' };
+export type ScriptedValue = readonly [string] | readonly [string, string];
+
+// Extended type to support Gender AND Number (Singular/Plural)
+// Format: [Value] OR [Value, Gender] OR [Value, Gender, Number]
+export type SlavicEntry = 
+  | ScriptedValue 
+  | readonly [ScriptedValue, 'm' | 'f' | 'n']
+  | readonly [ScriptedValue, 'm' | 'f' | 'n', 'sg' | 'pl'];
+
+/**
+ * Parses a dictionary entry to extract Source, Romanization, Gender, and Number.
+ */
+export const getSlavicData = (entry: SlavicEntry | undefined): { 
+  src: string, 
+  rom?: string, 
+  gender?: 'm' | 'f' | 'n', 
+  number: 'sg' | 'pl' 
+} => {
+  if (!entry) return { src: '', number: 'sg' };
 
   let scriptVal: ScriptedValue;
   let genderValue: 'm' | 'f' | 'n' | undefined;
+  let numberValue: 'sg' | 'pl' = 'sg'; // Default to Singular
 
-  if (Array.isArray(entry) && (entry.length === 2 && (entry[1] === 'm' || entry[1] === 'f' || entry[1] === 'n'))) {
-    // This case means it's a [ScriptedValue, gender] tuple
-    genderValue = entry[1];
-    scriptVal = entry[0] as ScriptedValue; // Type assertion needed or more robust check
+  // Check if it is a Tuple with Metadata (Gender/Number)
+  // We check if the second element is a gender string 'm'|'f'|'n'
+  if (Array.isArray(entry) && entry.length >= 2 && typeof entry[1] === 'string' && ['m','f','n'].includes(entry[1])) {
+    scriptVal = entry[0] as ScriptedValue;
+    genderValue = entry[1] as 'm' | 'f' | 'n';
+    
+    // Check for explicit Number (3rd element)
+    if (entry.length === 3) {
+      numberValue = entry[2] as 'sg' | 'pl';
+    }
   } else {
-    // This case means it's just a ScriptedValue (implicitly handled as ScriptedValue)
+    // It is just a ScriptedValue (e.g. ['Word'] or ['Word', 'Translit'])
     scriptVal = entry as ScriptedValue;
   }
 
   const srcValue = scriptVal[0];
   const romValue = scriptVal.length > 1 ? scriptVal[1] : undefined;
 
-  return { src: srcValue, rom: romValue, gender: genderValue };
+  return { src: srcValue, rom: romValue, gender: genderValue, number: numberValue };
 };
 
 
-// The main component interface remains the same
+// ==========================================
+// DICTIONARY DATA
+// ==========================================
+
 export interface SlavicComponent {
   id: string;
   type: 'adjective' | 'root' | 'suffix' | 'river' | 'river_loc' | 'country_suffix' | 'stem';
@@ -38,6 +66,7 @@ export interface SlavicComponent {
 
 export const SLAVIC_DATA: SlavicComponent[] = [
   // ========================== ADJECTIVES ==========================
+  // Adjectives are stored in their base Nominative Singular Masculine form.
   { id: 'New', type: 'adjective', pl: ['Nowy'], cs: ['Nový'], sk: ['Nový'], bg: ['Нов', 'Nov'], ru: ['Новый', 'Noviy'], uk: ['Новий', 'Novyy'] },
   { id: 'Old', type: 'adjective', pl: ['Stary'], cs: ['Starý'], sk: ['Starý'], bg: ['Стар', 'Star'], ru: ['Старый', 'Stariy'], uk: ['Старий', 'Staryy'] },
   { id: 'Great', type: 'adjective', pl: ['Wielki'], cs: ['Velký'], sk: ['Veľký'], bg: ['Голям', 'Golyam'], ru: ['Великий', 'Velikiy'], uk: ['Великий', 'Velykyy'] },
@@ -76,7 +105,6 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'Cold', type: 'adjective', pl: ['Zimny'], cs: ['Studený'], sk: ['Studený'], bg: ['Студен', 'Studen'], ru: ['Холодный', 'Kholodniy'], uk: ['Холодний', 'Kholodnyy'] },
   { id: 'Warm', type: 'adjective', pl: ['Ciepły'], cs: ['Teplý'], sk: ['Teplý'], bg: ['Топъл', 'Topal'], ru: ['Теплый', 'Tepliy'], uk: ['Теплий', 'Teplyy'] },
   { id: 'Clear', type: 'adjective', pl: ['Jasny'], cs: ['Jasný'], sk: ['Jasný'], bg: ['Ясен', 'Yasen'], ru: ['Ясный', 'Yasniy'], uk: ['Ясний', 'Yasnyy'] },
-  // Extended Adjectives for Capacity
   { id: 'Sunny', type: 'adjective', pl: ['Słoneczny'], cs: ['Slunečný'], sk: ['Slnečný'], bg: ['Слънчев', 'Slanchev'], ru: ['Солнечный', 'Solnechniy'], uk: ['Сонячний', 'Sonyachnyy'] },
   { id: 'Windy', type: 'adjective', pl: ['Wietrzny'], cs: ['Větrný'], sk: ['Veterný'], bg: ['Ветровит', 'Vetrovit'], ru: ['Ветреный', 'Vetreniy'], uk: ['Вітряний', 'Vitryanyy'] },
   { id: 'Quiet', type: 'adjective', pl: ['Cichy'], cs: ['Tichý'], sk: ['Tichý'], bg: ['Тих', 'Tih'], ru: ['Тихий', 'Tikhiy'], uk: ['Тихий', 'Tykhyy'] },
@@ -96,6 +124,8 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'GoodNice', type: 'adjective', pl: ['Dobry'], cs: ['Dobrý'], sk: ['Dobrý'], bg: ['Добър', 'Dobar'], ru: ['Добрый', 'Dobriy'], uk: ['Добрий', 'Dobriy'] },
   
   // ========================== ROOTS (Nouns/Stems) ==========================
+  // Note: Default number is 'sg' unless specified otherwise.
+  
   // Civic / Settlements
   { id: 'Town', type: 'root', tags: ['civic'], pl: [['Miasto'], 'n'], cs: [['Město'], 'n'], sk: [['Mesto'], 'n'], bg: [['Град', 'Grad'], 'm'], ru: [['Город', 'Gorod'], 'm'], uk: [['Місто', 'Misto'], 'n'] },
   { id: 'Castle', type: 'root', tags: ['civic'], pl: [['Gród'], 'm'], cs: [['Hrad'], 'm'], sk: [['Hrad'], 'm'], bg: [['Крепост', 'Krepost'], 'f'], ru: [['Град', 'Grad'], 'm'], uk: [['Город', 'Horod'], 'm'] },
@@ -194,11 +224,12 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'King', type: 'root', tags: ['civic'], pl: [['Król'], 'm'], cs: [['Král'], 'm'], sk: [['Kráľ'], 'm'], bg: [['Крал', 'Kral'], 'm'], ru: [['Король', 'Korol'], 'm'], uk: [['Король', 'Korol'], 'm'] },
   { id: 'Prince', type: 'root', tags: ['civic'], pl: [['Książę'], 'm'], cs: [['Kníže'], 'm'], sk: [['Knieža'], 'n'], bg: [['Княз', 'Knyaz'], 'm'], ru: [['Князь', 'Knyaz'], 'm'], uk: [['Князь', 'Knyaz'], 'm'] },
 
-  // ========================== Missing Czech Roots ==========================
+  // ========================== Specific Roots (some with Plurality) ==========================
   { id: 'Lhota', type: 'root', tags: ['civic'], cs: [['Lhota'], 'f'], sk: [['Lehota'], 'f'], pl: [['Ligota'], 'f'] },
   { id: 'Ujezd', type: 'root', tags: ['civic'], cs: [['Újezd'], 'm'] },
   { id: 'Tyn', type: 'root', tags: ['civic'], cs: [['Týn'], 'm'] },
-  { id: 'Vary', type: 'root', tags: ['nature'], cs: [['Vary'], 'f'] }, // 'f' as a simplification for feminine plural
+  // Vary is plural (Karlovy Vary)
+  { id: 'Vary', type: 'root', tags: ['nature'], cs: [['Vary'], 'f', 'pl'] }, 
   { id: 'Chlum', type: 'root', tags: ['nature'], cs: [['Chlum'], 'm'] },
   { id: 'Stran', type: 'root', tags: ['nature'], cs: [['Stráň'], 'f'], sk: [['Stráň'], 'f'] },
 
@@ -227,7 +258,7 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'Vlad', type: 'stem', ru: [['Влад', 'Vlad'], 'm'], uk: [['Влад', 'Vlad'], 'm'], bg: [['Влад', 'Vlad'], 'm'] },
   { id: 'Sof', type: 'stem', bg: [['Соф', 'Sof'], 'f'] }, { id: 'Plov', type: 'stem', bg: [['Плов', 'Plov'], 'm'] }, { id: 'Varn', type: 'stem', bg: [['Варн', 'Varn'], 'f'] },
 
-  // ========================== Missing Polish Stems ==========================
+  // Missing Polish Stems
   { id: 'Byd', type: 'stem', tags: ['civic'], pl: [['Byd'], 'f'] }, { id: 'Kat', type: 'stem', tags: ['civic'], pl: [['Kat'], 'f'] },
   { id: 'Lub', type: 'stem', tags: ['civic'], pl: [['Lub'], 'm'] }, { id: 'Rzesz', type: 'stem', tags: ['civic'], pl: [['Rzesz'], 'm'] },
   { id: 'Gdyn', type: 'stem', tags: ['civic'], pl: [['Gdyn'], 'f'] }, { id: 'Czest', type: 'stem', tags: ['civic'], pl: [['Częst'], 'f'] },
@@ -235,29 +266,40 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'Tor', type: 'stem', tags: ['civic'], pl: [['Tor'], 'm'] }, { id: 'Olsz', type: 'stem', tags: ['civic'], pl: [['Olsz'], 'm'] },
   { id: 'Wola', type: 'root', tags: ['civic'], pl: [['Wola'], 'f'] },
 
-  // ========================== Added Bulgarian Roots/Stems ==========================
+  // Bulgarian Roots/Stems
   { id: 'StaraRoot', type: 'root', tags: ['civic', 'nature'], bg: [['Стара', 'Stara'], 'f'] }, { id: 'VelikoRoot', type: 'root', tags: ['civic'], bg: [['Велико', 'Veliko'], 'n'] },
   { id: 'GornoRoot', type: 'root', tags: ['civic', 'nature'], bg: [['Горно', 'Gorno'], 'n'] }, { id: 'DolnoRoot', type: 'root', tags: ['civic', 'nature'], bg: [['Долно', 'Dolno'], 'n'] },
   { id: 'Balkan', type: 'root', tags: ['nature'], bg: [['Балкан', 'Balkan'], 'm'] }, { id: 'Rila', type: 'root', tags: ['nature'], bg: [['Рила', 'Rila'], 'f'] },
   { id: 'Pirin', type: 'root', tags: ['nature'], bg: [['Пирин', 'Pirin'], 'm'] }, { id: 'Shipka', type: 'root', tags: ['nature'], bg: [['Шипка', 'Shipka'], 'f'] },
 
-  // ========================== Added Slovak Roots/Stems ==========================
-  { id: 'Bratislav', type: 'stem', tags: ['civic'], sk: [['Bratislav'], 'm'] }, { id: 'Kosic', type: 'stem', tags: ['civic'], sk: [['Košíc'], 'n'] }, // Simplified to 'n' for plural
+  // Slovak Roots/Stems
+  { id: 'Bratislav', type: 'stem', tags: ['civic'], sk: [['Bratislav'], 'm'] }, { id: 'Kosic', type: 'stem', tags: ['civic'], sk: [['Košíc'], 'n'] }, 
   { id: 'Presov', type: 'stem', tags: ['civic'], sk: [['Prešov'], 'm'] }, { id: 'Liptov', type: 'stem', tags: ['civic', 'nature'], sk: [['Liptov'], 'm'] },
   { id: 'Zvolen', type: 'stem', tags: ['civic'], sk: [['Zvolen'], 'm'] }, { id: 'NitraCity', type: 'stem', tags: ['civic'], sk: [['Nitra'], 'f'] },
-  { id: 'Tatry', type: 'root', tags: ['nature'], sk: [['Tatry'], 'f'] }, // Simplified to 'f' for plural
+  // Tatry is plural
+  { id: 'Tatry', type: 'root', tags: ['nature'], sk: [['Tatry'], 'f', 'pl'], pl: [['Tatry'], 'f', 'pl'] }, 
 
   // ========================== SUFFIXES ==========================
+  // -ice / -itsi is the most common plural suffix in Slavic place names.
+  // -ki / -ky is also frequently plural.
   { id: 'suf_ov', type: 'suffix', pl: ['ów'], cs: ['ov'], sk: ['ov'], bg: [['ов', 'ov'], 'm'], ru: [['ов', 'ov'], 'm'], uk: [['ів', 'iv'], 'm'] },
   { id: 'suf_in', type: 'suffix', pl: ['in'], cs: ['ín'], sk: ['ín'], bg: [['ин', 'in'], 'm'], ru: [['ин', 'in'], 'm'], uk: [['ин', 'yn'], 'm'] },
-  { id: 'suf_ice', type: 'suffix', pl: ['ice'], cs: ['ice'], sk: ['ice'], bg: [['ици', 'itsi'], 'f'], ru: [['ицы', 'itsy'], 'f'], uk: [['иці', 'ytsi'], 'f'] },
+  // Plural Suffix: -ice
+  { id: 'suf_ice', type: 'suffix', 
+    pl: [['ice'], 'f', 'pl'], 
+    cs: [['ice'], 'f', 'pl'], 
+    sk: [['ice'], 'f', 'pl'], 
+    bg: [['ици', 'itsi'], 'f', 'pl'], 
+    ru: [['ицы', 'itsy'], 'f', 'pl'], 
+    uk: [['иці', 'ytsi'], 'f', 'pl'] 
+  },
   { id: 'suf_sk', type: 'suffix', pl: ['sk'], cs: ['sko'], sk: ['sko'], bg: [['ско', 'sko'], 'n'], ru: [['ск', 'sk'], 'm'], uk: [['ськ', 'sk'], 'm'] },
   { id: 'suf_no', type: 'suffix', pl: ['no'], cs: ['no'], sk: ['no'], bg: [['но', 'no'], 'n'], ru: [['но', 'no'], 'n'], uk: [['не', 'ne'], 'n'] },
   { id: 'suf_ec', type: 'suffix', pl: ['ec'], cs: ['ec'], sk: ['ec'], bg: [['ец', 'ets'], 'm'], ru: [['ец', 'ets'], 'm'], uk: [['ець', 'ets'], 'm'] },
   { id: 'suf_ka', type: 'suffix', pl: ['ka'], cs: ['ka'], sk: ['ka'], bg: [['ка', 'ka'], 'f'], ru: [['ка', 'ka'], 'f'], uk: [['ка', 'ka'], 'f'] },
   { id: 'suf_na', type: 'suffix', pl: ['na'], cs: ['ná'], sk: ['na'], bg: [['на', 'na'], 'f'], ru: [['ная', 'naya'], 'f'], uk: [['на', 'na'], 'f'] },
   { id: 'suf_ev', type: 'suffix', pl: ['ew'], cs: ['ev'], sk: ['ev'], bg: [['ев', 'ev'], 'm'], ru: [['ев', 'ev'], 'm'], uk: [['ів', 'iv'], 'm'] },
-  { id: 'suf_vk', type: 'suffix', pl: ['wka'], cs: ['vka'], sk: ['vka'], bg: [['вка', 'vka'], 'f'], ru: [['вка', 'vka'], 'f'], uk: [['вка', 'vka'], 'f'] },
+  { id: 'suf_vk', type: 'suffix', pl: [['ówka'], 'f'], cs: ['vka'], sk: ['vka'], bg: [['вка', 'vka'], 'f'], ru: [['вка', 'vka'], 'f'], uk: [['вка', 'vka'], 'f'] },
   { id: 'suf_grad', type: 'suffix', bg: [['град', 'grad'], 'm'], ru: [['град', 'grad'], 'm'] },
   { id: 'suf_vo', type: 'suffix', bg: [['во', 'vo'], 'n'], ru: [['во', 'vo'], 'n'] },
   { id: 'suf_ovo', type: 'suffix', pl: [['owo'], 'n'], cs: [['ovo'], 'n'], sk: [['ovo'], 'n'], bg: [['ово', 'ovo'], 'n'], ru: [['ово', 'ovo'], 'n'], uk: [['ово', 'ovo'], 'n'] },
@@ -265,16 +307,20 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'suf_nica', type: 'suffix', pl: [['nica'], 'f'], cs: [['nice'], 'f'], sk: [['nica'], 'f'], bg: [['ница', 'nica'], 'f'], ru: [['ница', 'nitsa'], 'f'], uk: [['ниця', 'nytsia'], 'f'] },
   { id: 'suf_ishte', type: 'suffix', pl: [['iszcze'], 'n'], cs: [['iště'], 'n'], sk: [['ište'], 'n'], bg: [['ище', 'ishte'], 'n'], ru: [['ище', 'ishche'], 'n'], uk: [['ище', 'yshche'], 'n'] },
   { id: 'suf_ina', type: 'suffix', pl: [['ina'], 'f'], cs: [['ina'], 'f'], sk: [['ina'], 'f'], bg: [['ина', 'ina'], 'f'], ru: [['ина', 'ina'], 'f'], uk: [['ина', 'yna'], 'f'] },
-  { id: 'suf_ki', type: 'suffix', tags: ['plural_locative'], pl: [['ki'], 'f'], cs: [['ky'], 'f'], sk: [['ky'], 'f'], bg: [['ки', 'ki'], 'f'], ru: [['ки', 'ki'], 'f'], uk: [['ки', 'ky'], 'f'] },
+  // Plural Suffix: -ki
+  { id: 'suf_ki', type: 'suffix', 
+    pl: [['ki'], 'f', 'pl'], 
+    cs: [['ky'], 'f', 'pl'], 
+    sk: [['ky'], 'f', 'pl'], 
+    bg: [['ки', 'ki'], 'f', 'pl'], 
+    ru: [['ки', 'ki'], 'f', 'pl'], 
+    uk: [['ки', 'ky'], 'f', 'pl'] 
+  },
   { id: 'suf_a_fem_nom', type: 'suffix', pl: [['a'], 'f'], cs: [['á'], 'f'], sk: [['a'], 'f'], bg: [['а', 'a'], 'f'], ru: [['а', 'a'], 'f'], uk: [['а', 'a'], 'f'] },
   { id: 'suf_ie', type: 'suffix', pl: [['ie'], 'n'], cs: [['í'], 'n'], sk: [['ie'], 'n'], bg: [['е', 'e'], 'n'], ru: [['ье', 'ye'], 'n'], uk: [['є', 'ie'], 'n'] },
   { id: 'suf_ysko', type: 'suffix', pl: [['ysko'], 'n'], cs: [['isko'], 'n'], sk: [['isko'], 'n'], bg: [['иско', 'isko'], 'n'], ru: [['ыско', 'ysko'], 'n'], uk: [['исько', 'ysko'], 'n'] },
 
-  // ========================== RIVERS (Base forms with gender stored) ==========================
-  // NOTE: For river names, it's generally best practice to store the base nominative form and its gender.
-  // The generator should then handle inflecting the river name to the correct case (e.g., instrumental for "nad X").
-  // Given your original dict stored inflected forms, I've kept them in 'src' for now, but added the inherent gender.
-  // Full conversion would involve changing 'src' to nominative form.
+  // ========================== RIVERS ==========================
   { id: 'Vltava', type: 'river', cs: [['Vltava'], 'f'] },
   { id: 'Elbe', type: 'river', cs: [['Labe'], 'f'] },
   { id: 'Morava', type: 'river', cs: [['Morava'], 'f'], sk: [['Morava'], 'f'] },
@@ -306,23 +352,23 @@ export const SLAVIC_DATA: SlavicComponent[] = [
 
   // ========================== INFLECTED RIVERS (river_loc) ==========================
   { id: 'loc_Vltava', type: 'river_loc', cs: ['Vltavou'] },
-  { id: 'loc_Elbe', type: 'river_loc', cs: ['Labem'] }, // Labe is neuter/special -> Labem
+  { id: 'loc_Elbe', type: 'river_loc', cs: ['Labem'] },
   { id: 'loc_Morava', type: 'river_loc', cs: ['Moravou'], sk: ['Moravou'] },
   { id: 'loc_Odra', type: 'river_loc', cs: ['Odrou'], pl: ['Odrą'] },
   { id: 'loc_Vistula', type: 'river_loc', pl: ['Wisłą'] },
   { id: 'loc_Warta', type: 'river_loc', pl: ['Wartą'] },
   { id: 'loc_Volga', type: 'river_loc', ru: ['Волге', 'Volge'] },
-  { id: 'loc_Don', type: 'river_loc', ru: ['Дону', 'Donu'] }, // Locative II exception
+  { id: 'loc_Don', type: 'river_loc', ru: ['Дону', 'Donu'] },
   { id: 'loc_Dnipro', type: 'river_loc', uk: ['Дніпрі', 'Dnipri'] },
   { id: 'loc_Desna', type: 'river_loc', uk: ['Десні', 'Desni'] },
   { id: 'loc_Danube', type: 'river_loc', bg: ['Дунав', 'Dunav'], sk: ['Dunajom'] },
   { id: 'loc_Maritsa', type: 'river_loc', bg: ['Марица', 'Maritsa'] },
-  { id: 'loc_Ohre', type: 'river_loc', cs: ['Ohří'] }, // Soft stem
+  { id: 'loc_Ohre', type: 'river_loc', cs: ['Ohří'] },
   { id: 'loc_Sazava', type: 'river_loc', cs: ['Sázavou'] },
   { id: 'loc_Berounka', type: 'river_loc', cs: ['Berounkou'] },
   { id: 'loc_Svratka', type: 'river_loc', cs: ['Svratkou'] },
   { id: 'loc_Jizera', type: 'river_loc', cs: ['Jizerou'] },
-  { id: 'loc_Bug', type: 'river_loc', pl: ['Bugiem'], uk: ['Бузі', 'Buzi'] }, // UK: g -> z palatalization
+  { id: 'loc_Bug', type: 'river_loc', pl: ['Bugiem'], uk: ['Бузі', 'Buzi'] },
   { id: 'loc_San', type: 'river_loc', pl: ['Sanem'] },
   { id: 'loc_Narew', type: 'river_loc', pl: ['Narwią'] },
   { id: 'loc_Pilica', type: 'river_loc', pl: ['Pilicą'] },
@@ -336,8 +382,17 @@ export const SLAVIC_DATA: SlavicComponent[] = [
 
   // ========================== COUNTRY SUFFIXES ==========================
   { id: 'landia', type: 'country_suffix', pl: [['landia'], 'f'], cs: [['land'], 'f'], sk: [['land'], 'f'], bg: [['ландия', 'landiya'], 'f'], ru: [['ландия', 'landiya'], 'f'], uk: [['ландія', 'landiya'], 'f'] },
-  { id: 'sko', type: 'country_suffix', pl: [['ska'], 'n'], cs: [['sko'], 'n'], sk: [['sko'], 'n'], bg: [['ско', 'sko'], 'n'], ru: [['стан', 'stan'], 'm'], uk: [['стан', 'stan'], 'm'] }, // Russian/Ukrainian use 'stan' for this concept
+  { id: 'sko', type: 'country_suffix', pl: [['ska'], 'n'], cs: [['sko'], 'n'], sk: [['sko'], 'n'], bg: [['ско', 'sko'], 'n'], ru: [['стан', 'stan'], 'm'], uk: [['стан', 'stan'], 'm'] },
   { id: 'ia', type: 'country_suffix', pl: [['ia'], 'f'], cs: [['ie'], 'f'], sk: [['ia'], 'f'], bg: [['ия', 'iya'], 'f'], ru: [['ия', 'iya'], 'f'], uk: [['ія', 'iya'], 'f'] },
   { id: 'stan', type: 'country_suffix', pl: [['stan'], 'm'], cs: [['stán'], 'm'], sk: [['stan'], 'm'], bg: [['стан', 'stan'], 'm'], ru: [['стан', 'stan'], 'm'], uk: [['стан', 'stan'], 'm'] },
   { id: 'raj', type: 'country_suffix', tags: ['civic'], pl: [['raj'], 'm'], cs: [['ráj'], 'm'], sk: [['raj'], 'm'] },
 ];
+
+export const LOWERCASE_PARTICLES: Record<string, string[]> = {
+  cs: ['nad', 'pod', 'u', 've', 'vo', 'při', 'za', 'mezi'],
+  sk: ['nad', 'pod', 'u', 'vo', 'pri', 'za', 'medzi'],
+  pl: ['nad', 'pod', 'u', 'we', 'przy', 'za', 'między', 'ku'],
+  bg: ['на', 'na', 'над', 'nad', 'под', 'pod', 'при', 'pri'],
+  ru: ['на', 'na', 'над', 'nad', 'под', 'pod', 'при', 'pri', 'у', 'u', 'за', 'za'],
+  uk: ['на', 'na', 'над', 'nad', 'під', 'pid', 'при', 'pry', 'у', 'u', 'за', 'za']
+};

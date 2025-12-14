@@ -1,6 +1,7 @@
 import { GeneratedResult } from "../../../types";
-import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, transliteratePolishToAscii, getCompositeGender } from "../../utils";
-import { SLAVIC_DATA, SlavicComponent } from "../../dictionaries/slavicDict";
+import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, transliteratePolishToAscii, getCompositeAttributes } from "../../utils";
+import { SLAVIC_DATA } from "../../dictionaries/slavicDict";
+import { capitalizeSlavicName } from "../../utils";
 
 export const getPolishCapacity = () => {
    const roots = SLAVIC_DATA.filter(c => hasLanguageEntry(c.pl) && (c.type === 'root' || c.type === 'stem'));
@@ -8,11 +9,7 @@ export const getPolishCapacity = () => {
    const adjectives = SLAVIC_DATA.filter(c => hasLanguageEntry(c.pl) && c.type === 'adjective');
    const rivers = SLAVIC_DATA.filter(c => hasLanguageEntry(c.pl) && c.type === 'river');
    
-   const path1 = adjectives.length * roots.length * suffixes.length; // Adj + Derived
-   const path2 = roots.length * suffixes.length; // Root + Suf
-   const path3 = roots.length * rivers.length; // Root + River
-
-   return path1 + path2 + path3;
+   return (adjectives.length * roots.length * suffixes.length) + (roots.length * suffixes.length) + (roots.length * rivers.length);
 }
 
 export const generatePolishPlace = (): GeneratedResult => {
@@ -32,9 +29,11 @@ export const generatePolishPlace = (): GeneratedResult => {
     const selectedRootComponent = getRandomElement(rootsAndStems);
     const selectedSuffix = getRandomElement(suffixes);
     
-    // Determine gender of the Noun part
-    const effectiveGender = getCompositeGender(selectedRootComponent.pl, selectedSuffix.pl, 'pl');
-    const { src: inflectedAdjSrc } = inflectSlavicAdjective(selectedAdj.pl!, effectiveGender, 'pl');
+    // UPDATED: Get attributes
+    const { gender, number } = getCompositeAttributes(selectedRootComponent.pl, selectedSuffix.pl);
+    
+    // UPDATED: Pass number
+    const { src: inflectedAdjSrc } = inflectSlavicAdjective(selectedAdj.pl!, gender, 'pl', number);
     
     const rootInfo = getSlavicData(selectedRootComponent.pl);
     const suffixInfo = getSlavicData(selectedSuffix.pl!);
@@ -62,12 +61,10 @@ export const generatePolishPlace = (): GeneratedResult => {
     else { 
         let adjStem = getSlavicData(selectedAdj.pl).src.slice(0, -1); // Now-, Star-
         let connector = 'o'; 
-        // Heuristic: stems ending in hard consonants + 'iał' usually take 'y'
         if (adjStem.endsWith('iał') || adjStem.endsWith('yst')) connector = 'y'; 
         
         let lowerRootSrc = rootInfo.src.toLowerCase();
         
-        // Truncate root vowel for suffix attachment in compound
         const compoundRootEndsVowel = ['a','e','o'].includes(lowerRootSrc.slice(-1));
         if (compoundRootEndsVowel && suffixStartsVowel) {
             lowerRootSrc = lowerRootSrc.slice(0, -1);
@@ -104,8 +101,7 @@ export const generatePolishPlace = (): GeneratedResult => {
   }
 
   wordSrc = wordSrc.replace(/(.)\1+/g, '$1'); // De-dupe
-  const capitalize = (s: string) => s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const wordAscii = transliteratePolishToAscii(wordSrc);
   
-  return { word: capitalize(wordSrc), ascii: capitalize(wordAscii) };
+  return { word: capitalizeSlavicName(wordSrc, 'pl'), ascii: capitalizeSlavicName(wordAscii, 'pl') };
 };

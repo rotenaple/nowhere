@@ -1,6 +1,7 @@
 import { GeneratedResult } from "../../../types";
-import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, transliterateRussianToAscii, getCompositeGender } from "../../utils";
+import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, transliterateRussianToAscii, getCompositeAttributes } from "../../utils";
 import { SLAVIC_DATA, SlavicComponent } from "../../dictionaries/slavicDict";
+import { capitalizeSlavicName } from "../../utils";
 
 export const getRussianCapacity = () => {
    const roots = SLAVIC_DATA.filter(c => hasLanguageEntry(c.ru) && (c.type === 'root' || c.type === 'stem'));
@@ -8,11 +9,7 @@ export const getRussianCapacity = () => {
    const adjectives = SLAVIC_DATA.filter(c => hasLanguageEntry(c.ru) && c.type === 'adjective');
    const rivers = SLAVIC_DATA.filter(c => hasLanguageEntry(c.ru) && c.type === 'river');
 
-   const path1 = adjectives.length * roots.length * suffixes.length; 
-   const path2 = roots.length * suffixes.length;
-   const path3 = roots.length * rivers.length; 
-
-   return path1 + path2 + path3;
+   return (adjectives.length * roots.length * suffixes.length) + (roots.length * suffixes.length) + (roots.length * rivers.length);
 }
 
 export const generateRussianPlace = (): GeneratedResult => {
@@ -23,7 +20,7 @@ export const generateRussianPlace = (): GeneratedResult => {
   const adjectives = getPool('adjective');
   const suffixes = getPool('suffix');
   const rootsAndStems = [...getPool('root'), ...getPool('stem'), ...getPool('river')];
-  const riversLoc = getPool('river_loc'); // Pre-inflected Prepositional case
+  const riversLoc = getPool('river_loc');
 
   const typeRoll = Math.random();
 
@@ -39,8 +36,11 @@ export const generateRussianPlace = (): GeneratedResult => {
          isDerived = true;
       }
       
-      const effectiveGender = getCompositeGender(selectedRootComponent.ru, selectedSuffix?.ru, 'ru');
-      const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.ru!, effectiveGender, 'ru');
+      // UPDATED: Get attributes
+      const { gender, number } = getCompositeAttributes(selectedRootComponent.ru, selectedSuffix?.ru);
+      
+      // UPDATED: Pass number
+      const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.ru!, gender, 'ru', number);
 
       const rootInfo = getSlavicData(selectedRootComponent.ru);
       let finalNounSrc = rootInfo.src;
@@ -112,12 +112,9 @@ export const generateRussianPlace = (): GeneratedResult => {
       }
       
       wordCyrillic = `${baseSrc}-на-${riverInfo.src}`; 
-      // Manually construct ascii since we might not have a full dictionary entry for the inflected river ASCII
-      // But river_loc should ideally have ROM. If not, fallback to transliteration.
       const riverRom = riverInfo.rom || transliterateRussianToAscii(riverInfo.src);
       wordAscii = `${baseRom}-na-${riverRom}`;
   }
 
-  const capitalize = (s: string) => s.split(/[ -]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(s.includes('-') ? '-' : ' ');
-  return { word: capitalize(wordCyrillic), ascii: capitalize(wordAscii) };
+  return { word: capitalizeSlavicName(wordCyrillic, 'ru'), ascii: capitalizeSlavicName(wordAscii, 'ru') };
 };
