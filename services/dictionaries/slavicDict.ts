@@ -275,28 +275,33 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   // The generator should then handle inflecting the river name to the correct case (e.g., instrumental for "nad X").
   // Given your original dict stored inflected forms, I've kept them in 'src' for now, but added the inherent gender.
   // Full conversion would involve changing 'src' to nominative form.
-  { id: 'Vltava', type: 'river', cs: [['Vltava'], 'f'] }, // Original: 'Vltavou'
-  { id: 'Elbe', type: 'river', cs: [['Labe'], 'f'] }, // Original: 'Labem'
-  { id: 'Morava', type: 'river', cs: [['Morava'], 'f'], sk: [['Morava'], 'f'] }, // Original: 'Moravou'
-  { id: 'Odra', type: 'river', cs: [['Odra'], 'f'], pl: [['Odra'], 'f'] }, // Original: 'Odrou', 'Odrą'
-  { id: 'Vistula', type: 'river', pl: [['Wisła'], 'f'] }, // Original: 'Wisłą'
-  { id: 'Warta', type: 'river', pl: [['Warta'], 'f'] }, // Original: 'Wartą'
-  { id: 'Volga', type: 'river', ru: [['Волга', 'Volga'], 'f'] }, // Original: 'Volgoy'
-  { id: 'Don', type: 'river', ru: [['Дон', 'Don'], 'm'] }, // Original: 'Donom'
-  { id: 'Dnipro', type: 'river', uk: [['Дніпро', 'Dnipro'], 'm'] }, // Original: 'Dniprom'
-  { id: 'Desna', type: 'river', uk: [['Десна', 'Desna'], 'f'] }, // Original: 'Desnoyu'
-  { id: 'Danube', type: 'river', bg: [['Дунав', 'Dunav'], 'm'], sk: [['Dunaj'], 'm'] }, // Original: 'Dunav', 'Dunajom'
+  { id: 'Vltava', type: 'river', cs: [['Vltava'], 'f'] },
+  { id: 'Elbe', type: 'river', cs: [['Labe'], 'f'] },
+  { id: 'Morava', type: 'river', cs: [['Morava'], 'f'], sk: [['Morava'], 'f'] },
+  { id: 'Odra', type: 'river', cs: [['Odra'], 'f'], pl: [['Odra'], 'f'] },
+  { id: 'Vistula', type: 'river', pl: [['Wisła'], 'f'] },
+  { id: 'Warta', type: 'river', pl: [['Warta'], 'f'] },
+  { id: 'Volga', type: 'river', ru: [['Волга', 'Volga'], 'f'] },
+  { id: 'Don', type: 'river', ru: [['Дон', 'Don'], 'm'] },
+  { id: 'Dnipro', type: 'river', uk: [['Дніпро', 'Dnipro'], 'm'] },
+  { id: 'Desna', type: 'river', uk: [['Десна', 'Desna'], 'f'] },
+  { id: 'Danube', type: 'river', bg: [['Дунав', 'Dunav'], 'm'], sk: [['Dunaj'], 'm'] },
   { id: 'Maritsa', type: 'river', bg: [['Марица', 'Maritsa'], 'f'] },
-
-  // ========================== Missing Local Rivers ==========================
-  { id: 'Ohre', type: 'river', cs: [['Ohře'], 'f'] }, { id: 'Sazava', type: 'river', cs: [['Sázava'], 'f'] },
-  { id: 'Berounka', type: 'river', cs: [['Berounka'], 'f'] }, { id: 'Svratka', type: 'river', cs: [['Svratka'], 'f'] },
+  { id: 'Ohre', type: 'river', cs: [['Ohře'], 'f'] },
+  { id: 'Sazava', type: 'river', cs: [['Sázava'], 'f'] },
+  { id: 'Berounka', type: 'river', cs: [['Berounka'], 'f'] },
+  { id: 'Svratka', type: 'river', cs: [['Svratka'], 'f'] },
   { id: 'Jizera', type: 'river', cs: [['Jizera'], 'f'] },
-  { id: 'Bug', type: 'river', pl: [['Bug'], 'm'], uk: [['Буг', 'Buh'], 'm'] }, { id: 'San', type: 'river', pl: [['San'], 'm'] },
-  { id: 'Narew', type: 'river', pl: [['Narew'], 'f'] }, { id: 'Pilica', type: 'river', pl: [['Pilica'], 'f'] },
-  { id: 'Hron', type: 'river', sk: [['Hron'], 'm'] }, { id: 'Vah', type: 'river', sk: [['Váh'], 'm'] },
-  { id: 'NitraRiver', type: 'river', sk: [['Nitra'], 'f'] }, { id: 'Hornad', type: 'river', sk: [['Hornád'], 'm'] },
-  { id: 'Iskar', type: 'river', bg: [['Искър', 'Iskar'], 'm'] }, { id: 'Struma', type: 'river', bg: [['Струма', 'Struma'], 'f'] },
+  { id: 'Bug', type: 'river', pl: [['Bug'], 'm'], uk: [['Буг', 'Buh'], 'm'] },
+  { id: 'San', type: 'river', pl: [['San'], 'm'] },
+  { id: 'Narew', type: 'river', pl: [['Narew'], 'f'] },
+  { id: 'Pilica',type: 'river', pl: [['Pilica'], 'f'] },
+  { id: 'Hron', type: 'river', sk: [['Hron'], 'm'] },
+  { id: 'Vah', type: 'river', sk: [['Váh'], 'm'] },
+  { id: 'NitraRiver', type: 'river', sk: [['Nitra'], 'f'] },
+  { id: 'Hornad', type: 'river', sk: [['Hornád'], 'm'] },
+  { id: 'Iskar', type: 'river', bg: [['Искър', 'Iskar'], 'm'] },
+  { id: 'Struma', type: 'river', bg: [['Струма', 'Struma'], 'f'] },
   { id: 'Tundzha', type: 'river', bg: [['Тунджа', 'Tundzha'], 'f'] },
 
   // ========================== COUNTRY SUFFIXES ==========================
