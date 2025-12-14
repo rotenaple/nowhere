@@ -3,328 +3,329 @@ export interface AustronesianComponent {
   type: 'prefix' | 'root' | 'suffix' | 'adjective';
   lang?: 'id' | 'ms' | 'jv';
   tags?: string[];
+  def: string;
 }
 
 export const AUSTRONESIAN_DATA: AustronesianComponent[] = [
   // ============================
   // GEOGRAPHIC PREFIXES (HEADS)
   // ============================
-  { val: 'Gunung', type: 'prefix' }, // Mountain
-  { val: 'Bukit', type: 'prefix' }, // Hill
-  { val: 'Sungai', type: 'prefix' }, // River
-  { val: 'Danau', type: 'prefix', lang: 'id' }, // Lake (ID)
-  { val: 'Tasik', type: 'prefix', lang: 'ms' }, // Lake (MS)
-  { val: 'Tanjung', type: 'prefix' }, // Cape
-  { val: 'Teluk', type: 'prefix' }, // Bay
-  { val: 'Pulau', type: 'prefix' }, // Island
-  { val: 'Kuala', type: 'prefix' }, // Estuary/Confluence (Very common in MS)
-  { val: 'Muara', type: 'prefix', lang: 'id' }, // Estuary (ID)
-  { val: 'Pantai', type: 'prefix' }, // Beach
-  { val: 'Kali', type: 'prefix', lang: 'id' }, // River (Javanese/ID)
-  { val: 'Air', type: 'prefix' }, // Water/Falls
-  { val: 'Batang', type: 'prefix' }, // River (Sumatra/Malay)
-  { val: 'Batu', type: 'prefix' }, // Stone/Mile
-  { val: 'Kota', type: 'prefix' }, // City/Fort
-  { val: 'Bandar', type: 'prefix', lang: 'ms' }, // City (MS)
-  { val: 'Kampung', type: 'prefix' }, // Village
-  { val: 'Desa', type: 'prefix', lang: 'id' }, // Village (ID)
-  { val: 'Dusun', type: 'prefix', lang: 'id' }, // Hamlet
-  { val: 'Pekan', type: 'prefix', lang: 'ms' }, // Town (MS)
-  { val: 'Taman', type: 'prefix' }, // Garden/Park
-  { val: 'Jalan', type: 'prefix' }, // Road
-  { val: 'Lorong', type: 'prefix' }, // Lane
-  { val: 'Simpang', type: 'prefix' }, // Junction
-  { val: 'Lubuk', type: 'prefix' }, // Deep pool
-  { val: 'Rantau', type: 'prefix' }, // Reach/Coast
-  { val: 'Pematang', type: 'prefix', lang: 'id' }, // Ridge
-  { val: 'Tanah', type: 'prefix' }, // Land
-  { val: 'Pasir', type: 'prefix' }, // Sand
-  { val: 'Hutan', type: 'prefix' }, // Forest
-  { val: 'Rimba', type: 'prefix' }, // Jungle
-  { val: 'Padang', type: 'prefix' }, // Field
-  { val: 'Sawah', type: 'prefix', lang: 'id' }, // Rice field
-  { val: 'Bendang', type: 'prefix', lang: 'ms' }, // Rice field
-  { val: 'Lembah', type: 'prefix' }, // Valley
-  { val: 'Gua', type: 'prefix' }, // Cave
-  { val: 'Ujung', type: 'prefix', lang: 'id' }, // End/Tip
-  { val: 'Hulu', type: 'prefix' }, // Upstream
-  { val: 'Hilir', type: 'prefix' }, // Downstream
-  { val: 'Gili', type: 'prefix', lang: 'id' }, // Island (Lombok/Bali)
-  { val: 'Nusa', type: 'prefix', lang: 'id' }, // Island (Sanskrit/Old Javanese)
-  { val: 'Wai', type: 'prefix', lang: 'id' }, // Water (Eastern Indo)
-  { val: 'Ci', type: 'prefix', lang: 'id' }, // Water (Sundanese prefix, e.g. Cianjur)
+  { val: 'Gunung', type: 'prefix', def: 'Mountain' },
+  { val: 'Bukit', type: 'prefix', def: 'Hill' },
+  { val: 'Sungai', type: 'prefix', def: 'River' },
+  { val: 'Danau', type: 'prefix', lang: 'id', def: 'Lake' },
+  { val: 'Tasik', type: 'prefix', lang: 'ms', def: 'Lake' },
+  { val: 'Tanjung', type: 'prefix', def: 'Cape' },
+  { val: 'Teluk', type: 'prefix', def: 'Bay' },
+  { val: 'Pulau', type: 'prefix', def: 'Island' },
+  { val: 'Kuala', type: 'prefix', def: 'Estuary/Confluence' },
+  { val: 'Muara', type: 'prefix', lang: 'id', def: 'Estuary' },
+  { val: 'Pantai', type: 'prefix', def: 'Beach' },
+  { val: 'Kali', type: 'prefix', lang: 'id', def: 'River' },
+  { val: 'Air', type: 'prefix', def: 'Water/Falls' },
+  { val: 'Batang', type: 'prefix', def: 'River' },
+  { val: 'Batu', type: 'prefix', def: 'Stone/Mile' },
+  { val: 'Kota', type: 'prefix', def: 'City/Fort' },
+  { val: 'Bandar', type: 'prefix', lang: 'ms', def: 'City' },
+  { val: 'Kampung', type: 'prefix', def: 'Village' },
+  { val: 'Desa', type: 'prefix', lang: 'id', def: 'Village' },
+  { val: 'Dusun', type: 'prefix', lang: 'id', def: 'Hamlet' },
+  { val: 'Pekan', type: 'prefix', lang: 'ms', def: 'Town' },
+  { val: 'Taman', type: 'prefix', def: 'Garden/Park' },
+  { val: 'Jalan', type: 'prefix', def: 'Road' },
+  { val: 'Lorong', type: 'prefix', def: 'Lane' },
+  { val: 'Simpang', type: 'prefix', def: 'Junction' },
+  { val: 'Lubuk', type: 'prefix', def: 'Deep pool' },
+  { val: 'Rantau', type: 'prefix', def: 'Reach/Coast' },
+  { val: 'Pematang', type: 'prefix', lang: 'id', def: 'Ridge' },
+  { val: 'Tanah', type: 'prefix', def: 'Land' },
+  { val: 'Pasir', type: 'prefix', def: 'Sand' },
+  { val: 'Hutan', type: 'prefix', def: 'Forest' },
+  { val: 'Rimba', type: 'prefix', def: 'Jungle' },
+  { val: 'Padang', type: 'prefix', def: 'Field' },
+  { val: 'Sawah', type: 'prefix', lang: 'id', def: 'Rice field' },
+  { val: 'Bendang', type: 'prefix', lang: 'ms', def: 'Rice field' },
+  { val: 'Lembah', type: 'prefix', def: 'Valley' },
+  { val: 'Gua', type: 'prefix', def: 'Cave' },
+  { val: 'Ujung', type: 'prefix', lang: 'id', def: 'End/Tip' },
+  { val: 'Hulu', type: 'prefix', def: 'Upstream' },
+  { val: 'Hilir', type: 'prefix', def: 'Downstream' },
+  { val: 'Gili', type: 'prefix', lang: 'id', def: 'Island' },
+  { val: 'Nusa', type: 'prefix', lang: 'id', def: 'Island' },
+  { val: 'Wai', type: 'prefix', lang: 'id', def: 'Water' },
+  { val: 'Ci', type: 'prefix', lang: 'id', def: 'Water (Sundanese)' },
 
   // Javanese Specific Prefixes (Heads)
-  { val: 'Karang', type: 'prefix', lang: 'jv' }, // Coral/Limestone/Estate (Very Common)
-  { val: 'Kedung', type: 'prefix', lang: 'jv' }, // Deep Pool
-  { val: 'Gondang', type: 'prefix', lang: 'jv' }, // Meeting Place / Tree
-  { val: 'Tegal', type: 'prefix', lang: 'jv' }, // Dry Field
-  { val: 'Wono', type: 'prefix', lang: 'jv' }, // Forest (Jav spelling of Wana)
-  { val: 'Alas', type: 'prefix', lang: 'jv' }, // Forest (Low Javanese)
-  { val: 'Giri', type: 'prefix', lang: 'jv' }, // Mountain (Sanskrit/Jav)
-  { val: 'Kulik', type: 'prefix', lang: 'jv' }, // Small place
-  { val: 'Simo', type: 'prefix', lang: 'jv' }, // Tiger (Old Jav)
-  { val: 'Banyu', type: 'prefix', lang: 'jv' }, // Water
-  { val: 'Sumber', type: 'prefix', lang: 'jv' }, // Source/Spring
-  { val: 'Grogol', type: 'prefix', lang: 'jv' }, // Trap/Area
-  { val: 'Curug', type: 'prefix', lang: 'jv' }, // Waterfall (Sundanese/Jav border)
+  { val: 'Karang', type: 'prefix', lang: 'jv', def: 'Coral/Limestone/Estate' },
+  { val: 'Kedung', type: 'prefix', lang: 'jv', def: 'Deep Pool' },
+  { val: 'Gondang', type: 'prefix', lang: 'jv', def: 'Meeting Place/Tree' },
+  { val: 'Tegal', type: 'prefix', lang: 'jv', def: 'Dry Field' },
+  { val: 'Wono', type: 'prefix', lang: 'jv', def: 'Forest' },
+  { val: 'Alas', type: 'prefix', lang: 'jv', def: 'Forest' },
+  { val: 'Giri', type: 'prefix', lang: 'jv', def: 'Mountain' },
+  { val: 'Kulik', type: 'prefix', lang: 'jv', def: 'Small place' },
+  { val: 'Simo', type: 'prefix', lang: 'jv', def: 'Tiger' },
+  { val: 'Banyu', type: 'prefix', lang: 'jv', def: 'Water' },
+  { val: 'Sumber', type: 'prefix', lang: 'jv', def: 'Source/Spring' },
+  { val: 'Grogol', type: 'prefix', lang: 'jv', def: 'Trap/Area' },
+  { val: 'Curug', type: 'prefix', lang: 'jv', def: 'Waterfall' },
 
   // ============================
   // ROOTS (NOUNS)
   // ============================
   // Nature
-  { val: 'Api', type: 'root' }, // Fire
-  { val: 'Awan', type: 'root' }, // Cloud
-  { val: 'Langit', type: 'root' }, // Sky
-  { val: 'Bintang', type: 'root' }, // Star
-  { val: 'Surya', type: 'root', lang: 'id' }, // Sun (Sanskrit)
-  { val: 'Matahari', type: 'root' }, // Sun
-  { val: 'Bulan', type: 'root' }, // Moon
-  { val: 'Angin', type: 'root' }, // Wind
-  { val: 'Hujan', type: 'root' }, // Rain
-  { val: 'Petir', type: 'root' }, // Lightning
-  { val: 'Guntur', type: 'root' }, // Thunder
-  { val: 'Pelangi', type: 'root' }, // Rainbow
-  { val: 'Kabut', type: 'root' }, // Mist
-  { val: 'Ombak', type: 'root' }, // Wave
-  { val: 'Karang', type: 'root' }, // Coral/Reef
+  { val: 'Api', type: 'root', def: 'Fire' },
+  { val: 'Awan', type: 'root', def: 'Cloud' },
+  { val: 'Langit', type: 'root', def: 'Sky' },
+  { val: 'Bintang', type: 'root', def: 'Star' },
+  { val: 'Surya', type: 'root', lang: 'id', def: 'Sun' },
+  { val: 'Matahari', type: 'root', def: 'Sun' },
+  { val: 'Bulan', type: 'root', def: 'Moon' },
+  { val: 'Angin', type: 'root', def: 'Wind' },
+  { val: 'Hujan', type: 'root', def: 'Rain' },
+  { val: 'Petir', type: 'root', def: 'Lightning' },
+  { val: 'Guntur', type: 'root', def: 'Thunder' },
+  { val: 'Pelangi', type: 'root', def: 'Rainbow' },
+  { val: 'Kabut', type: 'root', def: 'Mist' },
+  { val: 'Ombak', type: 'root', def: 'Wave' },
+  { val: 'Karang', type: 'root', def: 'Coral/Reef' },
   
   // Materials/Flora
-  { val: 'Mas', type: 'root' }, // Gold
-  { val: 'Emas', type: 'root' }, // Gold
-  { val: 'Perak', type: 'root' }, // Silver
-  { val: 'Intan', type: 'root' }, // Diamond
-  { val: 'Mutiara', type: 'root' }, // Pearl
-  { val: 'Besi', type: 'root' }, // Iron
-  { val: 'Timah', type: 'root' }, // Tin
-  { val: 'Tembaga', type: 'root' }, // Copper
-  { val: 'Kaca', type: 'root' }, // Glass
-  { val: 'Kayu', type: 'root' }, // Wood
-  { val: 'Bambu', type: 'root' }, // Bamboo
-  { val: 'Buluh', type: 'root', lang: 'ms' }, // Bamboo
-  { val: 'Rotan', type: 'root' }, // Rattan
-  { val: 'Kelapa', type: 'root' }, // Coconut
-  { val: 'Nyiur', type: 'root' }, // Coconut (Poetic)
-  { val: 'Sawit', type: 'root' }, // Palm
-  { val: 'Pinang', type: 'root' }, // Areca nut
-  { val: 'Bakau', type: 'root' }, // Mangrove
-  { val: 'Cengkeh', type: 'root', lang: 'id' }, // Clove
-  { val: 'Pala', type: 'root', lang: 'id' }, // Nutmeg
-  { val: 'Lada', type: 'root' }, // Pepper
-  { val: 'Padi', type: 'root' }, // Rice plant
-  { val: 'Bunga', type: 'root' }, // Flower
-  { val: 'Kembang', type: 'root', lang: 'id' }, // Flower
-  { val: 'Melati', type: 'root' }, // Jasmine
-  { val: 'Mawar', type: 'root' }, // Rose
-  { val: 'Teratai', type: 'root' }, // Lotus
-  { val: 'Anggrek', type: 'root' }, // Orchid
-  { val: 'Cempaka', type: 'root' }, // Magnolia
-  { val: 'Kenanga', type: 'root' }, // Ylang-ylang
-  { val: 'Raya', type: 'root' }, // Great/Hibiscus
-  { val: 'Waringin', type: 'root' }, // Banyan
-  { val: 'Beringin', type: 'root' }, // Banyan
-  { val: 'Jati', type: 'root' }, // Teak
-  { val: 'Cendana', type: 'root' }, // Sandalwood
-  { val: 'Meranti', type: 'root' }, // Meranti wood
+  { val: 'Mas', type: 'root', def: 'Gold' },
+  { val: 'Emas', type: 'root', def: 'Gold' },
+  { val: 'Perak', type: 'root', def: 'Silver' },
+  { val: 'Intan', type: 'root', def: 'Diamond' },
+  { val: 'Mutiara', type: 'root', def: 'Pearl' },
+  { val: 'Besi', type: 'root', def: 'Iron' },
+  { val: 'Timah', type: 'root', def: 'Tin' },
+  { val: 'Tembaga', type: 'root', def: 'Copper' },
+  { val: 'Kaca', type: 'root', def: 'Glass' },
+  { val: 'Kayu', type: 'root', def: 'Wood' },
+  { val: 'Bambu', type: 'root', def: 'Bamboo' },
+  { val: 'Buluh', type: 'root', lang: 'ms', def: 'Bamboo' },
+  { val: 'Rotan', type: 'root', def: 'Rattan' },
+  { val: 'Kelapa', type: 'root', def: 'Coconut' },
+  { val: 'Nyiur', type: 'root', def: 'Coconut (Poetic)' },
+  { val: 'Sawit', type: 'root', def: 'Palm' },
+  { val: 'Pinang', type: 'root', def: 'Areca nut' },
+  { val: 'Bakau', type: 'root', def: 'Mangrove' },
+  { val: 'Cengkeh', type: 'root', lang: 'id', def: 'Clove' },
+  { val: 'Pala', type: 'root', lang: 'id', def: 'Nutmeg' },
+  { val: 'Lada', type: 'root', def: 'Pepper' },
+  { val: 'Padi', type: 'root', def: 'Rice plant' },
+  { val: 'Bunga', type: 'root', def: 'Flower' },
+  { val: 'Kembang', type: 'root', lang: 'id', def: 'Flower' },
+  { val: 'Melati', type: 'root', def: 'Jasmine' },
+  { val: 'Mawar', type: 'root', def: 'Rose' },
+  { val: 'Teratai', type: 'root', def: 'Lotus' },
+  { val: 'Anggrek', type: 'root', def: 'Orchid' },
+  { val: 'Cempaka', type: 'root', def: 'Magnolia' },
+  { val: 'Kenanga', type: 'root', def: 'Ylang-ylang' },
+  { val: 'Raya', type: 'root', def: 'Great/Hibiscus' },
+  { val: 'Waringin', type: 'root', def: 'Banyan' },
+  { val: 'Beringin', type: 'root', def: 'Banyan' },
+  { val: 'Jati', type: 'root', def: 'Teak' },
+  { val: 'Cendana', type: 'root', def: 'Sandalwood' },
+  { val: 'Meranti', type: 'root', def: 'Meranti wood' },
   
   // Fauna
-  { val: 'Harimau', type: 'root' }, // Tiger
-  { val: 'Macan', type: 'root', lang: 'id' }, // Tiger/Leopard
-  { val: 'Gajah', type: 'root' }, // Elephant
-  { val: 'Badak', type: 'root' }, // Rhinoceros
-  { val: 'Banteng', type: 'root', lang: 'id' }, // Wild bull
-  { val: 'Seladang', type: 'root', lang: 'ms' }, // Wild ox
-  { val: 'Rusa', type: 'root' }, // Deer
-  { val: 'Kijang', type: 'root' }, // Barking Deer
-  { val: 'Kancil', type: 'root' }, // Mouse deer
-  { val: 'Buaya', type: 'root' }, // Crocodile
-  { val: 'Penyu', type: 'root' }, // Turtle
-  { val: 'Ular', type: 'root' }, // Snake
-  { val: 'Naga', type: 'root' }, // Dragon
-  { val: 'Garuda', type: 'root' }, // Mythical bird
-  { val: 'Rajawali', type: 'root' }, // Eagle/Hawk
-  { val: 'Elang', type: 'root', lang: 'id' }, // Eagle
-  { val: 'Helang', type: 'root', lang: 'ms' }, // Eagle
-  { val: 'Merpati', type: 'root' }, // Dove
-  { val: 'Bayan', type: 'root' }, // Parakeet
-  { val: 'Cenderawasih', type: 'root' }, // Bird of paradise
-  { val: 'Merak', type: 'root' }, // Peacock
-  { val: 'Ikan', type: 'root' }, // Fish
-  { val: 'Udang', type: 'root' }, // Prawn
-  { val: 'Kuda', type: 'root' }, // Horse
+  { val: 'Harimau', type: 'root', def: 'Tiger' },
+  { val: 'Macan', type: 'root', lang: 'id', def: 'Tiger/Leopard' },
+  { val: 'Gajah', type: 'root', def: 'Elephant' },
+  { val: 'Badak', type: 'root', def: 'Rhinoceros' },
+  { val: 'Banteng', type: 'root', lang: 'id', def: 'Wild bull' },
+  { val: 'Seladang', type: 'root', lang: 'ms', def: 'Wild ox' },
+  { val: 'Rusa', type: 'root', def: 'Deer' },
+  { val: 'Kijang', type: 'root', def: 'Barking Deer' },
+  { val: 'Kancil', type: 'root', def: 'Mouse deer' },
+  { val: 'Buaya', type: 'root', def: 'Crocodile' },
+  { val: 'Penyu', type: 'root', def: 'Turtle' },
+  { val: 'Ular', type: 'root', def: 'Snake' },
+  { val: 'Naga', type: 'root', def: 'Dragon' },
+  { val: 'Garuda', type: 'root', def: 'Mythical bird' },
+  { val: 'Rajawali', type: 'root', def: 'Eagle/Hawk' },
+  { val: 'Elang', type: 'root', lang: 'id', def: 'Eagle' },
+  { val: 'Helang', type: 'root', lang: 'ms', def: 'Eagle' },
+  { val: 'Merpati', type: 'root', def: 'Dove' },
+  { val: 'Bayan', type: 'root', def: 'Parakeet' },
+  { val: 'Cenderawasih', type: 'root', def: 'Bird of paradise' },
+  { val: 'Merak', type: 'root', def: 'Peacock' },
+  { val: 'Ikan', type: 'root', def: 'Fish' },
+  { val: 'Udang', type: 'root', def: 'Prawn' },
+  { val: 'Kuda', type: 'root', def: 'Horse' },
   
   // Abstract / Sanskrit / Titles
-  { val: 'Jaya', type: 'root' }, // Victory/Glorious
-  { val: 'Wijaya', type: 'root' }, // Victory
-  { val: 'Sakti', type: 'root' }, // Magic/Power
-  { val: 'Bakti', type: 'root' }, // Devotion
-  { val: 'Mulia', type: 'root' }, // Noble
-  { val: 'Agung', type: 'root' }, // Great
-  { val: 'Sari', type: 'root' }, // Essence
-  { val: 'Raja', type: 'root' }, // King
-  { val: 'Ratu', type: 'root' }, // Queen
-  { val: 'Putri', type: 'root' }, // Princess
-  { val: 'Putra', type: 'root' }, // Prince/Son
-  { val: 'Indra', type: 'root' }, // God Indra
-  { val: 'Dewa', type: 'root' }, // God
-  { val: 'Dewi', type: 'root' }, // Goddess
-  { val: 'Kusuma', type: 'root' }, // Flower (Sanskrit)
-  { val: 'Darma', type: 'root' }, // Duty
-  { val: 'Wira', type: 'root' }, // Hero
-  { val: 'Pahlawan', type: 'root' }, // Hero
-  { val: 'Sejahtera', type: 'root' }, // Prosperous
-  { val: 'Makmur', type: 'root' }, // Prosperous
-  { val: 'Sentosa', type: 'root' }, // Peaceful
-  { val: 'Aman', type: 'root' }, // Safe/Peaceful
-  { val: 'Damai', type: 'root' }, // Peace
-  { val: 'Harapan', type: 'root' }, // Hope
-  { val: 'Kasih', type: 'root' }, // Love
-  { val: 'Sayang', type: 'root' }, // Love/Dear
-  { val: 'Suka', type: 'root' }, // Like/Joy
-  { val: 'Bahagia', type: 'root' }, // Happy
+  { val: 'Jaya', type: 'root', def: 'Victory/Glorious' },
+  { val: 'Wijaya', type: 'root', def: 'Victory' },
+  { val: 'Sakti', type: 'root', def: 'Magic/Power' },
+  { val: 'Bakti', type: 'root', def: 'Devotion' },
+  { val: 'Mulia', type: 'root', def: 'Noble' },
+  { val: 'Agung', type: 'root', def: 'Great' },
+  { val: 'Sari', type: 'root', def: 'Essence' },
+  { val: 'Raja', type: 'root', def: 'King' },
+  { val: 'Ratu', type: 'root', def: 'Queen' },
+  { val: 'Putri', type: 'root', def: 'Princess' },
+  { val: 'Putra', type: 'root', def: 'Prince/Son' },
+  { val: 'Indra', type: 'root', def: 'God Indra' },
+  { val: 'Dewa', type: 'root', def: 'God' },
+  { val: 'Dewi', type: 'root', def: 'Goddess' },
+  { val: 'Kusuma', type: 'root', def: 'Flower' },
+  { val: 'Darma', type: 'root', def: 'Duty' },
+  { val: 'Wira', type: 'root', def: 'Hero' },
+  { val: 'Pahlawan', type: 'root', def: 'Hero' },
+  { val: 'Sejahtera', type: 'root', def: 'Prosperous' },
+  { val: 'Makmur', type: 'root', def: 'Prosperous' },
+  { val: 'Sentosa', type: 'root', def: 'Peaceful' },
+  { val: 'Aman', type: 'root', def: 'Safe/Peaceful' },
+  { val: 'Damai', type: 'root', def: 'Peace' },
+  { val: 'Harapan', type: 'root', def: 'Hope' },
+  { val: 'Kasih', type: 'root', def: 'Love' },
+  { val: 'Sayang', type: 'root', def: 'Love/Dear' },
+  { val: 'Suka', type: 'root', def: 'Like/Joy' },
+  { val: 'Bahagia', type: 'root', def: 'Happy' },
 
   // Javanese/Sanskrit Roots (High Register & Compounding Stems)
-  { val: 'Suro', type: 'root', lang: 'jv' }, // Shark/Brave (Sura)
-  { val: 'Purwo', type: 'root', lang: 'jv' }, // First/Beginning (Purwa)
-  { val: 'Margo', type: 'root', lang: 'jv' }, // Road/Way (Marga)
-  { val: 'Soco', type: 'root', lang: 'jv' }, // Gem/Eye
-  { val: 'Karto', type: 'root', lang: 'jv' }, // Work/Prosperous (Karta)
-  { val: 'Yogya', type: 'root', lang: 'jv' }, // Suitable/Fit
-  { val: 'Asta', type: 'root', lang: 'jv' }, // Hand/Eight
-  { val: 'Cipto', type: 'root', lang: 'jv' }, // Create (Cipta)
-  { val: 'Duto', type: 'root', lang: 'jv' }, // Messenger (Duta)
-  { val: 'Wiro', type: 'root', lang: 'jv' }, // Hero (Wira)
-  { val: 'Tirto', type: 'root', lang: 'jv' }, // Water (Tirta)
-  { val: 'Argo', type: 'root', lang: 'jv' }, // Mountain (Arga)
-  { val: 'Buwono', type: 'root', lang: 'jv' }, // World/Universe
-  { val: 'Hamengku', type: 'root', lang: 'jv' }, // Holder/Ruler
-  { val: 'Pakis', type: 'root', lang: 'jv' }, // Fern
-  { val: 'Rejo', type: 'root', lang: 'jv' }, // Crowded/Prosperous (Raja)
-  { val: 'Hardjo', type: 'root', lang: 'jv' }, // Prosperous
-  { val: 'Mulyo', type: 'root', lang: 'jv' }, // Noble
-  { val: 'Santoso', type: 'root', lang: 'jv' }, // Peaceful
-  { val: 'Puro', type: 'root', lang: 'jv' }, // Palace/Temple
+  { val: 'Suro', type: 'root', lang: 'jv', def: 'Shark/Brave' },
+  { val: 'Purwo', type: 'root', lang: 'jv', def: 'First/Beginning' },
+  { val: 'Margo', type: 'root', lang: 'jv', def: 'Road/Way' },
+  { val: 'Soco', type: 'root', lang: 'jv', def: 'Gem/Eye' },
+  { val: 'Karto', type: 'root', lang: 'jv', def: 'Work/Prosperous' },
+  { val: 'Yogya', type: 'root', lang: 'jv', def: 'Suitable/Fit' },
+  { val: 'Asta', type: 'root', lang: 'jv', def: 'Hand/Eight' },
+  { val: 'Cipto', type: 'root', lang: 'jv', def: 'Create' },
+  { val: 'Duto', type: 'root', lang: 'jv', def: 'Messenger' },
+  { val: 'Wiro', type: 'root', lang: 'jv', def: 'Hero' },
+  { val: 'Tirto', type: 'root', lang: 'jv', def: 'Water' },
+  { val: 'Argo', type: 'root', lang: 'jv', def: 'Mountain' },
+  { val: 'Buwono', type: 'root', lang: 'jv', def: 'World/Universe' },
+  { val: 'Hamengku', type: 'root', lang: 'jv', def: 'Holder/Ruler' },
+  { val: 'Pakis', type: 'root', lang: 'jv', def: 'Fern' },
+  { val: 'Rejo', type: 'root', lang: 'jv', def: 'Crowded/Prosperous' },
+  { val: 'Hardjo', type: 'root', lang: 'jv', def: 'Prosperous' },
+  { val: 'Mulyo', type: 'root', lang: 'jv', def: 'Noble' },
+  { val: 'Santoso', type: 'root', lang: 'jv', def: 'Peaceful' },
+  { val: 'Puro', type: 'root', lang: 'jv', def: 'Palace/Temple' },
   
   // ============================
   // ADJECTIVES (MODIFIERS)
   // ============================
-  { val: 'Besar', type: 'adjective' }, // Big
-  { val: 'Kecil', type: 'adjective' }, // Small
-  { val: 'Agung', type: 'adjective' }, // Great/Grand
-  { val: 'Baru', type: 'adjective' }, // New
-  { val: 'Lama', type: 'adjective' }, // Old
-  { val: 'Tua', type: 'adjective' }, // Old (Age)
-  { val: 'Muda', type: 'adjective' }, // Young
-  { val: 'Indah', type: 'adjective' }, // Beautiful
-  { val: 'Cantik', type: 'adjective' }, // Pretty
-  { val: 'Permai', type: 'adjective' }, // Scenic
-  { val: 'Molek', type: 'adjective' }, // Lovely
-  { val: 'Elok', type: 'adjective' }, // Fine/Good
-  { val: 'Bagus', type: 'adjective' }, // Good
-  { val: 'Baik', type: 'adjective' }, // Good
-  { val: 'Buruk', type: 'adjective' }, // Bad
-  { val: 'Jahat', type: 'adjective' }, // Evil
-  { val: 'Suci', type: 'adjective' }, // Holy
-  { val: 'Keramat', type: 'adjective' }, // Sacred
-  { val: 'Sakti', type: 'adjective' }, // Powerful
-  { val: 'Tinggi', type: 'adjective' }, // High
-  { val: 'Rendah', type: 'adjective' }, // Low
-  { val: 'Panjang', type: 'adjective' }, // Long
-  { val: 'Pendek', type: 'adjective' }, // Short
-  { val: 'Luas', type: 'adjective' }, // Wide
-  { val: 'Sempit', type: 'adjective' }, // Narrow
-  { val: 'Dalam', type: 'adjective' }, // Deep
-  { val: 'Dangkal', type: 'adjective' }, // Shallow
-  { val: 'Kering', type: 'adjective' }, // Dry
-  { val: 'Basah', type: 'adjective' }, // Wet
-  { val: 'Panas', type: 'adjective' }, // Hot
-  { val: 'Dingin', type: 'adjective' }, // Cold
-  { val: 'Sejuk', type: 'adjective' }, // Cool
-  { val: 'Hangat', type: 'adjective' }, // Warm
-  { val: 'Terang', type: 'adjective' }, // Bright
-  { val: 'Gelap', type: 'adjective' }, // Dark
-  { val: 'Sunyi', type: 'adjective' }, // Quiet
-  { val: 'Ramai', type: 'adjective' }, // Crowded/Busy
-  { val: 'Sepi', type: 'adjective' }, // Quiet/Lonely
-  { val: 'Bersih', type: 'adjective' }, // Clean
-  { val: 'Kotor', type: 'adjective' }, // Dirty
-  { val: 'Putih', type: 'adjective' }, // White
-  { val: 'Hitam', type: 'adjective' }, // Black
-  { val: 'Merah', type: 'adjective' }, // Red
-  { val: 'Biru', type: 'adjective' }, // Blue
-  { val: 'Hijau', type: 'adjective' }, // Green
-  { val: 'Kuning', type: 'adjective' }, // Yellow
-  { val: 'Jingga', type: 'adjective' }, // Orange
-  { val: 'Ungu', type: 'adjective' }, // Purple
-  { val: 'Kelabu', type: 'adjective' }, // Grey
-  { val: 'Emas', type: 'adjective' }, // Gold
-  { val: 'Perak', type: 'adjective' }, // Silver
-  { val: 'Utara', type: 'adjective' }, // North
-  { val: 'Selatan', type: 'adjective' }, // South
-  { val: 'Barat', type: 'adjective' }, // West
-  { val: 'Timur', type: 'adjective' }, // East
-  { val: 'Tengah', type: 'adjective' }, // Center/Middle
-  { val: 'Pusat', type: 'adjective' }, // Center
-  { val: 'Hulu', type: 'adjective' }, // Upstream
-  { val: 'Hilir', type: 'adjective' }, // Downstream
-  { val: 'Laut', type: 'adjective' }, // Sea/Seaward
-  { val: 'Darat', type: 'adjective' }, // Land/Inland
-  { val: 'Atas', type: 'adjective' }, // Upper
-  { val: 'Bawah', type: 'adjective' }, // Lower
-  { val: 'Maju', type: 'adjective' }, // Advanced/Forward
-  { val: 'Makmur', type: 'adjective' }, // Prosperous
-  { val: 'Sentosa', type: 'adjective' }, // Peaceful
-  { val: 'Abadi', type: 'adjective' }, // Eternal
-  { val: 'Lestari', type: 'adjective' }, // Everlasting
+  { val: 'Besar', type: 'adjective', def: 'Big' },
+  { val: 'Kecil', type: 'adjective', def: 'Small' },
+  { val: 'Agung', type: 'adjective', def: 'Great/Grand' },
+  { val: 'Baru', type: 'adjective', def: 'New' },
+  { val: 'Lama', type: 'adjective', def: 'Old' },
+  { val: 'Tua', type: 'adjective', def: 'Old (Age)' },
+  { val: 'Muda', type: 'adjective', def: 'Young' },
+  { val: 'Indah', type: 'adjective', def: 'Beautiful' },
+  { val: 'Cantik', type: 'adjective', def: 'Pretty' },
+  { val: 'Permai', type: 'adjective', def: 'Scenic' },
+  { val: 'Molek', type: 'adjective', def: 'Lovely' },
+  { val: 'Elok', type: 'adjective', def: 'Fine/Good' },
+  { val: 'Bagus', type: 'adjective', def: 'Good' },
+  { val: 'Baik', type: 'adjective', def: 'Good' },
+  { val: 'Buruk', type: 'adjective', def: 'Bad' },
+  { val: 'Jahat', type: 'adjective', def: 'Evil' },
+  { val: 'Suci', type: 'adjective', def: 'Holy' },
+  { val: 'Keramat', type: 'adjective', def: 'Sacred' },
+  { val: 'Sakti', type: 'adjective', def: 'Powerful' },
+  { val: 'Tinggi', type: 'adjective', def: 'High' },
+  { val: 'Rendah', type: 'adjective', def: 'Low' },
+  { val: 'Panjang', type: 'adjective', def: 'Long' },
+  { val: 'Pendek', type: 'adjective', def: 'Short' },
+  { val: 'Luas', type: 'adjective', def: 'Wide' },
+  { val: 'Sempit', type: 'adjective', def: 'Narrow' },
+  { val: 'Dalam', type: 'adjective', def: 'Deep' },
+  { val: 'Dangkal', type: 'adjective', def: 'Shallow' },
+  { val: 'Kering', type: 'adjective', def: 'Dry' },
+  { val: 'Basah', type: 'adjective', def: 'Wet' },
+  { val: 'Panas', type: 'adjective', def: 'Hot' },
+  { val: 'Dingin', type: 'adjective', def: 'Cold' },
+  { val: 'Sejuk', type: 'adjective', def: 'Cool' },
+  { val: 'Hangat', type: 'adjective', def: 'Warm' },
+  { val: 'Terang', type: 'adjective', def: 'Bright' },
+  { val: 'Gelap', type: 'adjective', def: 'Dark' },
+  { val: 'Sunyi', type: 'adjective', def: 'Quiet' },
+  { val: 'Ramai', type: 'adjective', def: 'Crowded/Busy' },
+  { val: 'Sepi', type: 'adjective', def: 'Quiet/Lonely' },
+  { val: 'Bersih', type: 'adjective', def: 'Clean' },
+  { val: 'Kotor', type: 'adjective', def: 'Dirty' },
+  { val: 'Putih', type: 'adjective', def: 'White' },
+  { val: 'Hitam', type: 'adjective', def: 'Black' },
+  { val: 'Merah', type: 'adjective', def: 'Red' },
+  { val: 'Biru', type: 'adjective', def: 'Blue' },
+  { val: 'Hijau', type: 'adjective', def: 'Green' },
+  { val: 'Kuning', type: 'adjective', def: 'Yellow' },
+  { val: 'Jingga', type: 'adjective', def: 'Orange' },
+  { val: 'Ungu', type: 'adjective', def: 'Purple' },
+  { val: 'Kelabu', type: 'adjective', def: 'Grey' },
+  { val: 'Emas', type: 'adjective', def: 'Gold' },
+  { val: 'Perak', type: 'adjective', def: 'Silver' },
+  { val: 'Utara', type: 'adjective', def: 'North' },
+  { val: 'Selatan', type: 'adjective', def: 'South' },
+  { val: 'Barat', type: 'adjective', def: 'West' },
+  { val: 'Timur', type: 'adjective', def: 'East' },
+  { val: 'Tengah', type: 'adjective', def: 'Center/Middle' },
+  { val: 'Pusat', type: 'adjective', def: 'Center' },
+  { val: 'Hulu', type: 'adjective', def: 'Upstream' },
+  { val: 'Hilir', type: 'adjective', def: 'Downstream' },
+  { val: 'Laut', type: 'adjective', def: 'Sea/Seaward' },
+  { val: 'Darat', type: 'adjective', def: 'Land/Inland' },
+  { val: 'Atas', type: 'adjective', def: 'Upper' },
+  { val: 'Bawah', type: 'adjective', def: 'Lower' },
+  { val: 'Maju', type: 'adjective', def: 'Advanced/Forward' },
+  { val: 'Makmur', type: 'adjective', def: 'Prosperous' },
+  { val: 'Sentosa', type: 'adjective', def: 'Peaceful' },
+  { val: 'Abadi', type: 'adjective', def: 'Eternal' },
+  { val: 'Lestari', type: 'adjective', def: 'Everlasting' },
 
   // Javanese Specific Adjectives
-  { val: 'Ageng', type: 'adjective', lang: 'jv' }, // Great
-  { val: 'Alit', type: 'adjective', lang: 'jv' }, // Small
-  { val: 'Asri', type: 'adjective', lang: 'jv' }, // Beautiful/Green
-  { val: 'Anyar', type: 'adjective', lang: 'jv' }, // New
-  { val: 'Lawas', type: 'adjective', lang: 'jv' }, // Old
-  { val: 'Kidul', type: 'adjective', lang: 'jv' }, // South
-  { val: 'Lor', type: 'adjective', lang: 'jv' }, // North
-  { val: 'Wetan', type: 'adjective', lang: 'jv' }, // East
-  { val: 'Kulon', type: 'adjective', lang: 'jv' }, // West
-  { val: 'Manis', type: 'adjective', lang: 'jv' }, // Sweet/Cute
-  { val: 'Gede', type: 'adjective', lang: 'jv' }, // Big (Low Jav)
+  { val: 'Ageng', type: 'adjective', lang: 'jv', def: 'Great' },
+  { val: 'Alit', type: 'adjective', lang: 'jv', def: 'Small' },
+  { val: 'Asri', type: 'adjective', lang: 'jv', def: 'Beautiful/Green' },
+  { val: 'Anyar', type: 'adjective', lang: 'jv', def: 'New' },
+  { val: 'Lawas', type: 'adjective', lang: 'jv', def: 'Old' },
+  { val: 'Kidul', type: 'adjective', lang: 'jv', def: 'South' },
+  { val: 'Lor', type: 'adjective', lang: 'jv', def: 'North' },
+  { val: 'Wetan', type: 'adjective', lang: 'jv', def: 'East' },
+  { val: 'Kulon', type: 'adjective', lang: 'jv', def: 'West' },
+  { val: 'Manis', type: 'adjective', lang: 'jv', def: 'Sweet/Cute' },
+  { val: 'Gede', type: 'adjective', lang: 'jv', def: 'Big' },
   
   // ============================
   // SUFFIXES / COMPOUNDS (Mostly Javanese/Sanskrit influence for ID)
   // ============================
-  { val: 'rejo', type: 'suffix', lang: 'id' }, // Prosperous (Javanese)
-  { val: 'sari', type: 'suffix', lang: 'id' }, // Essence/Flower
-  { val: 'karta', type: 'suffix', lang: 'id' }, // Work/Prosperous
-  { val: 'jakarta', type: 'suffix', lang: 'id' }, // (Special case)
-  { val: 'pura', type: 'suffix', lang: 'id' }, // City/Temple
-  { val: 'puri', type: 'suffix', lang: 'id' }, // Castle
-  { val: 'baya', type: 'suffix', lang: 'id' }, // Fear/Danger (Surabaya)
-  { val: 'baru', type: 'suffix' }, // New (Pekanbaru)
-  { val: 'lama', type: 'suffix' }, // Old
-  { val: 'an', type: 'suffix' }, // Generic suffix (Pasuruan)
-  { val: 'mas', type: 'suffix' }, // Gold (Banyumas)
-  { val: 'wangi', type: 'suffix' }, // Fragrant (Banyuwangi)
-  { val: 'bumi', type: 'suffix', lang: 'id' }, // Earth (Sukabumi)
-  { val: 'negara', type: 'suffix' }, // Country (Jatinagara)
-  { val: 'harjo', type: 'suffix', lang: 'id' }, // Prosperous (Javanese variant of rejo)
-  { val: 'mulyo', type: 'suffix', lang: 'id' }, // Noble (Javanese)
-  { val: 'kusuma', type: 'suffix', lang: 'id' }, // Flower
-  { val: 'goro', type: 'suffix', lang: 'id' }, // Mountain (Bojsonegoro - giri)
-  { val: 'giri', type: 'suffix', lang: 'id' }, // Mountain (Wonogiri)
-  { val: 'wono', type: 'suffix', lang: 'id' }, // Forest (often prefix but can be suffix stem)
+  { val: 'rejo', type: 'suffix', lang: 'id', def: 'Prosperous' },
+  { val: 'sari', type: 'suffix', lang: 'id', def: 'Essence/Flower' },
+  { val: 'karta', type: 'suffix', lang: 'id', def: 'Work/Prosperous' },
+  { val: 'jakarta', type: 'suffix', lang: 'id', def: 'Special case' },
+  { val: 'pura', type: 'suffix', lang: 'id', def: 'City/Temple' },
+  { val: 'puri', type: 'suffix', lang: 'id', def: 'Castle' },
+  { val: 'baya', type: 'suffix', lang: 'id', def: 'Fear/Danger' },
+  { val: 'baru', type: 'suffix', def: 'New' },
+  { val: 'lama', type: 'suffix', def: 'Old' },
+  { val: 'an', type: 'suffix', def: 'Place suffix' },
+  { val: 'mas', type: 'suffix', def: 'Gold' },
+  { val: 'wangi', type: 'suffix', def: 'Fragrant' },
+  { val: 'bumi', type: 'suffix', lang: 'id', def: 'Earth' },
+  { val: 'negara', type: 'suffix', def: 'Country' },
+  { val: 'harjo', type: 'suffix', lang: 'id', def: 'Prosperous' },
+  { val: 'mulyo', type: 'suffix', lang: 'id', def: 'Noble' },
+  { val: 'kusuma', type: 'suffix', lang: 'id', def: 'Flower' },
+  { val: 'goro', type: 'suffix', lang: 'id', def: 'Mountain' },
+  { val: 'giri', type: 'suffix', lang: 'id', def: 'Mountain' },
+  { val: 'wono', type: 'suffix', lang: 'id', def: 'Forest' },
 
   // Javanese Specific Suffixes/Stems
-  { val: 'kerto', type: 'suffix', lang: 'jv' }, // Karta in Jav
-  { val: 'puro', type: 'suffix', lang: 'jv' }, // Pura in Jav
-  { val: 'harjo', type: 'suffix', lang: 'jv' }, // Prosperous
-  { val: 'mulyo', type: 'suffix', lang: 'jv' }, // Noble
-  { val: 'kusumo', type: 'suffix', lang: 'jv' }, // Flower
-  { val: 'goro', type: 'suffix', lang: 'jv' }, // Mountain
-  { val: 'toro', type: 'suffix', lang: 'jv' }, 
-  { val: 'suro', type: 'suffix', lang: 'jv' }, // Brave/Shark
-  { val: 'progo', type: 'suffix', lang: 'jv' }, // River name
-  { val: 'binangun', type: 'suffix', lang: 'jv' }, // Built up
-  { val: 'winangun', type: 'suffix', lang: 'jv' }, 
-  { val: 'dadi', type: 'suffix', lang: 'jv' }, // Become
+  { val: 'kerto', type: 'suffix', lang: 'jv', def: 'Prosperous' },
+  { val: 'puro', type: 'suffix', lang: 'jv', def: 'Temple/Palace' },
+  { val: 'harjo', type: 'suffix', lang: 'jv', def: 'Prosperous' },
+  { val: 'mulyo', type: 'suffix', lang: 'jv', def: 'Noble' },
+  { val: 'kusumo', type: 'suffix', lang: 'jv', def: 'Flower' },
+  { val: 'goro', type: 'suffix', lang: 'jv', def: 'Mountain' },
+  { val: 'toro', type: 'suffix', lang: 'jv', def: 'Travel' }, 
+  { val: 'suro', type: 'suffix', lang: 'jv', def: 'Brave/Shark' },
+  { val: 'progo', type: 'suffix', lang: 'jv', def: 'River name' },
+  { val: 'binangun', type: 'suffix', lang: 'jv', def: 'Built up' },
+  { val: 'winangun', type: 'suffix', lang: 'jv', def: 'Built up' },
+  { val: 'dadi', type: 'suffix', lang: 'jv', def: 'Become' },
 ];
