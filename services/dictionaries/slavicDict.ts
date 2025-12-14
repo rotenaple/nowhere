@@ -245,6 +245,29 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   // "Wola" is a very common Polish toponym (Will/Freedom/Settlement)
   { id: 'Wola', type: 'root', pl: 'Wola', tags: ['civic'] },
 
+    // ==========================
+  // ADDED BULGARIAN ROOTS/STEMS
+  // ==========================
+  { id: 'Stara', type: 'root', bg: 'Stara', bg_cyr: 'Стара', tags: ['civic', 'nature'] }, // Old (often in place names)
+  { id: 'Veliko', type: 'root', bg: 'Veliko', bg_cyr: 'Велико', tags: ['civic'] }, // Great (often in place names)
+  { id: 'Gorno', type: 'root', bg: 'Gorno', bg_cyr: 'Горно', tags: ['civic', 'nature'] }, // Upper
+  { id: 'Dolno', type: 'root', bg: 'Dolno', bg_cyr: 'Долно', tags: ['civic', 'nature'] }, // Lower
+  { id: 'Balkan', type: 'root', bg: 'Balkan', bg_cyr: 'Балкан', tags: ['nature'] }, // Balkan Mountains
+  { id: 'Rila', type: 'root', bg: 'Rila', bg_cyr: 'Рила', tags: ['nature'] }, // Rila Mountains
+  { id: 'Pirin', type: 'root', bg: 'Pirin', bg_cyr: 'Пирин', tags: ['nature'] }, // Pirin Mountains
+  { id: 'Shipka', type: 'root', bg: 'Shipka', bg_cyr: 'Шипка', tags: ['nature'] }, // Shipka Pass/Mountain
+
+  // ==========================
+  // ADDED SLOVAK ROOTS/STEMS
+  // ==========================
+  { id: 'Bratislav', type: 'stem', sk: 'Bratislav', tags: ['civic'] }, // Bratislava
+  { id: 'Kosic', type: 'stem', sk: 'Košíc', tags: ['civic'] }, // Košice
+  { id: 'Presov', type: 'stem', sk: 'Prešov', tags: ['civic'] }, // Prešov
+  { id: 'Liptov', type: 'stem', sk: 'Liptov', tags: ['civic', 'nature'] }, // Liptov region
+  { id: 'Zvolen', type: 'stem', sk: 'Zvolen', tags: ['civic'] }, // Zvolen
+  { id: 'NitraCity', type: 'stem', sk: 'Nitra', tags: ['civic'] }, // Nitra
+  { id: 'Tatry', type: 'root', sk: 'Tatry', tags: ['nature'] }, // Tatra Mountains (plural, but used as a root)
+
   // ==========================
   // SUFFIXES
   // ==========================
@@ -260,6 +283,15 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'suf_vk', type: 'suffix', pl: 'wka', cs: 'vka', sk: 'vka', bg: 'vka', bg_cyr: 'вка', ru: 'vka', ru_cyr: 'вка', uk: 'vka', uk_cyr: 'вка' },
   { id: 'suf_grad', type: 'suffix', bg: 'grad', bg_cyr: 'град', ru: 'grad', ru_cyr: 'град' },
   { id: 'suf_vo', type: 'suffix', bg: 'vo', bg_cyr: 'во', ru: 'vo', ru_cyr: 'во' },
+  { id: 'suf_ovo', type: 'suffix', pl: 'owo', cs: 'ovo', sk: 'ovo', bg: 'ovo', bg_cyr: 'ово', ru: 'ovo', ru_cyr: 'ово', uk: 'ovo', uk_cyr: 'ово', gender: 'n' },
+  { id: 'suf_nik', type: 'suffix', pl: 'nik', cs: 'ník', sk: 'ník', bg: 'nik', bg_cyr: 'ник', ru: 'nik', ru_cyr: 'ник', uk: 'nyk', uk_cyr: 'ник', gender: 'm' },
+  { id: 'suf_nica', type: 'suffix', pl: 'nica', cs: 'nice', sk: 'nica', bg: 'nica', bg_cyr: 'ница', ru: 'nitsa', ru_cyr: 'ница', uk: 'nytsia', uk_cyr: 'ниця', gender: 'f' },
+  { id: 'suf_ishte', type: 'suffix', pl: 'iszcze', cs: 'iště', sk: 'ište', bg: 'ishte', bg_cyr: 'ище', ru: 'ishche', ru_cyr: 'ище', uk: 'yshche', uk_cyr: 'ище', gender: 'n' },
+  { id: 'suf_ina', type: 'suffix', pl: 'ina', cs: 'ina', sk: 'ina', bg: 'ina', bg_cyr: 'ина', ru: 'ina', ru_cyr: 'ина', uk: 'yna', uk_cyr: 'ина', gender: 'f' },
+  { id: 'suf_ki', type: 'suffix', pl: 'ki', cs: 'ky', sk: 'ky', bg: 'ki', bg_cyr: 'ки', ru: 'ki', ru_cyr: 'ки', uk: 'ky', uk_cyr: 'ки', tags: ['plural_locative'] },
+  { id: 'suf_a_fem_nom', type: 'suffix', pl: 'a', cs: 'á', sk: 'a', bg: 'a', bg_cyr: 'а', ru: 'a', ru_cyr: 'а', uk: 'a', uk_cyr: 'а', gender: 'f' },
+  { id: 'suf_ie', type: 'suffix', pl: 'ie', cs: 'í', sk: 'ie', bg: 'e', bg_cyr: 'е', ru: 'ye', ru_cyr: 'ье', uk: 'ie', uk_cyr: 'є', gender: 'n' },
+  { id: 'suf_ysko', type: 'suffix', pl: 'ysko', cs: 'isko', sk: 'isko', bg: 'isko', bg_cyr: 'иско', ru: 'ysko', ru_cyr: 'ыско', uk: 'ysko', uk_cyr: 'исько', gender: 'n' },
 
   // ==========================
   // RIVERS
@@ -289,6 +321,14 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'San', type: 'river', pl: 'Sanem' },
   { id: 'Narew', type: 'river', pl: 'Narwią' },
   { id: 'Pilica', type: 'river', pl: 'Pilicą' },
+  { id: 'Hron', type: 'river', sk: 'Hronom' },
+  { id: 'Vah', type: 'river', sk: 'Váhom' },
+  { id: 'NitraRiver', type: 'river', sk: 'Nitrou' },
+  { id: 'Hornad', type: 'river', sk: 'Hornádom' },
+  { id: 'Iskar', type: 'river', bg: 'Iskar', bg_cyr: 'Искър' },
+  { id: 'Struma', type: 'river', bg: 'Struma', bg_cyr: 'Струма' },
+  { id: 'Tundzha', type: 'river', bg: 'Tundzha', bg_cyr: 'Тунджа' },
+
 
   // ==========================
   // COUNTRY SUFFIXES

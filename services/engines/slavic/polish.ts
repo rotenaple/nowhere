@@ -6,13 +6,18 @@ import { SLAVIC_DATA } from "../../dictionaries/slavicDict";
 export const getPolishCapacity = () => {
   const roots = SLAVIC_DATA.filter(c => c.pl && (c.type === 'root' || c.type === 'stem'));
   const suffixes = SLAVIC_DATA.filter(c => c.pl && c.type === 'suffix');
-  const prefixes = SLAVIC_DATA.filter(c => c.pl && c.type === 'adjective');
+  const adjectives = SLAVIC_DATA.filter(c => c.pl && c.type === 'adjective');
 
-  // 1. Prefix + Root + Suffix
-  const c1 = prefixes.length * roots.length * suffixes.length;
-  // 2. Root + Suffix
-  const c2 = roots.length * suffixes.length;
-  return c1 + c2;
+  // Path 1 (Adjective + Root + Suffix)
+  // The compounding logic introduces variants of how these three components combine,
+  // but combinatorially, it's still N_A * N_R * N_S distinct sets of components that are generated.
+  const path1_adj_rootsuf = adjectives.length * roots.length * suffixes.length;
+
+  // Path 2 (Root + Suffix)
+  const path2_rootsuf = roots.length * suffixes.length;
+  
+  // Polish generator does not currently have a river combination path.
+  return path1_adj_rootsuf + path2_rootsuf;
 }
 
 export const generatePolishPlace = (): GeneratedResult => {

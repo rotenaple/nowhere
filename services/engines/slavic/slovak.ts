@@ -6,15 +6,26 @@ import { SLAVIC_DATA } from "../../dictionaries/slavicDict";
 export const getSlovakCapacity = () => {
   const roots = SLAVIC_DATA.filter(c => c.sk && (c.type === 'root' || c.type === 'stem'));
   const suffixes = SLAVIC_DATA.filter(c => c.sk && c.type === 'suffix');
-  const prefixes = SLAVIC_DATA.filter(c => c.sk && c.type === 'adjective');
+  const adjectives = SLAVIC_DATA.filter(c => c.sk && c.type === 'adjective');
   const rivers = SLAVIC_DATA.filter(c => c.sk && c.type === 'river');
 
-  const c1 = prefixes.length * roots.length;
-  const c2 = roots.length * suffixes.length;
-  const c3 = prefixes.length * roots.length * suffixes.length;
-  const c4 = (c1 + c2 + c3) * rivers.length;
+  // Path 1 (Adjective + Root)
+  const path1_adj_root = adjectives.length * roots.length;
+
+  // Path 2 (Root + Suffix)
+  const path2_rootsuf = roots.length * suffixes.length;
+
+  // Path 3 (Adjective + Root + Suffix)
+  const path3_adj_rootsuf = adjectives.length * roots.length * suffixes.length;
+
+  // Path 4 ((Root + optional Suffix) + "nad" + River)
+  // This path can generate Root + nad + River OR Root + Suffix + nad + River
+  const path4_root_river = roots.length * rivers.length;
+  const path4_rootsuf_river = roots.length * suffixes.length * rivers.length;
   
-  return c1 + c2 + c3 + c4;
+  // Summing the distinct possibilities from each generation path.
+  // This corrects the previous over-inflated calculation.
+  return path1_adj_root + path2_rootsuf + path3_adj_rootsuf + path4_root_river + path4_rootsuf_river;
 }
 
 export const generateSlovakPlace = (): GeneratedResult => {

@@ -7,16 +7,21 @@ export const getRussianCapacity = () => {
    const roots = SLAVIC_DATA.filter(c => c.ru && (c.type === 'root' || c.type === 'stem'));
    const suffixes = SLAVIC_DATA.filter(c => c.ru && c.type === 'suffix');
    const adjectives = SLAVIC_DATA.filter(c => c.ru && c.type === 'adjective');
-   
-   // Capacity logic
-   // 1. Root + Suffix (e.g. Saratov)
-   const c1 = roots.length * suffixes.length;
-   // 2. Adj + Root (e.g. Nizhniy Novgorod)
-   const c2 = adjectives.length * roots.length;
-   // 3. Adj + (Root + Suffix) (e.g. Novaya Ivanovka) - This is the big multiplier
-   const c3 = adjectives.length * roots.length * suffixes.length;
+   const rivers = SLAVIC_DATA.filter(c => c.ru && c.type === 'river'); // Assuming rivers are available
 
-   return c1 + c2 + c3;
+   // Path 1 (Adjective + (Root + optional Suffix))
+   // This path can generate Adj + Root OR Adj + Root + Suffix
+   const path1_adj_root = adjectives.length * roots.length;
+   const path1_adj_rootsuf = adjectives.length * roots.length * suffixes.length;
+
+   // Path 2 (Root + Suffix)
+   const path2_rootsuf = roots.length * suffixes.length;
+
+   // Path 3 (Root + "na" + River)
+   const path3_root_river = roots.length * rivers.length;
+
+   // Summing the distinct possibilities from each generation path.
+   return path1_adj_root + path1_adj_rootsuf + path2_rootsuf + path3_root_river;
 }
 
 export const generateRussianPlace = (): GeneratedResult => {
