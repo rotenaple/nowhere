@@ -1,104 +1,152 @@
-
 import { GeneratedResult } from "../../../types";
-import { getRandomElement, transliterateSlovakToAscii } from "../../utils";
-import { SLAVIC_DATA } from "../../dictionaries/slavicDict";
+import { getRandomElement, transliterateSlovakToAscii, getSlavicData, inflectSlavicAdjective, hasLanguageEntry } from "../../utils"; // Assuming utils has getRandomElement
+import { SLAVIC_DATA, SlavicComponent} from "../../dictionaries/slavicDict"; // Using the new dict
 
 export const getSlovakCapacity = () => {
-  const roots = SLAVIC_DATA.filter(c => c.sk && (c.type === 'root' || c.type === 'stem'));
-  const suffixes = SLAVIC_DATA.filter(c => c.sk && c.type === 'suffix');
-  const adjectives = SLAVIC_DATA.filter(c => c.sk && c.type === 'adjective');
-  const rivers = SLAVIC_DATA.filter(c => c.sk && c.type === 'river');
+   const roots = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && (c.type === 'root' || c.type === 'stem'));
+   const suffixes = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === 'suffix');
+   const adjectives = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === 'adjective');
+   const rivers = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === 'river');
+   // Path 1 (Adj + (Root + optional Suffix))
+   // This path can generate Adj + Root OR Adj + Root + Suffix
+   const path1_adj_root = adjectives.length * roots.length;
+   const path1_adj_rootsuf = adjectives.length * roots.length * suffixes.length;
 
-  // Path 1 (Adjective + Root)
-  const path1_adj_root = adjectives.length * roots.length;
+   // Path 2 (Root + Suffix)
+   const path2_rootsuf = roots.length * suffixes.length;
 
-  // Path 2 (Root + Suffix)
-  const path2_rootsuf = roots.length * suffixes.length;
+   // Path 3 ((Root + optional Suffix) + "na" + River)
+   // This path can generate Root + na + River OR Root + Suffix + na + River
+   const path3_root_river = roots.length * rivers.length;
+   const path3_rootsuf_river = roots.length * suffixes.length * rivers.length;
 
-  // Path 3 (Adjective + Root + Suffix)
-  const path3_adj_rootsuf = adjectives.length * roots.length * suffixes.length;
-
-  // Path 4 ((Root + optional Suffix) + "nad" + River)
-  // This path can generate Root + nad + River OR Root + Suffix + nad + River
-  const path4_root_river = roots.length * rivers.length;
-  const path4_rootsuf_river = roots.length * suffixes.length * rivers.length;
-  
-  // Summing the distinct possibilities from each generation path.
-  // This corrects the previous over-inflated calculation.
-  return path1_adj_root + path2_rootsuf + path3_adj_rootsuf + path4_root_river + path4_rootsuf_river;
+   return path1_adj_root + path1_adj_rootsuf + path2_rootsuf + path3_root_river + path3_rootsuf_river;
 }
 
 export const generateSlovakPlace = (): GeneratedResult => {
-  let word = "";
+  let wordAscii = ""; // Slovak is Latin script, so 'word' becomes 'wordSrc'
+  let wordSrc = ""; // Added a variable for src for internal consistency
 
-  const getPool = (t: string) => SLAVIC_DATA.filter(c => c.sk && c.type === t);
-  const roots = [...getPool('root'), ...getPool('stem')];
+  const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === t);
+  const rootsAndStems = [...getPool('root'), ...getPool('stem')];
+  const adjectives = getPool('adjective');
+  const suffixes = getPool('suffix');
+  const rivers = getPool('river');
 
-  const type = Math.random();
+  const typeRoll = Math.random();
   
-  // Helper to inflect adjectives (simplified)
-  const getAdjective = (baseAdj: string, noun: string): string => {
-      let stem = baseAdj;
-      let isSoft = false;
-      if (baseAdj.endsWith('í')) { isSoft = true; stem = baseAdj.slice(0, -1); } 
-      else if (baseAdj.endsWith('ý')) { stem = baseAdj.slice(0, -1); }
+  // Helper to determine the effective gender of a noun phrase
+  const getEffectiveGender = (
+      baseComponent: SlavicComponent,
+      isDerived: boolean,
+      suffixComponent: SlavicComponent | null
+  ): 'm' | 'f' | 'n' => {
+      const baseInfo = getSlavicData(baseComponent.sk);
+      let effectiveGender: 'm' | 'f' | 'n' | undefined = baseInfo.gender;
 
-      if (isSoft) return baseAdj;
+      if (isDerived && suffixComponent) {
+          const suffixInfo = getSlavicData(suffixComponent.sk);
+          if (suffixInfo.gender) {
+              effectiveGender = suffixInfo.gender;
+          }
+          // Slovak specific heuristic fallback for suffixes if not explicit gender
+          else if (suffixInfo.src) {
+              if (suffixInfo.src.endsWith('a') || suffixInfo.src.endsWith('ica')) effectiveGender = 'f';
+              else if (suffixInfo.src.endsWith('o') || suffixInfo.src.endsWith('ie')) effectiveGender = 'n';
+              else effectiveGender = 'm'; // Default for other endings
+          }
+      }
+      return effectiveGender || 'm';
+  };
 
-      // Guess noun gender from ending
-      if (noun.endsWith('a') || noun.endsWith('ice')) {
-          return stem + 'á'; 
-      } else if (noun.endsWith('o') || noun.endsWith('ie')) {
-          return stem + 'é'; 
-      } 
-      return stem + 'ý'; 
-  }
+  // 1. Adjective + Noun (or Derived Noun)
+  if (typeRoll < 0.35) {
+    const selectedAdj = getRandomElement(adjectives);
+    const selectedRootComponent = getRandomElement(rootsAndStems);
+    
+    let isDerived = false;
+    let selectedSuffix: SlavicComponent | null = null;
+    if (Math.random() < 0.5) { // 50% chance to derive the noun further
+        selectedSuffix = getRandomElement(suffixes);
+        isDerived = true;
+    }
 
-  // 1. Adjective + Noun (e.g. Nové Mesto)
-  if (type < 0.35) {
-    const adj = getRandomElement(getPool('adjective'));
-    const root = getRandomElement(getPool('root')); 
-    const validNoun = root.tags?.includes('civic') || root.tags?.includes('nature') ? root.sk! : getRandomElement(getPool('root')).sk!;
-    const inflectedAdj = getAdjective(adj.sk!, validNoun);
-    word = `${inflectedAdj} ${validNoun}`;
+    const effectiveGender = getEffectiveGender(selectedRootComponent, isDerived, selectedSuffix);
+    const { src: inflectedAdjSrc } = inflectSlavicAdjective(selectedAdj.sk!, effectiveGender, 'sk');
+
+    // Construct the noun part (root + optional suffix)
+    const rootInfo = getSlavicData(selectedRootComponent.sk);
+    let finalNounSrc = rootInfo.src;
+
+    if (isDerived && selectedSuffix) {
+        const suffixInfo = getSlavicData(selectedSuffix.sk!);
+        // Truncate logic
+        if (['a','e','i','o','u','y','á','é','í','ý'].includes(finalNounSrc.slice(-1)) && !['ov','ín'].some(s => suffixInfo.src.startsWith(s)) ) {
+            finalNounSrc = finalNounSrc.slice(0, -1);
+        }
+        finalNounSrc += suffixInfo.src;
+    }
+
+    wordSrc = `${inflectedAdjSrc} ${finalNounSrc}`;
   }
   // 2. Root + Suffix 
-  else if (type < 0.65) {
-    const root = getRandomElement(roots);
-    const suf = getRandomElement(getPool('suffix'));
-    let base = root.sk!;
-    if (['a','e','i','o','u','y','á','é','í','ý'].includes(base.slice(-1))) {
-        base = base.slice(0, -1);
-    }
-    word = base + suf.sk;
-  }
-  // 3. Adjective + Root+Suffix
-  else if (type < 0.85) {
-    const adj = getRandomElement(getPool('adjective'));
-    const root = getRandomElement(roots);
-    const suf = getRandomElement(getPool('suffix'));
+  else if (typeRoll < 0.65) {
+    const selectedRoot = getRandomElement(rootsAndStems);
+    const selectedSuffix = getRandomElement(suffixes);
     
-    let base = root.sk!;
-    if (['a','e','i','o','u','y','á','é','í','ý'].includes(base.slice(-1))) {
-        base = base.slice(0, -1);
+    const rootInfo = getSlavicData(selectedRoot.sk);
+    const suffixInfo = getSlavicData(selectedSuffix.sk!);
+
+    let baseSrc = rootInfo.src;
+    if (['a','e','i','o','u','y','á','é','í','ý'].includes(baseSrc.slice(-1)) && !['ov','ín'].some(s => suffixInfo.src.startsWith(s)) ) {
+        baseSrc = baseSrc.slice(0, -1);
     }
-    const derivedNoun = base + suf.sk;
-    const inflectedAdj = getAdjective(adj.sk!, derivedNoun);
-    word = `${inflectedAdj} ${derivedNoun}`;
+    wordSrc = baseSrc + suffixInfo.src;
+  }
+  // 3. Adjective + (Root + Suffix)
+  else if (typeRoll < 0.85) {
+    const selectedAdj = getRandomElement(adjectives);
+    const selectedRootComponent = getRandomElement(rootsAndStems);
+    const selectedSuffix = getRandomElement(suffixes);
+    
+    const effectiveGender = getEffectiveGender(selectedRootComponent, true, selectedSuffix);
+    const { src: inflectedAdjSrc } = inflectSlavicAdjective(selectedAdj.sk!, effectiveGender, 'sk');
+
+    const rootInfo = getSlavicData(selectedRootComponent.sk);
+    const suffixInfo = getSlavicData(selectedSuffix.sk!);
+
+    let derivedNounSrc = rootInfo.src;
+    if (['a','e','i','o','u','y','á','é','í','ý'].includes(derivedNounSrc.slice(-1)) && !['ov','ín'].some(s => suffixInfo.src.startsWith(s)) ) {
+        derivedNounSrc = derivedNounSrc.slice(0, -1);
+    }
+    derivedNounSrc += suffixInfo.src;
+
+    wordSrc = `${inflectedAdjSrc} ${derivedNounSrc}`;
   }
   // 4. [Base] nad [River]
   else {
-    const root = getRandomElement(roots);
-    let base = root.sk!;
-    if (Math.random() < 0.6) {
-        const suf = getRandomElement(getPool('suffix'));
-         if (['a','e','i','o','u','y'].includes(base.slice(-1))) base = base.slice(0, -1);
-        base += suf.sk;
+    const baseRootComponent = getRandomElement(rootsAndStems);
+    const selectedRiver = getRandomElement(rivers);
+    
+    const baseRootInfo = getSlavicData(baseRootComponent.sk);
+    let baseSrc = baseRootInfo.src;
+
+    if (Math.random() < 0.6) { // Optionally add suffix
+        const selectedSuffix = getRandomElement(suffixes);
+        const suffixInfo = getSlavicData(selectedSuffix.sk!);
+        if (['a','e','i','o','u','y','á','é','í','ý'].includes(baseSrc.slice(-1)) && !['ov','ín'].some(s => suffixInfo.src.startsWith(s)) ) {
+            baseSrc = baseSrc.slice(0, -1);
+        }
+        baseSrc += suffixInfo.src;
     }
-    const river = getRandomElement(getPool('river'));
-    word = `${base} nad ${river.sk}`;
+    
+    const riverInfo = getSlavicData(selectedRiver.sk!);
+    wordSrc = `${baseSrc} nad ${riverInfo.src}`;
   }
 
-  word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateSlovakToAscii(word) };
+  // Final capitalization and ASCII generation
+  wordSrc = wordSrc.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  wordAscii = wordSrc; // For Slovak, ASCII is typically same as source, or use a transliterator if exists
+
+  return { word: wordSrc, ascii: transliterateSlovakToAscii(wordAscii) }; // Use your specific transliterator
 };

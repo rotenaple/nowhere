@@ -1,12 +1,13 @@
 import { GeneratedResult } from "../../../types";
-import { getRandomElement, transliterateBulgarianToAscii } from "../../utils";
-import { SLAVIC_DATA } from "../../dictionaries/slavicDict";
+import { getRandomElement, transliterateBulgarianToAscii, getSlavicData, inflectSlavicAdjective, hasLanguageEntry } from "../../utils"; // Assuming utils has getRandomElement
+import { SLAVIC_DATA, SlavicComponent} from "../../dictionaries/slavicDict"; // Using the new dict
 
 export const getBulgarianCapacity = () => {
-   const roots = SLAVIC_DATA.filter(c => c.bg && (c.type === 'root' || c.type === 'stem'));
-   const suffixes = SLAVIC_DATA.filter(c => c.bg && c.type === 'suffix');
-   const adjectives = SLAVIC_DATA.filter(c => c.bg && c.type === 'adjective');
-   const rivers = SLAVIC_DATA.filter(c => c.bg && c.type === 'river');
+   const roots = SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && (c.type === 'root' || c.type === 'stem'));
+   const suffixes = SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && c.type === 'suffix');
+   const adjectives = SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && c.type === 'adjective');
+   const rivers = SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && c.type === 'river');
+
 
    // Path 1 (Adj + (Root + optional Suffix))
    // This path can generate Adj + Root OR Adj + Root + Suffix
@@ -28,155 +29,136 @@ export const generateBulgarianPlace = (): GeneratedResult => {
   let wordAscii = "";
   let wordCyrillic = "";
 
-  const getPool = (t: string) => SLAVIC_DATA.filter(c => c.bg && c.type === t);
+  // Get filtered pools using the new structure
+  const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && c.type === t);
   const adjectives = getPool('adjective');
   const suffixes = getPool('suffix');
   const rootsAndStems = [...getPool('root'), ...getPool('stem')];
-  const rivers = getPool('river'); // Added rivers pool
+  const rivers = getPool('river');
 
   const typeRoll = Math.random();
   
-  // Helper to inflect adjective (more robust for Bulgarian)
-  const inflectBulgarianAdjective = (adjBase: string, cAdjBase: string, gender: string): [string, string] => {
-      let inflected = adjBase;
-      let cInflected = cAdjBase;
+  // Helper to determine the effective gender of a noun phrase
+  const getEffectiveGender = (
+      baseComponent: SlavicComponent,
+      isDerived: boolean,
+      suffixComponent: SlavicComponent | null
+  ): 'm' | 'f' | 'n' => {
+      const baseInfo = getSlavicData(baseComponent.bg);
+      let effectiveGender: 'm' | 'f' | 'n' | undefined = baseInfo.gender;
 
-      // Handle common '-en' adjectives (Cheren -> Cherna, Cherno)
-      if (adjBase.endsWith('en')) {
-          if (gender === 'f') {
-              inflected = adjBase.slice(0, -2) + 'na'; // e.g., Cheren -> Cherna
-              cInflected = cAdjBase.slice(0, -2) + 'на'; // e.g., Черен -> Черна
-          } else if (gender === 'n') {
-              inflected = adjBase.slice(0, -2) + 'no'; // e.g., Cherno
-              cInflected = cAdjBase.slice(0, -2) + 'но'; // e.g., Черно
+      if (isDerived && suffixComponent) {
+          const suffixInfo = getSlavicData(suffixComponent.bg);
+          // Suffix gender is generally stronger IF defined.
+          if (suffixInfo.gender) {
+              effectiveGender = suffixInfo.gender;
           }
-      } else {
-        // Fallback or other adjective patterns
-        if (gender === 'f') {
-           inflected += 'a';
-           cInflected += 'а';
-           // Fleeting vowel check (simple heuristic for 'ak' -> 'ka' or 'ok' -> 'ka' types)
-           if (adjBase.endsWith('ak')) { // Malak -> Malka
-               inflected = adjBase.slice(0, -2) + 'ka';
-               cInflected = cAdjBase.slice(0, -2) + 'ка';
-           } else if (adjBase.endsWith('ok')) { // Visok -> Visoka
-               inflected = adjBase.slice(0, -2) + 'ka';
-               cInflected = cAdjBase.slice(0, -2) + 'ка';
-           }
-        } else if (gender === 'n') {
-           inflected += 'o';
-           cInflected += 'о';
-           if (adjBase.endsWith('ak')) { // Malak -> Malko
-               inflected = adjBase.slice(0, -2) + 'ko';
-               cInflected = cAdjBase.slice(0, -2) + 'ко';
-           } else if (adjBase.endsWith('ok')) { // Visok -> Visoko
-               inflected = adjBase.slice(0, -2) + 'ko';
-               cInflected = cAdjBase.slice(0, -2) + 'ко';
-           }
-        }
+          // If suffix doesn't explicitly define gender, assume it retains base noun's gender for simplicity
+          // or rely on previous heuristic if suffix's gender isn't in dict (e.g. 'a', 'o', 'ets')
+          else if (suffixInfo.src) { // Fallback to heuristic if suffix doesn't have explicit gender
+            if (suffixInfo.src.endsWith('а') || suffixInfo.src.endsWith('ица') || suffixInfo.src.endsWith('ина')) effectiveGender = 'f';
+            else if (suffixInfo.src.endsWith('о') || suffixInfo.src.endsWith('ово') || suffixInfo.src.endsWith('ище')) effectiveGender = 'n';
+            else if (suffixInfo.src.endsWith('ец') || suffixInfo.src.endsWith('ник')) effectiveGender = 'm';
+          }
       }
-      return [inflected, cInflected];
-  }
+      return effectiveGender || 'm'; // Default to masculine if no gender info
+  };
 
-  // 1. Adjective + Noun (e.g. Stara Zagora) or Adj + Derived Noun (e.g. Dolna Banya)
-  if (typeRoll < 0.45) { // Increased probability
-      const adj = getRandomElement(adjectives);
-      
-      let root = getRandomElement(rootsAndStems);
+
+  // 1. Adjective + Noun (or Derived Noun)
+  if (typeRoll < 0.45) {
+      const selectedAdj = getRandomElement(adjectives);
+      let selectedRoot = getRandomElement(rootsAndStems);
       let isDerived = false;
-      let suffix = null;
+      let selectedSuffix: SlavicComponent | null = null;
 
-      // Optional: Add suffix to root to make it a derived place (e.g. Dolna Mitropolija)
-      if (Math.random() < 0.5) { // 50% chance to be derived
-         root = getRandomElement(rootsAndStems); // Pick another root/stem for the base
-         suffix = getRandomElement(suffixes);
+      if (Math.random() < 0.5) {
+         selectedRoot = getRandomElement(rootsAndStems);
+         selectedSuffix = getRandomElement(suffixes);
          isDerived = true;
       }
       
-      let baseNounAscii = root.bg!;
-      let baseNounCyr = root.bg_cyr!;
-
-      // Determine gender of the final noun entity
-      let effectiveGender = root.gender;
-      if (isDerived && suffix) {
-          // Simple gender guess based on common suffix endings
-          if (suffix.bg!.endsWith('a') || suffix.bg!.endsWith('itsa') || suffix.bg!.endsWith('ina')) effectiveGender = 'f';
-          else if (suffix.bg!.endsWith('o') || suffix.bg!.endsWith('ovo') || suffix.bg!.endsWith('ishte')) effectiveGender = 'n';
-          else if (suffix.bg!.endsWith('ets') || suffix.bg!.endsWith('nik')) effectiveGender = 'm';
-          // If suffix doesn't strongly indicate, try base noun
-          if (!effectiveGender) effectiveGender = root.gender;
-      }
-      // If still no gender set, default to masculine
-      if (!effectiveGender) effectiveGender = 'm';
-      
-      const [inflectedAdj, cInflectedAdj] = inflectBulgarianAdjective(adj.bg!, adj.bg_cyr!, effectiveGender);
+      const effectiveGender = getEffectiveGender(selectedRoot, isDerived, selectedSuffix);
+      const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.bg!, effectiveGender, 'bg');
 
       // Construct the noun part (root + optional suffix)
-      let finalNounAscii = baseNounAscii;
-      let finalNounCyr = baseNounCyr;
-      
-      if (isDerived && suffix) {
+      const rootInfo = getSlavicData(selectedRoot.bg);
+      let finalNounSrc = rootInfo.src;
+      let finalNounRom = rootInfo.rom || transliterateBulgarianToAscii(rootInfo.src); // Ensure rom is there
+
+      if (isDerived && selectedSuffix) {
+          const suffixInfo = getSlavicData(selectedSuffix.bg!);
           // Truncate vowel endings from root if necessary before suffix attachment
-          if (['a','e','o'].includes(finalNounAscii.slice(-1)) && !suffix.bg!.startsWith('v') && !suffix.bg!.startsWith('s')) { // Avoid truncating before 'ov/ev'
-              finalNounAscii = finalNounAscii.slice(0, -1);
+          if (['а','е','о'].includes(finalNounSrc.slice(-1)) && !['ов','ев','ск'].some(s => suffixInfo.src.startsWith(s))) {
+              finalNounSrc = finalNounSrc.slice(0, -1);
           }
-          if (/[аео]$/.test(finalNounCyr) && !suffix.bg_cyr!.startsWith('в') && !suffix.bg_cyr!.startsWith('с')) {
-              finalNounCyr = finalNounCyr.slice(0, -1);
+          if (['a','e','o'].includes(finalNounRom.slice(-1)) && !['ov','ev','sk'].some(s => suffixInfo.rom!.startsWith(s))) {
+              finalNounRom = finalNounRom.slice(0, -1);
           }
 
-          finalNounAscii += suffix.bg;
-          finalNounCyr += suffix.bg_cyr;
+          finalNounSrc += suffixInfo.src;
+          finalNounRom += suffixInfo.rom;
       }
 
-      wordAscii = `${inflectedAdj} ${finalNounAscii}`;
-      wordCyrillic = `${cInflectedAdj} ${finalNounCyr}`;
+      wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
+      wordAscii = `${inflectedAdjRom} ${finalNounRom}`;
   }
-  // 2. Root + Suffix (e.g. Gabrovo, Pernik)
-  else if (typeRoll < 0.75) { // Increased probability
-      const root = getRandomElement(rootsAndStems);
-      const suf = getRandomElement(suffixes);
-      let base = root.bg!;
-      let cBase = root.bg_cyr!;
+  // 2. Root + Suffix
+  else if (typeRoll < 0.75) {
+      const selectedRoot = getRandomElement(rootsAndStems);
+      const selectedSuffix = getRandomElement(suffixes);
+      
+      const rootInfo = getSlavicData(selectedRoot.bg);
+      const suffixInfo = getSlavicData(selectedSuffix.bg!);
+
+      let baseSrc = rootInfo.src;
+      let baseRom = rootInfo.rom || transliterateBulgarianToAscii(rootInfo.src);
       
       // Truncate vowel endings from root before suffix attachment
-      if (['a','e','o'].includes(base.slice(-1)) && !suf.bg!.startsWith('v') && !suf.bg!.startsWith('s')) {
-          base = base.slice(0, -1);
-      }
-      if (/[аео]$/.test(cBase) && !suf.bg_cyr!.startsWith('в') && !suf.bg_cyr!.startsWith('с')) {
-          cBase = cBase.slice(0, -1);
-      }
+       if (['а','е','о'].includes(baseSrc.slice(-1)) && !['ов','ев','ск'].some(s => suffixInfo.src.startsWith(s))) {
+            baseSrc = baseSrc.slice(0, -1);
+        }
+        if (['a','e','o'].includes(baseRom.slice(-1)) && !['ov','ev','sk'].some(s => suffixInfo.rom!.startsWith(s))) {
+            baseRom = baseRom.slice(0, -1);
+        }
 
-      wordAscii = base + suf.bg;
-      wordCyrillic = cBase + suf.bg_cyr;
+      wordCyrillic = baseSrc + suffixInfo.src;
+      wordAscii = baseRom + suffixInfo.rom;
   }
-  // 3. Base + na + River (e.g., Kozloduy na Dunav, Krichim na Vicha) - New pattern
+  // 3. Base + "na" + River
   else {
-      const baseRoot = getRandomElement(rootsAndStems);
-      const river = getRandomElement(rivers);
+      const baseRootComponent = getRandomElement(rootsAndStems);
+      const selectedRiver = getRandomElement(rivers);
 
-      let basePartAscii = baseRoot.bg!;
-      let basePartCyr = baseRoot.bg_cyr!;
+      const baseRootInfo = getSlavicData(baseRootComponent.bg);
+      let basePartSrc = baseRootInfo.src;
+      let basePartRom = baseRootInfo.rom || transliterateBulgarianToAscii(baseRootInfo.src);
 
       // 50% chance to add a suffix to the base for river construction
       if (Math.random() < 0.5) {
-          const suffix = getRandomElement(suffixes);
-          // Simplified vowel truncation for this case
-          if (['a','e','o'].includes(basePartAscii.slice(-1))) basePartAscii = basePartAscii.slice(0, -1);
-          if (/[аео]$/.test(basePartCyr)) basePartCyr = basePartCyr.slice(0, -1);
-          basePartAscii += suffix.bg;
-          basePartCyr += suffix.bg_cyr;
+          const selectedSuffix = getRandomElement(suffixes);
+          const suffixInfo = getSlavicData(selectedSuffix.bg!);
+          
+          if (['а','е','о'].includes(basePartSrc.slice(-1)) && !['ов','ев','ск'].some(s => suffixInfo.src.startsWith(s))) {
+              basePartSrc = basePartSrc.slice(0, -1);
+          }
+          if (['a','e','o'].includes(basePartRom.slice(-1)) && !['ov','ev','sk'].some(s => suffixInfo.rom!.startsWith(s))) {
+              basePartRom = basePartRom.slice(0, -1);
+          }
+          basePartSrc += suffixInfo.src;
+          basePartRom += suffixInfo.rom;
       }
       
-      wordAscii = `${basePartAscii} na ${river.bg!}`;
-      wordCyrillic = `${basePartCyr} на ${river.bg_cyr!}`;
+      const riverInfo = getSlavicData(selectedRiver.bg!);
+      wordCyrillic = `${basePartSrc} на ${riverInfo.src}`;
+      wordAscii = `${basePartRom} na ${riverInfo.rom}`; // Assuming 'na' is universal
   }
 
-  if (!wordCyrillic || wordCyrillic.includes('undefined')) wordCyrillic = wordAscii;
+  // Ensure rom is always present for final output, using transliteration if absent
+  if (!wordAscii || wordAscii.includes('undefined')) wordAscii = transliterateBulgarianToAscii(wordCyrillic);
 
-  // Capitalize first letter of each word
-  wordAscii = wordAscii.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   wordCyrillic = wordCyrillic.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  wordAscii = wordAscii.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-
-  return { word: wordCyrillic, ascii: transliterateBulgarianToAscii(wordAscii) };
+  return { word: wordCyrillic, ascii: wordAscii };
 };
