@@ -2,28 +2,29 @@ import { GeneratedResult } from "../../../types";
 import { getRandomElement, transliterateGermanToAscii } from "../../utils";
 import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
 
-// Helper to extract string value from Tuple or String
 const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
-// Helper to extract gender data for German
-const getData = (entry: any) => {
-  if (!entry) return { val: "", gender: undefined };
-  return typeof entry === 'string' ? { val: entry, gender: undefined } : { val: entry[0], gender: entry[1] };
-};
 
 export const getGermanCapacity = () => {
   const roots = GERMANIC_DATA.filter(c => c.de && c.type === 'root');
   const suffixes = GERMANIC_DATA.filter(c => c.de && c.type === 'suffix');
-  const prefixes = GERMANIC_DATA.filter(c => c.de && c.type === 'prefix');
   const connectors = GERMANIC_DATA.filter(c => c.de && c.type === 'connector');
+  
+  // Combine adjectives and noun_prefixes
+  const prefixes = GERMANIC_DATA.filter(c => c.de && (c.type === 'adjective' || c.type === 'noun_prefix'));
 
-  // 1. Prefix+Suffix 
-  const c1 = prefixes.length * suffixes.length;
-  // 2. Root+Suffix
+  // 1. Prefix/Adj + Suffix/Root
+  const c1 = prefixes.length * (suffixes.length + roots.length);
+  // 2. Root + Suffix
   const c2 = roots.length * suffixes.length * (connectors.length + 1);
-  // 3. Root+Root
+  // 3. Root + Root
   const c3 = roots.length * roots.length;
   return c1 + c2 + c3;
 }
+
+const getData = (entry: any) => {
+  if (!entry) return { val: "", gender: undefined };
+  return typeof entry === 'string' ? { val: entry, gender: undefined } : { val: entry[0], gender: entry[1] };
+};
 
 export const generateGermanPlace = (): GeneratedResult => {
   let word = "";
@@ -32,53 +33,103 @@ export const generateGermanPlace = (): GeneratedResult => {
   const roots = getPool('root');
 
   const type = Math.random();
-  // 1. Prefix + Suffix
+
+  // Pattern 1: Adjective/Prefix + Root/Suffix
   if (type < 0.35) {
-    const pre = getRandomElement(getPool('prefix'));
-    const suf = getRandomElement(getPool('suffix'));
-    // Use helper because it might be a simple string or tuple
-    word = getVal(pre.de) + getVal(suf.de);
+    // Merge pools: 'adjective' and 'noun_prefix'
+    const prePool = [...getPool('adjective'), ...getPool('noun_prefix')];
+    const pre = getRandomElement(prePool);
+    
+    // Decide attachment: Root (Neuburg) or Suffix (Neuhausen)
+    const attachToRoot = Math.random() < 0.6;
+    const secondPart = attachToRoot ? getRandomElement(roots) : getRandomElement(getPool('suffix'));
+    
+    const rData = getData(secondPart.de);
+    let adj = getVal(pre.de);
+    let noun = rData.val;
+
+    // LOGIC: Only inflect if type is explicitly 'adjective'
+    if (pre.type === 'adjective') {
+        
+        // 1. Handle Irregularities via Tags
+        if (pre.tags?.includes('irreg_h') && adj === 'Hoch') {
+            adj = 'Hohen';
+        }
+        
+        // 2. Handle Weak Inflection via Tags or Standard Rules
+        // (Use tags for words that commonly fossilize as -en like 'Alt', 'Neu')
+        else if (pre.tags?.includes('weak_en') && Math.random() < 0.5) {
+             if (adj.endsWith('ß')) adj = adj + 'en'; // Groß -> Großen
+             else adj += 'en'; 
+        }
+    }
+
+    // Capitalize noun if it was a generic root, lowercase if it was a pure suffix or inside compound
+    if (attachToRoot) {
+        word = adj + noun.toLowerCase(); 
+    } else {
+        word = adj + noun;
+    }
   }
-  // 2. Compound Noun + Connector + Suffix
+  
+  // Pattern 2: Compound Noun + Connector + Suffix
   else if (type < 0.75) {
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
-    const rVal = getVal(root.de);
+    const rData = getData(root.de);
+    const rVal = rData.val;
     const sVal = getVal(suf.de);
 
     if (rVal.toLowerCase() === sVal.toLowerCase()) return generateGermanPlace();
-    if (sVal.includes(rVal.toLowerCase())) return generateGermanPlace();
-
+    
     let connector = "";
-    if (Math.random() < 0.6) {
-        const conObj = getRandomElement(getPool('connector'));
-        connector = getVal(conObj.de);
+    
+    // Check if suffix forbids connectors (e.g. -ing)
+    if (!suf.tags?.includes('no_conn')) {
+        // Gender Logic
+        if (rData.gender === 'f') {
+            if (rVal.endsWith('e')) connector = 'n';
+            else if (rVal.endsWith('ung') || rVal.endsWith('heit')) connector = 's';
+        }
+        else {
+            if (!['s', 'z', 'x', 'ß'].includes(rVal.slice(-1))) {
+                if (Math.random() < 0.6) connector = 's';
+            }
+        }
     }
     
-    // Heuristic glue
-    if (sVal === 'burg' || sVal === 'dorf' || sVal === 'heim') {
-        if (!['s', 'n', 'r', 'l'].includes(rVal.slice(-1)) && Math.random() < 0.5) connector = 's';
+    // Prevent double-s visual glitch
+    if (connector === 's' && sVal.toLowerCase().startsWith('s')) {
+        connector = "";
     }
-    if (rVal.endsWith('e')) connector = 'n';
 
     word = rVal + connector + sVal;
   }
-  // 3. Root + Root
+  
+  // Pattern 3: Root + Root
   else {
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
-    
-    const v1 = getVal(root1.de);
-    const v2 = getVal(root2.de);
+    const d1 = getData(root1.de);
+    const d2 = getData(root2.de);
 
-    if (v1 === v2) return generateGermanPlace();
-    if (v2.length < 3) return generateGermanPlace();
-    
+    if (d1.val === d2.val) return generateGermanPlace();
+
     let glue = "";
-    if (Math.random() < 0.3) glue = "s";
     
-    word = v1 + glue + v2.toLowerCase();
+    // Only glue if second root doesn't forbid it (rare, but good practice)
+    if (!root2.tags?.includes('no_conn')) {
+        if (d1.gender === 'f') {
+             if (d1.val.endsWith('e')) glue = 'n';
+        } else {
+             if (!['s', 'z', 'x', 'ß'].includes(d1.val.slice(-1)) && Math.random() < 0.4) glue = "s";
+        }
+    }
+    
+    if (glue === 's' && d2.val.toLowerCase().startsWith('s')) glue = "";
+
+    word = d1.val + glue + d2.val.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
