@@ -1,5 +1,5 @@
 import { GeneratedResult } from "../../../types";
-import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry } from "../../utils"; // Assuming utils has getRandomElement
+import { getRandomElement, getSlavicData, inflectSlavicAdjective, hasLanguageEntry, transliteratePolishToAscii } from "../../utils"; // Assuming utils has getRandomElement
 import { SLAVIC_DATA, SlavicComponent} from "../../dictionaries/slavicDict"; // Using the new dict
 
 export const getPolishCapacity = () => {
@@ -25,7 +25,6 @@ export const getPolishCapacity = () => {
 
 export const generatePolishPlace = (): GeneratedResult => {
   let wordSrc = ""; // Polish is Latin script, so 'word' becomes 'wordSrc'
-  let wordAscii = ""; // As Polish `src` is often sufficient for `ascii`, we'll try to generate a better one
 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.pl) && c.type === t);
   const rootsAndStems = [...getPool('root'), ...getPool('stem')];
@@ -110,8 +109,8 @@ export const generatePolishPlace = (): GeneratedResult => {
 
   wordSrc = wordSrc.replace(/(.)\1+/g, '$1'); // De-dupe chars like 'oo'
   wordSrc = wordSrc.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  // For Polish, ASCII is just the source string.
-  wordAscii = wordSrc; // Or add transliteratePolishToAscii(wordSrc) if needed
+  const wordAscii = transliteratePolishToAscii(wordSrc);
+
   
   return { word: wordSrc, ascii: wordAscii };
 };

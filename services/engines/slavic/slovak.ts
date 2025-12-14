@@ -24,8 +24,7 @@ export const getSlovakCapacity = () => {
 }
 
 export const generateSlovakPlace = (): GeneratedResult => {
-  let wordAscii = ""; // Slovak is Latin script, so 'word' becomes 'wordSrc'
-  let wordSrc = ""; // Added a variable for src for internal consistency
+  let wordSrc = "";
 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === t);
   const rootsAndStems = [...getPool('root'), ...getPool('stem')];
@@ -146,7 +145,7 @@ export const generateSlovakPlace = (): GeneratedResult => {
 
   // Final capitalization and ASCII generation
   wordSrc = wordSrc.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  wordAscii = wordSrc; // For Slovak, ASCII is typically same as source, or use a transliterator if exists
+  const wordAscii = transliterateSlovakToAscii(wordSrc);
 
-  return { word: wordSrc, ascii: transliterateSlovakToAscii(wordAscii) }; // Use your specific transliterator
+  return { word: wordSrc, ascii: wordAscii };
 };
