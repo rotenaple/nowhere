@@ -1,7 +1,9 @@
+import { GeneratedResult } from "../../../types";
+import { getRandomElement, transliterateDanishToAscii } from "../../utils";
+import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
 
-import { GeneratedResult } from "../../types";
-import { getRandomElement, transliterateDanishToAscii } from "../utils";
-import { GERMANIC_DATA } from "../dictionaries/germanicDict";
+// Helper to extract string value from Tuple or String
+const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
 
 export const getDanishCapacity = () => {
   const roots = GERMANIC_DATA.filter(c => c.da && c.type === 'root');
@@ -27,8 +29,8 @@ export const generateDanishPlace = (): GeneratedResult => {
     const pre = getRandomElement(getPool('prefix'));
     const root = getRandomElement(roots);
     
-    let p = pre.da!;
-    let r = root.da!;
+    let p = getVal(pre.da);
+    let r = getVal(root.da);
     
     // Inflect prefix? Nørre, Sønder, Vester, Øster are standard.
     // Stor -> Store, Lil -> Lille usually.
@@ -49,8 +51,8 @@ export const generateDanishPlace = (): GeneratedResult => {
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
-    let r = root.da!;
-    let s = suf.da!;
+    let r = getVal(root.da);
+    let s = getVal(suf.da);
     
     // dedup
     if (r.toLowerCase() === s.toLowerCase()) return generateDanishPlace();
@@ -76,14 +78,17 @@ export const generateDanishPlace = (): GeneratedResult => {
     const r1 = getRandomElement(roots);
     const r2 = getRandomElement(roots);
     
-    if (r1.da === r2.da) return generateDanishPlace();
+    const v1 = getVal(r1.da);
+    const v2 = getVal(r2.da);
+
+    if (v1 === v2) return generateDanishPlace();
     
     let glue = "";
-    if (Math.random() < 0.3 && !r1.da!.endsWith('s')) glue = "s";
+    if (Math.random() < 0.3 && !v1.endsWith('s')) glue = "s";
     // sometimes 'e'
     if (Math.random() < 0.1) glue = "e";
 
-    word = r1.da + glue + r2.da!.toLowerCase();
+    word = v1 + glue + v2.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);

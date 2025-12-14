@@ -1,7 +1,14 @@
+import { GeneratedResult } from "../../../types";
+import { getRandomElement, transliterateGermanToAscii } from "../../utils";
+import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
 
-import { GeneratedResult } from "../../types";
-import { getRandomElement, transliterateGermanToAscii } from "../utils";
-import { GERMANIC_DATA } from "../dictionaries/germanicDict";
+// Helper to extract string value from Tuple or String
+const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
+// Helper to extract gender data for German
+const getData = (entry: any) => {
+  if (!entry) return { val: "", gender: undefined };
+  return typeof entry === 'string' ? { val: entry, gender: undefined } : { val: entry[0], gender: entry[1] };
+};
 
 export const getGermanCapacity = () => {
   const roots = GERMANIC_DATA.filter(c => c.de && c.type === 'root');
@@ -29,42 +36,49 @@ export const generateGermanPlace = (): GeneratedResult => {
   if (type < 0.35) {
     const pre = getRandomElement(getPool('prefix'));
     const suf = getRandomElement(getPool('suffix'));
-    // Use non-null assertion because we filtered by c.de
-    word = pre.de! + suf.de!;
+    // Use helper because it might be a simple string or tuple
+    word = getVal(pre.de) + getVal(suf.de);
   }
   // 2. Compound Noun + Connector + Suffix
   else if (type < 0.75) {
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
-    if (root.de!.toLowerCase() === suf.de!.toLowerCase()) return generateGermanPlace();
-    if (suf.de!.includes(root.de!.toLowerCase())) return generateGermanPlace();
+    const rVal = getVal(root.de);
+    const sVal = getVal(suf.de);
+
+    if (rVal.toLowerCase() === sVal.toLowerCase()) return generateGermanPlace();
+    if (sVal.includes(rVal.toLowerCase())) return generateGermanPlace();
 
     let connector = "";
     if (Math.random() < 0.6) {
         const conObj = getRandomElement(getPool('connector'));
-        connector = conObj.de || "";
+        connector = getVal(conObj.de);
     }
     
     // Heuristic glue
-    if (suf.de === 'burg' || suf.de === 'dorf' || suf.de === 'heim') {
-        if (!['s', 'n', 'r', 'l'].includes(root.de!.slice(-1)) && Math.random() < 0.5) connector = 's';
+    if (sVal === 'burg' || sVal === 'dorf' || sVal === 'heim') {
+        if (!['s', 'n', 'r', 'l'].includes(rVal.slice(-1)) && Math.random() < 0.5) connector = 's';
     }
-    if (root.de!.endsWith('e')) connector = 'n';
+    if (rVal.endsWith('e')) connector = 'n';
 
-    word = root.de + connector + suf.de;
+    word = rVal + connector + sVal;
   }
   // 3. Root + Root
   else {
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
-    if (root1.de === root2.de) return generateGermanPlace();
-    if (root2.de!.length < 3) return generateGermanPlace();
+    
+    const v1 = getVal(root1.de);
+    const v2 = getVal(root2.de);
+
+    if (v1 === v2) return generateGermanPlace();
+    if (v2.length < 3) return generateGermanPlace();
     
     let glue = "";
     if (Math.random() < 0.3) glue = "s";
     
-    word = root1.de + glue + root2.de!.toLowerCase();
+    word = v1 + glue + v2.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);

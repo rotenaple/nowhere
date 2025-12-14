@@ -1,7 +1,7 @@
 
-import { GeneratedResult } from "../../types";
-import { getRandomElement, transliteratePolishToAscii } from "../utils";
-import { SLAVIC_DATA } from "../dictionaries/slavicDict";
+import { GeneratedResult } from "../../../types";
+import { getRandomElement, transliteratePolishToAscii } from "../../utils";
+import { SLAVIC_DATA } from "../../dictionaries/slavicDict";
 
 export const getPolishCapacity = () => {
   const roots = SLAVIC_DATA.filter(c => c.pl && (c.type === 'root' || c.type === 'stem'));

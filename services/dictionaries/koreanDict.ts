@@ -3,7 +3,7 @@ export interface KoreanComponent {
   rom: string; // Revised Romanization
   hangul: string;
   type: 'prefix' | 'root' | 'suffix' | 'native_root' | 'number';
-  def?: string;
+  def: string;
 }
 
 // ==========================================
@@ -216,14 +216,14 @@ export const KO_SUFFIXES: KoreanComponent[] = [
 ];
 
 export const KO_NUMBERS: KoreanComponent[] = [
-  { rom: 'Il', hangul: '일', type: 'number' },
-  { rom: 'I', hangul: '이', type: 'number' },
-  { rom: 'Sam', hangul: '삼', type: 'number' },
-  { rom: 'Sa', hangul: '사', type: 'number' },
-  { rom: 'O', hangul: '오', type: 'number' },
-  { rom: 'Yuk', hangul: '육', type: 'number' },
-  { rom: 'Chil', hangul: '칠', type: 'number' },
-  { rom: 'Pal', hangul: '팔', type: 'number' },
-  { rom: 'Gu', hangul: '구', type: 'number' },
-  { rom: 'Sip', hangul: '십', type: 'number' },
+  { rom: 'Il', hangul: '일', type: 'number', def: 'One' },
+  { rom: 'I', hangul: '이', type: 'number', def: 'Two' },
+  { rom: 'Sam', hangul: '삼', type: 'number', def: 'Three' },
+  { rom: 'Sa', hangul: '사', type: 'number', def: 'Four' },
+  { rom: 'O', hangul: '오', type: 'number', def: 'Five' },
+  { rom: 'Yuk', hangul: '육', type: 'number', def: 'Six' },
+  { rom: 'Chil', hangul: '칠', type: 'number', def: 'Seven' },
+  { rom: 'Pal', hangul: '팔', type: 'number', def: 'Eight' },
+  { rom: 'Gu', hangul: '구', type: 'number', def: 'Nine' },
+  { rom: 'Sip', hangul: '십', type: 'number', def: 'Ten' },
 ];

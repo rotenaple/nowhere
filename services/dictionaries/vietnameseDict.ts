@@ -3,7 +3,7 @@ export interface VnComponent {
   word: string; // Native with tones
   ascii: string;
   type: 'head' | 'root_sino' | 'root_native' | 'adjective' | 'number' | 'direction';
-  def?: string;
+  def: string;
 }
 
 // ==========================================
@@ -391,19 +391,19 @@ export const VN_ADJECTIVES: VnComponent[] = [
 ];
 
 export const VN_NUMBERS: VnComponent[] = [
-  { word: 'Một', ascii: 'Mot', type: 'number' },
-  { word: 'Hai', ascii: 'Hai', type: 'number' },
-  { word: 'Ba', ascii: 'Ba', type: 'number' },
-  { word: 'Bốn', ascii: 'Bon', type: 'number' },
-  { word: 'Năm', ascii: 'Nam', type: 'number' },
-  { word: 'Sáu', ascii: 'Sau', type: 'number' },
-  { word: 'Bảy', ascii: 'Bay', type: 'number' },
-  { word: 'Tám', ascii: 'Tam', type: 'number' },
-  { word: 'Chín', ascii: 'Chin', type: 'number' },
-  { word: 'Mười', ascii: 'Muoi', type: 'number' },
-  { word: 'Nhất', ascii: 'Nhat', type: 'number' }, // Sino-Viet 1
-  { word: 'Nhị', ascii: 'Nhi', type: 'number' }, // Sino-Viet 2
-  { word: 'Tam', ascii: 'Tam', type: 'number' }, // Sino-Viet 3
+  { word: 'Một', ascii: 'Mot', type: 'number', def: 'One' },
+  { word: 'Hai', ascii: 'Hai', type: 'number', def: 'Two' },
+  { word: 'Ba', ascii: 'Ba', type: 'number', def: 'Three' },
+  { word: 'Bốn', ascii: 'Bon', type: 'number', def: 'Four' },
+  { word: 'Năm', ascii: 'Nam', type: 'number', def: 'Five' },
+  { word: 'Sáu', ascii: 'Sau', type: 'number', def: 'Six' },
+  { word: 'Bảy', ascii: 'Bay', type: 'number', def: 'Seven' },
+  { word: 'Tám', ascii: 'Tam', type: 'number', def: 'Eight' },
+  { word: 'Chín', ascii: 'Chin', type: 'number', def: 'Nine' },
+  { word: 'Mười', ascii: 'Muoi', type: 'number', def: 'Ten' },
+  { word: 'Nhất', ascii: 'Nhat', type: 'number', def: 'First' }, // Sino-Viet 1
+  { word: 'Nhị', ascii: 'Nhi', type: 'number', def: 'Second' }, // Sino-Viet 2
+  { word: 'Tam', ascii: 'Tam', type: 'number', def: 'Third' }, // Sino-Viet 3
 ];
 
 export const VN_DIRECTIONS: VnComponent[] = [

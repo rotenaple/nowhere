@@ -1,7 +1,7 @@
 
-import { GeneratedResult } from "../../types";
-import { getRandomElement, transliterateRussianToAscii } from "../utils";
-import { SLAVIC_DATA } from "../dictionaries/slavicDict";
+import { GeneratedResult } from "../../../types";
+import { getRandomElement, transliterateRussianToAscii } from "../../utils";
+import { SLAVIC_DATA } from "../../dictionaries/slavicDict";
 
 export const getRussianCapacity = () => {
    const roots = SLAVIC_DATA.filter(c => c.ru && (c.type === 'root' || c.type === 'stem'));

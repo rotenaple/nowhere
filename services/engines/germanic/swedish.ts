@@ -1,6 +1,9 @@
-import { GeneratedResult } from "../../types";
-import { getRandomElement, transliterateSwedishToAscii } from "../utils";
-import { GERMANIC_DATA } from "../dictionaries/germanicDict";
+import { GeneratedResult } from "../../../types";
+import { getRandomElement, transliterateSwedishToAscii } from "../../utils";
+import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
+
+// Helper to extract string value from Tuple or String
+const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
 
 export const getSwedishCapacity = () => {
   const roots = GERMANIC_DATA.filter(c => c.sv && c.type === 'root');
@@ -29,11 +32,12 @@ export const generateSwedishPlace = (): GeneratedResult => {
     const pre = getRandomElement(getPool('prefix'));
     const suf = getRandomElement(getPool('suffix'));
     
-    if (pre.sv!.toLowerCase() === suf.sv!.toLowerCase()) return generateSwedishPlace();
+    const pVal = getVal(pre.sv);
+    const sVal = getVal(suf.sv);
+
+    if (pVal.toLowerCase() === sVal.toLowerCase()) return generateSwedishPlace();
     
-    let p = pre.sv!;
-    
-    word = p + suf.sv!.toLowerCase();
+    word = pVal + sVal.toLowerCase();
   }
   
   // Pattern 2: Root + Suffix (e.g., Stockholm, Jönköping)
@@ -41,8 +45,8 @@ export const generateSwedishPlace = (): GeneratedResult => {
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
-    let r = root.sv!;
-    let s = suf.sv!;
+    let r = getVal(root.sv);
+    let s = getVal(suf.sv);
     
     if (r.toLowerCase() === s.toLowerCase()) return generateSwedishPlace();
     
@@ -60,7 +64,8 @@ export const generateSwedishPlace = (): GeneratedResult => {
       const pre = getRandomElement(getPool('prefix'));
       const root = getRandomElement(roots);
       
-      let p = pre.sv!;
+      let p = getVal(pre.sv);
+      let r = getVal(root.sv);
       
       // Inflect for definite article (Separate words = Both Capitalized)
       if (['Stor', 'Lill', 'Ny', 'Gammal', 'Hög', 'Låg', 'Röd', 'Svart', 'Vit'].includes(p)) {
@@ -69,10 +74,10 @@ export const generateSwedishPlace = (): GeneratedResult => {
           else p += 'a';
           
           // "Stora Höga" -> Keep root Capitalized because it's a separate word
-          word = `${p} ${root.sv}`;
+          word = `${p} ${r}`;
       } else {
           // "Nybro" -> Fused word, so lowercase the root
-          word = p + root.sv!.toLowerCase();
+          word = p + r.toLowerCase();
       }
   }
   
@@ -80,12 +85,16 @@ export const generateSwedishPlace = (): GeneratedResult => {
   else {
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
-    if (root1 === root2) return generateSwedishPlace();
+    
+    const v1 = getVal(root1.sv);
+    const v2 = getVal(root2.sv);
+
+    if (v1 === v2) return generateSwedishPlace();
     
     let connector = "";
-    if (Math.random() < 0.25 && !['s', 'x'].includes(root1.sv!.slice(-1))) connector = "s";
+    if (Math.random() < 0.25 && !['s', 'x'].includes(v1.slice(-1))) connector = "s";
     
-    word = root1.sv + connector + root2.sv!.toLowerCase();
+    word = v1 + connector + v2.toLowerCase();
   }
 
   // Ensure first letter is Cap (just in case)

@@ -2,7 +2,7 @@
 export interface TagalogComponent {
   val: string;
   type: 'root' | 'prefix' | 'suffix' | 'adjective';
-  def?: string;
+  def: string;
 }
 
 export const TL_PREFIXES: TagalogComponent[] = [
@@ -282,14 +282,14 @@ export const TL_ROOTS: TagalogComponent[] = [
 ];
 
 export const TL_SUFFIXES: TagalogComponent[] = [
-  { val: 'an', type: 'suffix' },
-  { val: 'han', type: 'suffix' },
-  { val: 'in', type: 'suffix' },
-  { val: 'hin', type: 'suffix' },
-  { val: 'on', type: 'suffix' }, // Visayan influence
-  { val: 'ay', type: 'suffix' }, // Visayan influence
-  { val: 'ng', type: 'suffix' }, 
-  { val: 'g', type: 'suffix' },
+  { val: 'an', type: 'suffix', def: '' },
+  { val: 'han', type: 'suffix', def: '' },
+  { val: 'in', type: 'suffix', def: '' },
+  { val: 'hin', type: 'suffix', def: '' },
+  { val: 'on', type: 'suffix', def: '' }, // Visayan influence
+  { val: 'ay', type: 'suffix', def: '' }, // Visayan influence
+  { val: 'ng', type: 'suffix', def: '' }, 
+  { val: 'g', type: 'suffix', def: '' },
 ];
 
 export const TL_ADJECTIVES: TagalogComponent[] = [

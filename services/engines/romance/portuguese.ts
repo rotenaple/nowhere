@@ -1,7 +1,7 @@
 
-import { GeneratedResult } from "../../types";
-import { getRandomElement, transliteratePortugueseToAscii } from "../utils";
-import { ROMANCE_DATA } from "../dictionaries/romanceDict";
+import { GeneratedResult } from "../../../types";
+import { getRandomElement, transliteratePortugueseToAscii } from "../../utils";
+import { ROMANCE_DATA } from "../../dictionaries/romanceDict";
 
 export const getPortugueseCapacity = () => {
   const roots = ROMANCE_DATA.filter(c => c.pt && c.type === 'root');

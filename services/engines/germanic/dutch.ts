@@ -1,7 +1,14 @@
+import { GeneratedResult } from "../../../types";
+import { getRandomElement, transliterateDutchToAscii } from "../../utils";
+import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
 
-import { GeneratedResult } from "../../types";
-import { getRandomElement, transliterateDutchToAscii } from "../utils";
-import { GERMANIC_DATA } from "../dictionaries/germanicDict";
+// Helper to extract string value from Tuple or String
+const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
+// Helper to extract gender data
+const getData = (entry: any) => {
+  if (!entry) return { val: "", gender: undefined };
+  return typeof entry === 'string' ? { val: entry, gender: undefined } : { val: entry[0], gender: entry[1] };
+};
 
 export const getDutchCapacity = () => {
   const roots = GERMANIC_DATA.filter(c => c.nl && c.type === 'root');
@@ -30,8 +37,9 @@ export const generateDutchPlace = (): GeneratedResult => {
     const pre = getRandomElement(getPool('prefix'));
     const root = getRandomElement(roots);
     
-    let p = pre.nl!;
-    let r = root.nl!;
+    let p = getVal(pre.nl);
+    let rData = getData(root.nl); // Need gender for potential adjective inflection
+    let r = rData.val;
     
     // Adjective inflection
     if (['Nieuw', 'Oud', 'Groot', 'Klein', 'Hoog', 'Laag'].includes(p)) {
@@ -54,8 +62,8 @@ export const generateDutchPlace = (): GeneratedResult => {
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
-    let r = root.nl!;
-    let s = suf.nl!;
+    let r = getVal(root.nl);
+    let s = getVal(suf.nl);
     
     if (r.toLowerCase().includes(s.toLowerCase())) return generateDutchPlace();
     
@@ -78,18 +86,22 @@ export const generateDutchPlace = (): GeneratedResult => {
       const genitives = ['Heeren', 'Graven', 'Hertogen', 'Papen', 'Vrouwen', 'Princen', 'Konings', 'Monniken'];
       const root = getRandomElement(genitives);
       const suf = getRandomElement(getPool('suffix'));
-      word = `'s-${root}${suf.nl}`;
+      word = `'s-${root}${getVal(suf.nl)}`;
   }
   // 4. Root + Root (Compound)
   else {
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
-    if (root1.nl === root2.nl) return generateDutchPlace();
+    
+    const v1 = getVal(root1.nl);
+    const v2 = getVal(root2.nl);
+
+    if (v1 === v2) return generateDutchPlace();
     
     let glue = "";
-    if (Math.random() < 0.3 && !root1.nl!.endsWith('s')) glue = "s";
+    if (Math.random() < 0.3 && !v1.endsWith('s')) glue = "s";
     
-    word = root1.nl + glue + root2.nl!.toLowerCase();
+    word = v1 + glue + v2.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);

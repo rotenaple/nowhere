@@ -3,7 +3,7 @@ export interface JaComponent {
   kana: string;
   romaji: string;
   type: 'prefix' | 'direction' | 'nature' | 'civic' | 'number' | 'modifier' | 'root' | 'suffix';
-  def?: string; // New field for definition
+  def: string; // New field for definition
   onReading?: string; // For Sino-Japanese compounds
   kunReading?: string; // For Native compounds
   rendaku?: { kana: string, romaji: string }; // The voiced version of this component

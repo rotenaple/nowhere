@@ -152,3 +152,15 @@ export const transliterateRomanianToAscii = (word: string): string => {
   };
   return word.split('').map(c => map[c] || c).join('');
 };
+
+const getVal = (entry: string | readonly [string, any] | undefined): string => {
+  if (!entry) return "";
+  return typeof entry === 'string' ? entry : entry[0];
+};
+
+const getData = (entry: string | readonly [string, any] | undefined) => {
+  if (!entry) return { val: "", gender: undefined };
+  return typeof entry === 'string' 
+    ? { val: entry, gender: undefined } 
+    : { val: entry[0], gender: entry[1] };
+};
