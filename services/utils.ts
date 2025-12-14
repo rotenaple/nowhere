@@ -1,4 +1,3 @@
-
 // ==========================================
 // UTILITIES & DISTRIBUTION
 // ==========================================
@@ -60,7 +59,7 @@ export const transliterateDutchToAscii = (word: string): string => {
   return word
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/ë/g, 'e').replace(/ï/g, 'i')
-    .replace(/'/g, ""); // Strip apostrophes for 's- constructions
+    .replace(/'/g, ""); 
 };
 
 export const transliterateFrenchToAscii = (word: string): string => {
@@ -68,7 +67,7 @@ export const transliterateFrenchToAscii = (word: string): string => {
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
     .replace(/œ/g, "oe").replace(/Œ/g, "Oe")
     .replace(/æ/g, "ae").replace(/Æ/g, "Ae")
-    .replace(/'/g, ""); // Strip apostrophes for l' constructions
+    .replace(/'/g, ""); 
 };
 
 export const transliteratePolishToAscii = (word: string): string => {
@@ -80,7 +79,7 @@ export const transliteratePolishToAscii = (word: string): string => {
 export const transliterateIrishToAscii = (word: string): string => {
   return word
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/'/g, ""); // Strip apostrophes
+    .replace(/'/g, ""); 
 };
 
 export const transliterateCzechToAscii = (word: string): string => {
@@ -142,7 +141,7 @@ export const transliterateBulgarianToAscii = (word: string): string => {
 export const transliteratePortugueseToAscii = (word: string): string => {
   return word
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/'/g, ""); // Strip apostrophes
+    .replace(/'/g, "");
 };
 
 export const transliterateRomanianToAscii = (word: string): string => {
@@ -175,19 +174,20 @@ export const getSlavicData = (entry: SlavicEntry | undefined): { src: string, ro
   return { src: srcValue, rom: romValue, gender: genderValue };
 };
 
-// Common Adjective Inflection Helper (Example for a generic East/South Slavic pattern, can be adapted/branched)
-// This is a draft and might need per-language tweaks for edge cases.
+// ==========================================
+// INFLECTION LOGIC
+// ==========================================
+
 export const inflectSlavicAdjective = (
-    adjEntry: SlavicEntry, // The adjective entry from SLAVIC_DATA
+    adjEntry: SlavicEntry, 
     targetGender: 'm' | 'f' | 'n',
-    lang: 'bg' | 'ru' | 'uk' | 'cs' | 'pl' | 'sk' // The target language
+    lang: 'bg' | 'ru' | 'uk' | 'cs' | 'pl' | 'sk' 
 ): { src: string, rom?: string } => {
 
     const adjInfo = getSlavicData(adjEntry);
     let inflectedSrc = adjInfo.src;
     let inflectedRom = adjInfo.rom;
 
-    // Default masculine nominative endings to look for and their inflected forms
     let mascEndingSrc: string | RegExp;
     let mascEndingRom: string | RegExp;
     let femEndingSrc: string;
@@ -196,73 +196,127 @@ export const inflectSlavicAdjective = (
     let neutEndingRom: string;
 
     switch (lang) {
-        case 'bg': // Bulgarian adjectives usually end in -en/-ak/-ok (masc)
-            mascEndingSrc = /ен|ък|ок$/; mascEndingRom = /en|ak|ok$/;
+        case 'bg': 
+            // Handles both -en/-ak/-ok and -ar (Mokar -> Mokra)
+            mascEndingSrc = /ен|ък|ок|ър$/; 
+            mascEndingRom = /en|ak|ok|ar$/;
             femEndingSrc = 'на'; femEndingRom = 'na';
             neutEndingSrc = 'но'; neutEndingRom = 'no';
             break;
-        case 'ru': // Russian adjectives typically end in -ый/-ий (masc)
-            mascEndingSrc = /(ый|ий)$/; mascEndingRom = /(iy|yy)$/; // iy and yy for transliteration consistency
+        case 'ru': 
+            mascEndingSrc = /(ый|ий)$/; mascEndingRom = /(iy|yy)$/; 
             femEndingSrc = 'ая'; femEndingRom = 'aya';
             neutEndingSrc = 'ое'; neutEndingRom = 'oye';
             break;
-        case 'uk': // Ukrainian adjectives typically end in -ий (masc)
+        case 'uk': 
             mascEndingSrc = /ий$/; mascEndingRom = /yy|iy$/;
-            femEndingSrc = 'а'; femEndingRom = 'a'; // Can also be 'я' / 'ya' for soft stems
-            neutEndingSrc = 'е'; neutEndingRom = 'e'; // Can also be 'є' / 'ye' for soft stems
+            femEndingSrc = 'а'; femEndingRom = 'a'; 
+            neutEndingSrc = 'е'; neutEndingRom = 'e'; 
             break;
-        case 'cs': // Czech adjectives usually end in -ý/-í (masc)
-            mascEndingSrc = /(ý|í)$/; mascEndingRom = /(y|i)$/;
-            femEndingSrc = 'á'; femEndingRom = 'a'; // Use 'á' for hard stems, 'í' for soft (invariant)
-            neutEndingSrc = 'é'; neutEndingRom = 'e';
+        case 'cs':
+            // Check for soft adjectives (Severní, Horní) which end in 'í' and are invariant in Nom.
+            if (adjInfo.src.endsWith('í')) {
+                mascEndingSrc = 'í'; mascEndingRom = 'i';
+                femEndingSrc = 'í'; femEndingRom = 'i';
+                neutEndingSrc = 'í'; neutEndingRom = 'i';
+            } else {
+                // Hard adjectives (Nový -> Nová -> Nové)
+                mascEndingSrc = /(ý|í)$/; mascEndingRom = /(y|i)$/;
+                femEndingSrc = 'á'; femEndingRom = 'a';
+                neutEndingSrc = 'é'; neutEndingRom = 'e';
+            }
             break;
-        case 'sk': // Slovak adjectives typically end in -ý/-ý (masc)
-            mascEndingSrc = /(ý|y)$/; mascEndingRom = /(y|y)$/; // Slovak also uses proper y/ý
+        case 'sk': 
+            mascEndingSrc = /(ý|y)$/; mascEndingRom = /(y|y)$/; 
             femEndingSrc = 'á'; femEndingRom = 'a';
             neutEndingSrc = 'é'; neutEndingRom = 'e';
             break;
-        case 'pl': // Polish adjectives typically end in -y/-i (masc)
+        case 'pl': 
             mascEndingSrc = /(y|i)$/; mascEndingRom = /(y|i)$/;
             femEndingSrc = 'a'; femEndingRom = 'a';
             neutEndingSrc = 'e'; neutEndingRom = 'e';
             break;
         default:
-            // Fallback for unexpected language
             return { src: inflectedSrc, rom: inflectedRom };
     }
 
     if (targetGender === 'f') {
+        // Standard inflection for Feminine
         if (inflectedSrc.match(mascEndingSrc)) {
             inflectedSrc = inflectedSrc.replace(mascEndingSrc, femEndingSrc);
-        } else if (lang === 'cs' && adjInfo.src.endsWith('í')) { // Czech soft adj are invariant in fem/neut nom
-             // Do nothing, but ensure 'rom' is correct
-        } else if (lang === 'bg' && (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок'))) { // Fleeting vowel for BG
-            inflectedSrc = adjInfo.src.slice(0, -2) + 'ка'; // remove 'ък' or 'ок', add 'ка'
-            inflectedRom = adjInfo.rom!.slice(0, -2) + 'ka'; // remove 'ak' or 'ok', add 'ka'
-        } else if (lang === 'uk' && adjInfo.src.endsWith('ий')) { // Ukrainian soft adj
-            // Check for soft stems, often ending in consonant before 'ий'
-            // For now, simple replace, might be 'я' for some soft stems
+            if (inflectedRom && mascEndingRom) {
+                inflectedRom = inflectedRom.replace(mascEndingRom, femEndingRom);
+            }
+        } 
+        // Special Case: Bulgarian fleeting vowels
+        else if (lang === 'bg') {
+            // -ak/-ok -> -ka (Malak -> Malka)
+            if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
+                inflectedSrc = adjInfo.src.slice(0, -2) + 'ка';
+                inflectedRom = adjInfo.rom!.slice(0, -2) + 'ka';
+            }
+            // -ar -> -ra (Mokar -> Mokra)
+            else if (adjInfo.src.endsWith('ър')) {
+                inflectedSrc = adjInfo.src.slice(0, -2) + 'ра';
+                inflectedRom = adjInfo.rom!.slice(0, -2) + 'ra';
+            }
+        } 
+        // Special Case: Ukrainian soft stems (simplified)
+        else if (lang === 'uk' && adjInfo.src.endsWith('ий')) { 
              inflectedSrc = adjInfo.src.replace('ий', 'а');
-             inflectedRom = adjInfo.rom!.replace(mascEndingRom, femEndingRom); // Use common mascEndingRom
+             if (inflectedRom && mascEndingRom) inflectedRom = inflectedRom.replace(mascEndingRom, femEndingRom);
         }
+
     } else if (targetGender === 'n') {
+        // Standard inflection for Neuter
         if (inflectedSrc.match(mascEndingSrc)) {
             inflectedSrc = inflectedSrc.replace(mascEndingSrc, neutEndingSrc);
-        } else if (lang === 'cs' && adjInfo.src.endsWith('í')) { // Czech soft adj are invariant in fem/neut nom
-             // Do nothing
-        } else if (lang === 'bg' && (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок'))) { // Fleeting vowel for BG
-            inflectedSrc = adjInfo.src.slice(0, -2) + 'ко'; // remove 'ък' or 'ок', add 'ко'
-            inflectedRom = adjInfo.rom!.slice(0, -2) + 'ko'; // remove 'ak' or 'ok', add 'ko'
-        } else if (lang === 'uk' && adjInfo.src.endsWith('ий')) {
+            if (inflectedRom && mascEndingRom) {
+                inflectedRom = inflectedRom.replace(mascEndingRom, neutEndingRom);
+            }
+        } 
+        // Special Case: Bulgarian fleeting vowels
+        else if (lang === 'bg') {
+            // -ak/-ok -> -ko (Malak -> Malko)
+            if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
+                inflectedSrc = adjInfo.src.slice(0, -2) + 'ко'; 
+                inflectedRom = adjInfo.rom!.slice(0, -2) + 'ko'; 
+            }
+             // -ar -> -ro (Mokar -> Mokro)
+             else if (adjInfo.src.endsWith('ър')) {
+                inflectedSrc = adjInfo.src.slice(0, -2) + 'ро';
+                inflectedRom = adjInfo.rom!.slice(0, -2) + 'ro';
+            }
+        } 
+        // Special Case: Ukrainian soft stems (simplified)
+        else if (lang === 'uk' && adjInfo.src.endsWith('ий')) {
              inflectedSrc = adjInfo.src.replace('ий', 'е');
-             inflectedRom = adjInfo.rom!.replace(mascEndingRom, neutEndingRom);
+             if (inflectedRom && mascEndingRom) inflectedRom = inflectedRom.replace(mascEndingRom, neutEndingRom);
         }
     }
-    // No change for 'm', as base form is assumed masculine nominative singular.
 
     return { src: inflectedSrc, rom: inflectedRom };
 };
 
 export const hasLanguageEntry = (entry: SlavicEntry | undefined): boolean => {
   return entry !== undefined;
+};
+
+/** 
+ * Determines gender of a composite word. 
+ * Suffix gender takes precedence. If no suffix, uses root gender.
+ */
+export const getCompositeGender = (
+  rootEntry: SlavicEntry | undefined, 
+  suffixEntry: SlavicEntry | undefined, 
+  lang: 'bg'|'cs'|'pl'|'ru'|'sk'|'uk'
+): 'm' | 'f' | 'n' => {
+  const rootData = getSlavicData(rootEntry);
+  
+  if (suffixEntry) {
+    const sufData = getSlavicData(suffixEntry);
+    if (sufData.gender) return sufData.gender;
+  }
+  
+  return rootData.gender || 'm';
 };

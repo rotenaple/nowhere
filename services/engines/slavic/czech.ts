@@ -24,10 +24,10 @@ export const getCzechCapacity = () => {
 export const generateCzechPlace = (): GeneratedResult => {
   let wordSrc = ""; 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.cs) && c.type === t);
-  const rootsAndStems = [...getPool('root'), ...getPool('stem')];
+  const rootsAndStems = [...getPool('root'), ...getPool('stem'), ...getPool('river')];
   const adjectives = getPool('adjective');
   const suffixes = getPool('suffix');
-  const rivers = getPool('river');
+  const riversLoc = getPool('river_loc');
 
   const typeRoll = Math.random();
   
@@ -75,8 +75,12 @@ export const generateCzechPlace = (): GeneratedResult => {
     if (isDerived && selectedSuffix) {
         const suffixInfo = getSlavicData(selectedSuffix.cs!);
         
-        // Truncate logic (based ONLY on finalNounSrc)
-        if (['a','e','i','o','u','y','á','é','í','ý','ů'].includes(finalNounSrc.slice(-1)) && !['ov','ín'].some(s => suffixInfo.src.startsWith(s)) ) {
+        // Aggressive Vowel Truncation
+        // If Root ends in vowel AND Suffix starts with vowel
+        const rootEndsInVowel = ['a','e','i','o','u','y','á','é','í','ý','ů'].includes(finalNounSrc.slice(-1));
+        const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixInfo.src.charAt(0));
+
+        if (rootEndsInVowel && suffixStartsVowel) {
             finalNounSrc = finalNounSrc.slice(0, -1);
         }
 
@@ -126,7 +130,7 @@ export const generateCzechPlace = (): GeneratedResult => {
   // 4. [Base] nad [River]
   else {
     const baseRootComponent = getRandomElement(rootsAndStems);
-    const selectedRiver = getRandomElement(rivers);
+    const selectedRiver = getRandomElement(riversLoc);
     
     const baseRootInfo = getSlavicData(baseRootComponent.cs);
     const riverInfo = getSlavicData(selectedRiver.cs!);

@@ -26,7 +26,7 @@ export const getSlavicData = (entry: SlavicEntry | undefined): { src: string, ro
 // The main component interface remains the same
 export interface SlavicComponent {
   id: string;
-  type: 'adjective' | 'root' | 'suffix' | 'river' | 'country_suffix' | 'stem';
+  type: 'adjective' | 'root' | 'suffix' | 'river' | 'river_loc' | 'country_suffix' | 'stem';
   pl?: SlavicEntry;
   cs?: SlavicEntry;
   sk?: SlavicEntry;
@@ -303,6 +303,36 @@ export const SLAVIC_DATA: SlavicComponent[] = [
   { id: 'Iskar', type: 'river', bg: [['Искър', 'Iskar'], 'm'] },
   { id: 'Struma', type: 'river', bg: [['Струма', 'Struma'], 'f'] },
   { id: 'Tundzha', type: 'river', bg: [['Тунджа', 'Tundzha'], 'f'] },
+
+  // ========================== INFLECTED RIVERS (river_loc) ==========================
+  { id: 'loc_Vltava', type: 'river_loc', cs: ['Vltavou'] },
+  { id: 'loc_Elbe', type: 'river_loc', cs: ['Labem'] }, // Labe is neuter/special -> Labem
+  { id: 'loc_Morava', type: 'river_loc', cs: ['Moravou'], sk: ['Moravou'] },
+  { id: 'loc_Odra', type: 'river_loc', cs: ['Odrou'], pl: ['Odrą'] },
+  { id: 'loc_Vistula', type: 'river_loc', pl: ['Wisłą'] },
+  { id: 'loc_Warta', type: 'river_loc', pl: ['Wartą'] },
+  { id: 'loc_Volga', type: 'river_loc', ru: ['Волге', 'Volge'] },
+  { id: 'loc_Don', type: 'river_loc', ru: ['Дону', 'Donu'] }, // Locative II exception
+  { id: 'loc_Dnipro', type: 'river_loc', uk: ['Дніпрі', 'Dnipri'] },
+  { id: 'loc_Desna', type: 'river_loc', uk: ['Десні', 'Desni'] },
+  { id: 'loc_Danube', type: 'river_loc', bg: ['Дунав', 'Dunav'], sk: ['Dunajom'] },
+  { id: 'loc_Maritsa', type: 'river_loc', bg: ['Марица', 'Maritsa'] },
+  { id: 'loc_Ohre', type: 'river_loc', cs: ['Ohří'] }, // Soft stem
+  { id: 'loc_Sazava', type: 'river_loc', cs: ['Sázavou'] },
+  { id: 'loc_Berounka', type: 'river_loc', cs: ['Berounkou'] },
+  { id: 'loc_Svratka', type: 'river_loc', cs: ['Svratkou'] },
+  { id: 'loc_Jizera', type: 'river_loc', cs: ['Jizerou'] },
+  { id: 'loc_Bug', type: 'river_loc', pl: ['Bugiem'], uk: ['Бузі', 'Buzi'] }, // UK: g -> z palatalization
+  { id: 'loc_San', type: 'river_loc', pl: ['Sanem'] },
+  { id: 'loc_Narew', type: 'river_loc', pl: ['Narwią'] },
+  { id: 'loc_Pilica', type: 'river_loc', pl: ['Pilicą'] },
+  { id: 'loc_Hron', type: 'river_loc', sk: ['Hronom'] },
+  { id: 'loc_Vah', type: 'river_loc', sk: ['Váhom'] },
+  { id: 'loc_NitraRiver', type: 'river_loc', sk: ['Nitrou'] },
+  { id: 'loc_Hornad', type: 'river_loc', sk: ['Hornádom'] },
+  { id: 'loc_Iskar', type: 'river_loc', bg: ['Искър', 'Iskar'] },
+  { id: 'loc_Struma', type: 'river_loc', bg: ['Струма', 'Struma'] },
+  { id: 'loc_Tundzha', type: 'river_loc', bg: ['Тунджа', 'Tundzha'] },
 
   // ========================== COUNTRY SUFFIXES ==========================
   { id: 'landia', type: 'country_suffix', pl: [['landia'], 'f'], cs: [['land'], 'f'], sk: [['land'], 'f'], bg: [['ландия', 'landiya'], 'f'], ru: [['ландия', 'landiya'], 'f'], uk: [['ландія', 'landiya'], 'f'] },
