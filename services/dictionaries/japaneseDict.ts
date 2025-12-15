@@ -190,7 +190,7 @@ export const JA_ROOTS: JaComponent[] = [
   { kanji: '都', kana: 'ミヤコ', romaji: 'miyako', type: 'civic', def: 'capital, metropolis' },
   { kanji: '社', kana: 'ヤシロ', romaji: 'yashiro', type: 'civic', def: 'shintō shrine' },
   { kanji: '庄', kana: 'ショウ', romaji: 'shou', type: 'civic', def: 'manor, estate' },
-  { kanji: '部', kana: 'ベ', romaji: 'be', type: 'civic', def: 'section, part' },
+  { kanji: '部', kana: 'ヘ', romaji: 'he', type: 'civic', rendaku: { kana: 'ベ', romaji: 'be' }, def: 'section, part'},
   { kanji: '隅', kana: 'スミ', romaji: 'sumi', type: 'civic', rendaku: { kana: 'ズミ', romaji: 'zumi' }, def: 'corner' },
   { kanji: '越', kana: 'コシ', romaji: 'koshi', type: 'civic', rendaku: { kana: 'ゴシ', romaji: 'goshi' }, def: 'crossing, beyond' },
   { kanji: '縄', kana: 'ナワ', romaji: 'nawa', type: 'civic', def: 'rope, cord' },

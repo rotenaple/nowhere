@@ -291,7 +291,6 @@ export const TL_SUFFIXES: TagalogComponent[] = [
   { val: 'hin', type: 'suffix', def: '' },
   { val: 'on', type: 'suffix', def: '' }, // Visayan influence
   { val: 'ay', type: 'suffix', def: '' }, // Visayan influence
-  { val: 'ng', type: 'suffix', def: '' },
   { val: 'g', type: 'suffix', def: '' },
 ];
 // Adjectives typically don't have Es origin, as they are part of TL grammar patterns

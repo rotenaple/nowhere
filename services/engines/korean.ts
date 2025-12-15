@@ -1,109 +1,100 @@
-
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
 import { 
-  KO_PREFIXES, KO_ROOTS_SINO, KO_ROOTS_NATIVE, KO_SUFFIXES, KO_NUMBERS 
+  KO_ADJECTIVES, KO_NOUNS_SINO, KO_NATIVE, KO_SUFFIXES, KO_NUMBERS, KoreanComponent 
 } from "../dictionaries/koreanDict";
 
 export const getKoreanCapacity = () => {
-  const roots = [...KO_ROOTS_SINO, ...KO_ROOTS_NATIVE];
+  // 1. Adj/Nature/Abstract + Noun
+  const heads = KO_ADJECTIVES.length + KO_NOUNS_SINO.filter(x => ['nature', 'abstract'].includes(x.type)).length;
+  const tails = KO_NOUNS_SINO.filter(x => ['geo', 'settlement'].includes(x.type)).length;
+  const c1 = heads * tails;
   
-  // 1. Prefix + Root (2 syllables)
-  const c1 = KO_PREFIXES.length * roots.length;
-  // 2. Root + Root (2 syllables)
-  const c2 = KO_ROOTS_SINO.length * KO_ROOTS_SINO.length;
-  // 3. Root + Suffix (2 syllables)
-  const c3 = roots.length * KO_SUFFIXES.length;
-  // 4. Native Compounds (2 syllables)
-  const c4 = KO_ROOTS_NATIVE.length * KO_ROOTS_NATIVE.length;
-  // 5. Root + Root + Root (3 syllables) - BIG MULTIPLIER
-  const c5 = Math.pow(KO_ROOTS_SINO.length, 3);
-
-  return c1 + c2 + c3 + c4 + c5;
+  // 2. Base + Suffix
+  const c2 = (c1) * KO_SUFFIXES.length;
+  
+  // 3. Native
+  const nDesc = KO_NATIVE.filter(x => ['native_desc', 'native_geo'].includes(x.type)).length;
+  const nGeo = KO_NATIVE.filter(x => x.type === 'native_geo').length;
+  const c3 = nDesc * nGeo;
+  
+  return c1 + c2 + c3;
 }
 
 export const generateKoreanPlace = (): GeneratedResult => {
-  const type = Math.random();
+  let word = "";
+  let ascii = "";
+  const roll = Math.random();
 
-  // Pattern 1: Sino-Korean 2-syllable (e.g. Bu-san, Dae-gu)
-  if (type < 0.25) {
-    const p1 = getRandomElement([...KO_PREFIXES, ...KO_ROOTS_SINO]);
-    const p2 = getRandomElement(KO_ROOTS_SINO);
+  const getPool = (arr: KoreanComponent[], types: string[]) => 
+    arr.filter(x => types.includes(x.type));
+
+  // --- RECIPE 1: Descriptive Compound (e.g. Nam-san, Song-do, Ryong-san) ---
+  if (roll < 0.40) {
+    // EXPANSION: Allow Nature (Pine, Dragon) and Abstract (Peace) as heads
+    const p1 = getRandomElement(
+        getPool(KO_ADJECTIVES, ['direction', 'color', 'quality'])
+        .concat(getPool(KO_NOUNS_SINO, ['nature', 'abstract']))
+    );
     
-    // Avoid duplicates
-    if (p1.rom === p2.rom) return generateKoreanPlace();
-
-    const name = p1.hangul + p2.hangul;
-    const ascii = p1.rom + p2.rom.toLowerCase();
+    const p2 = getRandomElement(getPool(KO_NOUNS_SINO, ['geo', 'settlement']));
     
-    return { word: name, ascii };
-  }
-
-  // Pattern 2: Sino-Korean 3-syllable Compound (e.g. Yeong-deung-po, Dong-dae-mun, Seo-dae-mun)
-  // This drastically increases variety.
-  else if (type < 0.55) {
-    const r1 = getRandomElement([...KO_PREFIXES, ...KO_ROOTS_SINO]);
-    const r2 = getRandomElement(KO_ROOTS_SINO);
-    const r3 = getRandomElement(KO_ROOTS_SINO);
-
-    if (r2.rom === r3.rom) return generateKoreanPlace();
-
-    const name = r1.hangul + r2.hangul + r3.hangul;
-    // Usually 3-syllable places are written as OneTwoThree or One-two-three
-    const ascii = r1.rom + r2.rom.toLowerCase() + r3.rom.toLowerCase();
-    
-    return { word: name, ascii };
-  }
-
-  // Pattern 3: Root + Administrative Suffix (e.g. Gangnam-gu, Yeouido)
-  else if (type < 0.75) {
-    const suf = getRandomElement(KO_SUFFIXES);
-    
-    // Choose between 1-root base (Do-dong) or 2-root base (Gangnam-gu)
-    if (Math.random() < 0.3) {
-       // 1 char root + suffix
-       const r1 = getRandomElement([...KO_PREFIXES, ...KO_ROOTS_SINO]);
-       const name = r1.hangul + suf.hangul;
-       const ascii = r1.rom + '-' + suf.rom; 
-       return { word: name, ascii };
+    // 3-Syllable Logic (e.g. Seo-dae-mun)
+    if (Math.random() < 0.2) {
+       const mid = getRandomElement(getPool(KO_ADJECTIVES, ['quality', 'color'])); 
+       word = p1.hangul + mid.hangul + p2.hangul;
+       ascii = p1.rom + mid.rom.toLowerCase() + p2.rom.toLowerCase();
     } else {
-       // 2 char root + suffix
-       const r1 = getRandomElement([...KO_PREFIXES, ...KO_ROOTS_SINO]);
-       const r2 = getRandomElement(KO_ROOTS_SINO);
-       const name = r1.hangul + r2.hangul + suf.hangul;
-       const ascii = r1.rom + r2.rom.toLowerCase() + '-' + suf.rom;
-       return { word: name, ascii };
+       word = p1.hangul + p2.hangul;
+       ascii = p1.rom + p2.rom.toLowerCase();
     }
   }
 
-  // Pattern 4: Native Korean / Hybrid (e.g. Saem-gol)
-  else if (type < 0.90) {
-    const native = getRandomElement(KO_ROOTS_NATIVE);
+  // --- RECIPE 2: Administrative Suffix (e.g. Gangnam-gu) ---
+  else if (roll < 0.70) {
+    let baseHangul = "";
+    let baseRom = "";
     
-    // Native compound (Root + Native Suffix)
-    if (Math.random() < 0.5) {
-       const nativeSuffixes = KO_SUFFIXES.filter(s => ['ma-eul', 'bat', 'gol', 'nae'].includes(s.rom));
-       const suffix = getRandomElement(nativeSuffixes);
-       
-       const name = native.hangul + suffix.hangul;
-       const ascii = native.rom + '-' + suffix.rom;
-       return { word: name, ascii };
-    } 
-    // Native + Native
-    else {
-       const n2 = getRandomElement(KO_ROOTS_NATIVE);
-       const name = native.hangul + n2.hangul;
-       const ascii = native.rom + n2.rom.toLowerCase();
-       return { word: name, ascii };
+    if (Math.random() < 0.4) {
+        // 2-Syllable Base: [Nature/Abstract] + [Geo/Settlement]
+        const r1 = getRandomElement(getPool(KO_NOUNS_SINO, ['nature', 'abstract', 'geo']));
+        const r2 = getRandomElement(getPool(KO_NOUNS_SINO, ['geo', 'settlement']));
+        baseHangul = r1.hangul + r2.hangul;
+        baseRom = r1.rom + r2.rom.toLowerCase();
+    } else {
+        // 2-Syllable Base: [Adj] + [Noun]
+        const r1 = getRandomElement(getPool(KO_ADJECTIVES, ['direction', 'quality', 'color']));
+        const r2 = getRandomElement(getPool(KO_NOUNS_SINO, ['geo', 'settlement']));
+        baseHangul = r1.hangul + r2.hangul;
+        baseRom = r1.rom + r2.rom.toLowerCase();
     }
+
+    const suffix = getRandomElement(getPool(KO_SUFFIXES, ['suffix']));
+    word = baseHangul + suffix.hangul;
+    ascii = baseRom + '-' + suffix.rom;
   }
-  
-  // Pattern 5: Number + Root (e.g. Sam-cheok, O-ryuk-do)
+
+  // --- RECIPE 3: Native Korean Names ---
+  else if (roll < 0.90) {
+    const p1 = getRandomElement(getPool(KO_NATIVE, ['native_desc', 'native_geo']));
+    const p2 = getRandomElement(getPool(KO_NATIVE, ['native_geo']));
+    
+    if (p1.rom === p2.rom) return generateKoreanPlace(); 
+
+    word = p1.hangul + p2.hangul;
+    ascii = p1.rom + p2.rom.toLowerCase();
+  }
+
+  // --- RECIPE 4: Numeric ---
   else {
     const num = getRandomElement(KO_NUMBERS);
-    const root = getRandomElement(KO_ROOTS_SINO);
-    const name = num.hangul + root.hangul;
-    const ascii = num.rom + root.rom.toLowerCase();
-    return { word: name, ascii };
+    // EXPANSION: Numbers can apply to Settlements too (e.g. "Three Bridges")
+    const root = getRandomElement(getPool(KO_NOUNS_SINO, ['settlement', 'nature', 'geo']));
+    
+    word = num.hangul + root.hangul;
+    ascii = num.rom + root.rom.toLowerCase();
   }
+
+  ascii = ascii.charAt(0).toUpperCase() + ascii.slice(1);
+  return { word, ascii };
 };

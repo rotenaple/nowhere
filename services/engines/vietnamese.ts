@@ -1,72 +1,78 @@
-
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
 import { 
-  VN_HEADS, VN_ROOTS_SINO, VN_ROOTS_NATIVE, VN_ADJECTIVES, VN_NUMBERS, VN_DIRECTIONS 
+  VN_HEADS, VN_ROOTS_SINO, VN_ROOTS_NATIVE, VN_ADJECTIVES, VN_NUMBERS, VN_DIRECTIONS, VnComponent 
 } from "../dictionaries/vietnameseDict";
 
 export const getVietnameseCapacity = () => {
-  // 1. Sino-Viet Compound (2 words)
-  const c1 = VN_ROOTS_SINO.length * VN_ROOTS_SINO.length;
-  // 2. Geographic Head + Native Root
-  const c2 = VN_HEADS.length * VN_ROOTS_NATIVE.length;
-  // 3. Native Root + Adjective
-  const c3 = VN_ROOTS_NATIVE.length * VN_ADJECTIVES.length;
-  // 4. Geographic Head + Sino Root
-  const c4 = VN_HEADS.length * VN_ROOTS_SINO.length;
-  
-  return c1 + c2 + c3 + c4;
+  const heads = VN_HEADS.length;
+  const tails = VN_ROOTS_NATIVE.length + VN_ROOTS_SINO.length + VN_ADJECTIVES.length;
+  return heads * tails * 2; // Rough estimate including compounds
 }
 
 export const generateVietnamesePlace = (): GeneratedResult => {
   let word = "";
   let ascii = "";
+  const roll = Math.random();
 
-  const type = Math.random();
+  const getPool = (arr: VnComponent[], types: string[]) => 
+    arr.filter(x => types.includes(x.type));
 
-  // Pattern 1: Sino-Vietnamese Compound (City/Province names)
-  // e.g. Hà Nội, Hải Phòng, Thanh Hóa, Nghệ An, Đà Nẵng (Cham origin but looks Sino-ish in structure often)
-  // Structure: [Sino Root] + [Sino Root]
-  if (type < 0.40) {
-    const r1 = getRandomElement(VN_ROOTS_SINO);
-    const r2 = getRandomElement(VN_ROOTS_SINO);
+  // --- RECIPE 1: Sino-Vietnamese Compound (Provinces/Districts) ---
+  // e.g. Bình Dương, Hải Phòng, Thanh Xuân
+  if (roll < 0.40) {
+    // R1: Abstract, Geo, Color
+    const r1 = getRandomElement(getPool(VN_ROOTS_SINO, ['abstract', 'geo_head', 'color', 'quality']));
+    // R2: Abstract, Nature, Geo
+    const r2 = getRandomElement(getPool(VN_ROOTS_SINO, ['abstract', 'nature', 'geo_head']));
     
-    // Avoid repetition
     if (r1.word === r2.word) return generateVietnamesePlace();
 
     word = `${r1.word} ${r2.word}`;
     ascii = `${r1.ascii} ${r2.ascii}`;
   }
   
-  // Pattern 2: Geographic Head + Proper Name (Sino or Native)
-  // e.g. Sông Hồng, Núi Bà Đen, Mũi Né, Cù Lao Chàm
-  else if (type < 0.70) {
-    const head = getRandomElement(VN_HEADS);
+  // --- RECIPE 2: Geographic Head + Descriptive Tail ---
+  // e.g. Sông Hương (River Scent), Núi Bà Đen, Mũi Né
+  else if (roll < 0.70) {
+    const head = getRandomElement(VN_HEADS.filter(x => x.type === 'geo_head'));
     
-    // 50% chance for Sino root, 50% for Native root/Adj
-    const tailPool = Math.random() < 0.5 ? VN_ROOTS_SINO : [...VN_ROOTS_NATIVE, ...VN_ADJECTIVES];
+    // Tail can be: Nature (Trees/Animals), Colors, Qualities (Big/Small)
+    const tailPool = [
+        ...getPool(VN_ROOTS_NATIVE, ['nature']),
+        ...getPool(VN_ADJECTIVES, ['color', 'quality']),
+        ...getPool(VN_ROOTS_SINO, ['nature', 'abstract']) // e.g. Sông Tiên (Fairy River)
+    ];
     const tail = getRandomElement(tailPool);
     
     word = `${head.word} ${tail.word}`;
     ascii = `${head.ascii} ${tail.ascii}`;
   }
   
-  // Pattern 3: Native Noun + Adjective/Direction/Number
-  // e.g. Chợ Mới, Bến Tre, Gò Vấp (Vấp is tree), Làng Sen
-  else if (type < 0.90) {
-    const head = getRandomElement([...VN_HEADS, ...VN_ROOTS_NATIVE]);
-    const modifier = getRandomElement([...VN_ADJECTIVES, ...VN_DIRECTIONS, ...VN_NUMBERS]);
+  // --- RECIPE 3: Settlement + Specific Tail ---
+  // e.g. Chợ Mới (New Market), Bến Tre (Bamboo Wharf)
+  else if (roll < 0.90) {
+    const head = getRandomElement(VN_HEADS.filter(x => x.type === 'settlement'));
     
-    word = `${head.word} ${modifier.word}`;
-    ascii = `${head.ascii} ${modifier.ascii}`;
+    // Settlements match well with: Directions, Qualities (New/Old), Numbers, Nature (Products)
+    const tailPool = [
+        ...VN_DIRECTIONS,
+        ...VN_NUMBERS,
+        ...getPool(VN_ADJECTIVES, ['quality']),
+        ...getPool(VN_ROOTS_NATIVE, ['nature']) // e.g. Market + Fish
+    ];
+    const tail = getRandomElement(tailPool);
+    
+    word = `${head.word} ${tail.word}`;
+    ascii = `${head.ascii} ${tail.ascii}`;
   }
   
-  // Pattern 4: 3-Word Compound (Rare but descriptive)
-  // e.g. Bà Rịa, Phan Rang (Cham), or descriptive like "Suối Tiên Xanh"
+  // --- RECIPE 4: 3-Word Descriptive (Rare) ---
+  // e.g. Suối Tiên Xanh (Blue Fairy Stream)
   else {
-    const head = getRandomElement(VN_HEADS);
-    const mid = getRandomElement(VN_ROOTS_NATIVE);
-    const tail = getRandomElement(VN_ADJECTIVES);
+    const head = getRandomElement(VN_HEADS.filter(x => x.type === 'geo_head'));
+    const mid = getRandomElement(getPool(VN_ROOTS_NATIVE, ['nature']));
+    const tail = getRandomElement(getPool(VN_ADJECTIVES, ['color', 'quality']));
     
     word = `${head.word} ${mid.word} ${tail.word}`;
     ascii = `${head.ascii} ${mid.ascii} ${tail.ascii}`;

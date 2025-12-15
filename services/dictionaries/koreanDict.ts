@@ -1,229 +1,219 @@
-
 export interface KoreanComponent {
-  rom: string; // Revised Romanization
+  rom: string; // Revised Romanization string
   hangul: string;
-  type: 'prefix' | 'root' | 'suffix' | 'native_root' | 'number';
+  // Types used for semantic logic in generation
+  type: 
+    | 'direction'   // East, West...
+    | 'number'      // One, Two...
+    | 'color'       // Blue, White...
+    | 'quality'     // New, Old, Big, Small, High...
+    | 'geo'         // Mountain, River, Lake...
+    | 'settlement'  // Town, Fort, Port, Market...
+    | 'nature'      // Flower, Pine, Bamboo...
+    | 'abstract'    // Peace, Luck, Spirit...
+    | 'suffix'      // Administrative suffixes (city, county)
+    | 'native_geo'  // Native words for geography
+    | 'native_desc';// Native descriptors
+  
   def: string;
 }
 
 // ==========================================
-// 1. PREFIXES / MODIFIERS (Sino-Korean)
+// 1. PREFIXES & ADJECTIVES (Sino-Korean)
 // ==========================================
-export const KO_PREFIXES: KoreanComponent[] = [
-  { rom: 'Sin', hangul: '신', type: 'prefix', def: 'New' },
-  { rom: 'Gu', hangul: '구', type: 'prefix', def: 'Old' },
-  { rom: 'Dae', hangul: '대', type: 'prefix', def: 'Big' },
-  { rom: 'So', hangul: '소', type: 'prefix', def: 'Small' },
-  { rom: 'Buk', hangul: '북', type: 'prefix', def: 'North' },
-  { rom: 'Nam', hangul: '남', type: 'prefix', def: 'South' },
-  { rom: 'Dong', hangul: '동', type: 'prefix', def: 'East' },
-  { rom: 'Seo', hangul: '서', type: 'prefix', def: 'West' },
-  { rom: 'Jung', hangul: '중', type: 'prefix', def: 'Middle' },
-  { rom: 'Sang', hangul: '상', type: 'prefix', def: 'Upper' },
-  { rom: 'Ha', hangul: '하', type: 'prefix', def: 'Lower' },
-  { rom: 'Go', hangul: '고', type: 'prefix', def: 'High' },
-  { rom: 'Cheong', hangul: '청', type: 'prefix', def: 'Blue/Clear' },
-  { rom: 'Baek', hangul: '백', type: 'prefix', def: 'White' },
-  { rom: 'Hwang', hangul: '황', type: 'prefix', def: 'Yellow' },
-  { rom: 'Heuk', hangul: '흑', type: 'prefix', def: 'Black' },
-  { rom: 'Hong', hangul: '홍', type: 'prefix', def: 'Red/Vast' },
-  { rom: 'Ja', hangul: '자', type: 'prefix', def: 'Purple' },
-  { rom: 'Nok', hangul: '녹', type: 'prefix', def: 'Green' },
+export const KO_ADJECTIVES: KoreanComponent[] = [
+  // Directions
+  { rom: 'Buk', hangul: '북', type: 'direction', def: 'North' },
+  { rom: 'Nam', hangul: '남', type: 'direction', def: 'South' },
+  { rom: 'Dong', hangul: '동', type: 'direction', def: 'East' },
+  { rom: 'Seo', hangul: '서', type: 'direction', def: 'West' },
+  { rom: 'Jung', hangul: '중', type: 'direction', def: 'Middle' },
+  { rom: 'Sang', hangul: '상', type: 'direction', def: 'Upper' },
+  { rom: 'Ha', hangul: '하', type: 'direction', def: 'Lower' },
+  { rom: 'Nae', hangul: '내', type: 'direction', def: 'Inner' },
+  { rom: 'Oe', hangul: '외', type: 'direction', def: 'Outer' },
+  
+  // Quality / Size
+  { rom: 'Sin', hangul: '신', type: 'quality', def: 'New' },
+  { rom: 'Gu', hangul: '구', type: 'quality', def: 'Old' },
+  { rom: 'Dae', hangul: '대', type: 'quality', def: 'Big' },
+  { rom: 'So', hangul: '소', type: 'quality', def: 'Small' },
+  { rom: 'Go', hangul: '고', type: 'quality', def: 'High' },
+  { rom: 'Jeo', hangul: '저', type: 'quality', def: 'Low' },
+  { rom: 'Jang', hangul: '장', type: 'quality', def: 'Long' },
+  { rom: 'Myeong', hangul: '명', type: 'quality', def: 'Bright' },
+  { rom: 'Seong', hangul: '성', type: 'quality', def: 'Holy/Saint' },
+  { rom: 'Jin', hangul: '진', type: 'quality', def: 'True/Precious' },
+  { rom: 'Tae', hangul: '태', type: 'quality', def: 'Great/Big' },
+  
+  // Colors
+  { rom: 'Cheong', hangul: '청', type: 'color', def: 'Blue/Clear' },
+  { rom: 'Baek', hangul: '백', type: 'color', def: 'White' },
+  { rom: 'Hwang', hangul: '황', type: 'color', def: 'Yellow' },
+  { rom: 'Heuk', hangul: '흑', type: 'color', def: 'Black' },
+  { rom: 'Hong', hangul: '홍', type: 'color', def: 'Red' },
+  { rom: 'Nok', hangul: '녹', type: 'color', def: 'Green' },
+  { rom: 'Geum', hangul: '금', type: 'color', def: 'Gold' },
+  { rom: 'Eun', hangul: '은', type: 'color', def: 'Silver' },
+  { rom: 'Ja', hangul: '자', type: 'color', def: 'Purple' },
 ];
 
 // ==========================================
-// 2. ROOTS (Sino-Korean - Hanja based)
+// 2. NOUN ROOTS (Sino-Korean)
 // ==========================================
-export const KO_ROOTS_SINO: KoreanComponent[] = [
-  // Geographic / Nature
-  { rom: 'San', hangul: '산', type: 'root', def: 'Mountain' },
-  { rom: 'Gang', hangul: '강', type: 'root', def: 'River' },
-  { rom: 'Cheon', hangul: '천', type: 'root', def: 'Stream/Heaven' },
-  { rom: 'Hae', hangul: '해', type: 'root', def: 'Sea' },
-  { rom: 'Do', hangul: '도', type: 'root', def: 'Island/Province' },
-  { rom: 'Ju', hangul: '주', type: 'root', def: 'Region/State' },
-  { rom: 'Won', hangul: '원', type: 'root', def: 'Source/Garden' },
-  { rom: 'Gwang', hangul: '광', type: 'root', def: 'Light/Broad' },
-  { rom: 'Pyeong', hangul: '평', type: 'root', def: 'Flat/Peace' },
-  { rom: 'An', hangul: '안', type: 'root', def: 'Peace/Inside' },
-  { rom: 'Chang', hangul: '창', type: 'root', def: 'Prosperous/Window' },
-  { rom: 'Jin', hangul: '진', type: 'root', def: 'Ferry/Camp/Truth' },
-  { rom: 'Po', hangul: '포', type: 'root', def: 'Port' },
-  { rom: 'Gok', hangul: '곡', type: 'root', def: 'Valley' },
-  { rom: 'Reung', hangul: '릉', type: 'root', def: 'Tomb/Ridge' },
-  { rom: 'Yang', hangul: '양', type: 'root', def: 'Sunny/Ocean' },
-  { rom: 'Seong', hangul: '성', type: 'root', def: 'Castle/Star/Holy' },
-  { rom: 'Rim', hangul: '림', type: 'root', def: 'Forest' },
-  { rom: 'Su', hangul: '수', type: 'root', def: 'Water/Excellent' },
-  { rom: 'Hwa', hangul: '화', type: 'root', def: 'Flower/Fire/Harmony' },
-  { rom: 'Yeong', hangul: '영', type: 'root', def: 'Eternal/Pass' },
-  { rom: 'Chon', hangul: '촌', type: 'root', def: 'Village' },
-  { rom: 'Tan', hangul: '탄', type: 'root', def: 'Shoal/Coal' },
-  { rom: 'Mok', hangul: '목', type: 'root', def: 'Wood/Neck' },
-  { rom: 'Geum', hangul: '금', type: 'root', def: 'Gold' },
-  { rom: 'Eun', hangul: '은', type: 'root', def: 'Silver' },
-  { rom: 'Seok', hangul: '석', type: 'root', def: 'Stone' },
-  { rom: 'Am', hangul: '암', type: 'root', def: 'Rock' },
-  { rom: 'Gyeong', hangul: '경', type: 'root', def: 'View/Capital' },
-  { rom: 'Bo', hangul: '보', type: 'root', def: 'Treasure/Fort' },
-  { rom: 'Cheol', hangul: '철', type: 'root', def: 'Iron' },
-  { rom: 'Ho', hangul: '호', type: 'root', def: 'Lake/Protect' },
-  { rom: 'Man', hangul: '만', type: 'root', def: 'Bay/10,000' },
-  { rom: 'Gap', hangul: '갑', type: 'root', def: 'Cape/First' },
-  { rom: 'Dae', hangul: '대', type: 'root', def: 'Terrace/Platform' },
-  { rom: 'Jeong', hangul: '정', type: 'root', def: 'Pavilion/Well/Right' },
-  { rom: 'Sa', hangul: '사', type: 'root', def: 'Temple/Sand' },
-  { rom: 'Gyo', hangul: '교', type: 'root', def: 'Bridge/School' },
-  { rom: 'Tap', hangul: '탑', type: 'root', def: 'Pagoda' },
-  { rom: 'Hyeon', hangul: '현', type: 'root', def: 'Pass/Prefecture' },
-  { rom: 'Gung', hangul: '궁', type: 'root', def: 'Palace' },
-  { rom: 'Mun', hangul: '문', type: 'root', def: 'Gate' },
-  { rom: 'Ro', hangul: '로', type: 'root', def: 'Road' },
-  { rom: 'Dang', hangul: '당', type: 'root', def: 'Hall' },
-  { rom: 'Gak', hangul: '각', type: 'root', def: 'Pavilion' },
-  { rom: 'Ru', hangul: '루', type: 'root', def: 'Tower' },
-  { rom: 'Chae', hangul: '채', type: 'root', def: 'Vegetable/Color' },
-  { rom: 'Ya', hangul: '야', type: 'root', def: 'Field/Wild' },
-  { rom: 'Jeon', hangul: '전', type: 'root', def: 'Field/Hall' },
-  { rom: 'Un', hangul: '운', type: 'root', def: 'Cloud/Luck' },
-  { rom: 'Pung', hangul: '풍', type: 'root', def: 'Wind' },
-  { rom: 'U', hangul: '우', type: 'root', def: 'Rain' },
-  { rom: 'Seol', hangul: '설', type: 'root', def: 'Snow' },
-  { rom: 'Il', hangul: '일', type: 'root', def: 'Sun/Day' },
-  { rom: 'Wol', hangul: '월', type: 'root', def: 'Moon/Month' },
-  { rom: 'Myeong', hangul: '명', type: 'root', def: 'Bright' },
-  { rom: 'Deok', hangul: '덕', type: 'root', def: 'Virtue' },
-  { rom: 'In', hangul: '인', type: 'root', def: 'Benevolence/Person' },
-  { rom: 'Ui', hangul: '의', type: 'root', def: 'Righteousness' },
-  { rom: 'Ye', hangul: '예', type: 'root', def: 'Art/Politeness' },
-  { rom: 'Ji', hangul: '지', type: 'root', def: 'Wisdom/Land' },
-  { rom: 'Sin', hangul: '신', type: 'root', def: 'Trust/God' },
-  { rom: 'Chung', hangul: '충', type: 'root', def: 'Loyalty' },
-  { rom: 'Hyo', hangul: '효', type: 'root', def: 'Filial Piety' },
-  { rom: 'Sun', hangul: '순', type: 'root', def: 'Pure' },
-  { rom: 'Mi', hangul: '미', type: 'root', def: 'Beauty' },
-  { rom: 'Guk', hangul: '국', type: 'root', def: 'Nation' },
-  { rom: 'Min', hangul: '민', type: 'root', def: 'People' },
-  { rom: 'Gun', hangul: '군', type: 'root', def: 'Military/County' },
-  { rom: 'Hang', hangul: '항', type: 'root', def: 'Port' },
-  { rom: 'Yeon', hangul: '연', type: 'root', def: 'Lotus/Connection' },
-  { rom: 'Lan', hangul: '란', type: 'root', def: 'Orchid' },
-  { rom: 'Guk', hangul: '국', type: 'root', def: 'Chrysanthemum' },
-  { rom: 'Juk', hangul: '죽', type: 'root', def: 'Bamboo' },
-  { rom: 'Song', hangul: '송', type: 'root', def: 'Pine' },
-  { rom: 'Mae', hangul: '매', type: 'root', def: 'Plum' },
-  { rom: 'Do', hangul: '도', type: 'root', def: 'Peach/Capital' },
-  { rom: 'Yi', hangul: '이', type: 'root', def: 'Pear/Benefit' },
-  { rom: 'Sam', hangul: '삼', type: 'root', def: 'Three/Ginseng' },
-  { rom: 'O', hangul: '오', type: 'root', def: 'Five/Noon' },
-  { rom: 'Chil', hangul: '칠', type: 'root', def: 'Seven' },
-  { rom: 'Pal', hangul: '팔', type: 'root', def: 'Eight' },
-  { rom: 'Gu', hangul: '구', type: 'root', def: 'Nine/Hills' },
-  { rom: 'Sip', hangul: '십', type: 'root', def: 'Ten' },
-  { rom: 'Baek', hangul: '백', type: 'root', def: 'Hundred' },
-  { rom: 'Cheon', hangul: '천', type: 'root', def: 'Thousand' },
-  { rom: 'Man', hangul: '만', type: 'root', def: 'Ten Thousand' },
-  { rom: 'Ok', hangul: '옥', type: 'root', def: 'Jade' },
-  { rom: 'Bi', hangul: '비', type: 'root', def: 'Rain/Queen/Stone Monument' },
-  { rom: 'Sang', hangul: '상', type: 'root', def: 'Frost/Minister' },
-  { rom: 'Ha', hangul: '하', type: 'root', def: 'Summer/River' },
-  { rom: 'Chu', hangul: '추', type: 'root', def: 'Autumn' },
-  { rom: 'Dong', hangul: '동', type: 'root', def: 'Winter/East' },
-  { rom: 'Nam', hangul: '남', type: 'root', def: 'South/Male' },
-  { rom: 'Seo', hangul: '서', type: 'root', def: 'West/Book' },
-  { rom: 'Buk', hangul: '북', type: 'root', def: 'North' },
-  { rom: 'Jung', hangul: '중', type: 'root', def: 'Middle' },
-  { rom: 'Bin', hangul: '빈', type: 'root', def: 'Guest/Refined' },
-  { rom: 'Hui', hangul: '희', type: 'root', def: 'Joy' },
-  { rom: 'Rak', hangul: '락', type: 'root', def: 'Pleasure' },
-  { rom: 'Su', hangul: '수', type: 'root', def: 'Longevity/Water' },
-  { rom: 'Bok', hangul: '복', type: 'root', def: 'Fortune' },
-  { rom: 'Gang', hangul: '강', type: 'root', def: 'Strong/River' },
-  { rom: 'Yak', hangul: '약', type: 'root', def: 'Medicine/Weak' },
-  { rom: 'Cho', hangul: '초', type: 'root', def: 'Grass/Beginning' },
-  { rom: 'Mu', hangul: '무', type: 'root', def: 'Military/Nothing' },
-  { rom: 'Mun', hangul: '문', type: 'root', def: 'Literature/Gate' },
+export const KO_NOUNS_SINO: KoreanComponent[] = [
+  // Geographic Features
+  { rom: 'San', hangul: '산', type: 'geo', def: 'Mountain' },
+  { rom: 'Gang', hangul: '강', type: 'geo', def: 'River' },
+  { rom: 'Cheon', hangul: '천', type: 'geo', def: 'Stream' },
+  { rom: 'Hae', hangul: '해', type: 'geo', def: 'Sea' },
+  { rom: 'Do', hangul: '도', type: 'geo', def: 'Island' },
+  { rom: 'Gok', hangul: '곡', type: 'geo', def: 'Valley' },
+  { rom: 'Won', hangul: '원', type: 'geo', def: 'Spring/Source' },
+  { rom: 'Ho', hangul: '호', type: 'geo', def: 'Lake' },
+  { rom: 'Man', hangul: '만', type: 'geo', def: 'Bay' },
+  { rom: 'Gap', hangul: '갑', type: 'geo', def: 'Cape' },
+  { rom: 'Bong', hangul: '봉', type: 'geo', def: 'Peak' },
+  { rom: 'Reung', hangul: '릉', type: 'geo', def: 'Ridge/Tomb' },
+  { rom: 'Tan', hangul: '탄', type: 'geo', def: 'Shoal/Rapids' },
+  { rom: 'Ya', hangul: '야', type: 'geo', def: 'Field/Wild' },
+  { rom: 'Jeon', hangul: '전', type: 'geo', def: 'Field' },
+  { rom: 'Dae', hangul: '대', type: 'geo', def: 'Plateau/Terrace' },
+  
+  // Settlements / Structures
+  { rom: 'Seong', hangul: '성', type: 'settlement', def: 'Castle/Fort' },
+  { rom: 'Jin', hangul: '진', type: 'settlement', def: 'Garrison/Ferry' },
+  { rom: 'Po', hangul: '포', type: 'settlement', def: 'Port' },
+  { rom: 'Chon', hangul: '촌', type: 'settlement', def: 'Village' },
+  { rom: 'Ju', hangul: '주', type: 'settlement', def: 'Region/State' },
+  { rom: 'Gyeong', hangul: '경', type: 'settlement', def: 'Capital/View' },
+  { rom: 'Sa', hangul: '사', type: 'settlement', def: 'Temple' },
+  { rom: 'Gung', hangul: '궁', type: 'settlement', def: 'Palace' },
+  { rom: 'Mun', hangul: '문', type: 'settlement', def: 'Gate' },
+  { rom: 'Ro', hangul: '로', type: 'settlement', def: 'Road' },
+  { rom: 'Gyo', hangul: '교', type: 'settlement', def: 'Bridge' },
+  { rom: 'Won', hangul: '원', type: 'settlement', def: 'Center/Park' },
+  { rom: 'Hang', hangul: '항', type: 'settlement', def: 'Harbor' },
+  { rom: 'Gwan', hangul: '관', type: 'settlement', def: 'Hall/Pavilion' },
+  { rom: 'Ru', hangul: '루', type: 'settlement', def: 'Tower' },
+  { rom: 'Dang', hangul: '당', type: 'settlement', def: 'Hall' },
+    { rom: 'Chon', hangul: '촌', type: 'settlement', def: 'Village' },
+  { rom: 'Tap', hangul: '탑', type: 'settlement', def: 'Pagoda' },
+  { rom: 'Jeong', hangul: '정', type: 'settlement', def: 'Pavilion/Well' },
+  
+
+  // Nature Objects
+  { rom: 'Rim', hangul: '림', type: 'nature', def: 'Forest' },
+  { rom: 'Hwa', hangul: '화', type: 'nature', def: 'Flower' },
+  { rom: 'Mok', hangul: '목', type: 'nature', def: 'Tree' },
+  { rom: 'Seok', hangul: '석', type: 'nature', def: 'Stone' },
+  { rom: 'Am', hangul: '암', type: 'nature', def: 'Rock' },
+  { rom: 'Yeon', hangul: '연', type: 'nature', def: 'Lotus' },
+  { rom: 'Song', hangul: '송', type: 'nature', def: 'Pine' },
+  { rom: 'Juk', hangul: '죽', type: 'nature', def: 'Bamboo' },
+  { rom: 'Lan', hangul: '란', type: 'nature', def: 'Orchid' },
+  { rom: 'Guk', hangul: '국', type: 'nature', def: 'Chrysanthemum' },
+  { rom: 'Mae', hangul: '매', type: 'nature', def: 'Plum' },
+  { rom: 'Un', hangul: '운', type: 'nature', def: 'Cloud' },
+  { rom: 'Ryong', hangul: '룡', type: 'nature', def: 'Dragon' },
+  { rom: 'Ho', hangul: '호', type: 'nature', def: 'Tiger' },
+  { rom: 'Gu', hangul: '구', type: 'nature', def: 'Turtle' },
+  { rom: 'Hak', hangul: '학', type: 'nature', def: 'Crane' },
+  { rom: 'E', hangul: '어', type: 'nature', def: 'Fish' },
+  { rom: 'Ma', hangul: '마', type: 'nature', def: 'Horse' },
+  { rom: 'Cheol', hangul: '철', type: 'nature', def: 'Iron' },
+  { rom: 'Dong', hangul: '동', type: 'nature', def: 'Copper' },
+  { rom: 'Ok', hangul: '옥', type: 'nature', def: 'Jade/Gem' },
+  { rom: 'Ju', hangul: '주', type: 'nature', def: 'Jewel/Pearl' },
+  { rom: 'To', hangul: '토', type: 'nature', def: 'Earth/Soil' },
+  
+  // Abstract / Concepts
+  { rom: 'Pyeong', hangul: '평', type: 'abstract', def: 'Peace/Flat' },
+  { rom: 'An', hangul: '안', type: 'abstract', def: 'Comfort/Peace' },
+  { rom: 'Chang', hangul: '창', type: 'abstract', def: 'Prosperous' },
+  { rom: 'Yang', hangul: '양', type: 'abstract', def: 'Sun/Yang' },
+  { rom: 'Eum', hangul: '음', type: 'abstract', def: 'Shade/Yin' },
+  { rom: 'Su', hangul: '수', type: 'abstract', def: 'Water/Longevity' },
+  { rom: 'Deok', hangul: '덕', type: 'abstract', def: 'Virtue' },
+  { rom: 'Bok', hangul: '복', type: 'abstract', def: 'Luck' },
+  { rom: 'Il', hangul: '일', type: 'abstract', def: 'Sun/Day' },
+  { rom: 'Wol', hangul: '월', type: 'abstract', def: 'Moon' },
+  { rom: 'Yeong', hangul: '영', type: 'abstract', def: 'Eternal/Glory' },
+  { rom: 'Sang', hangul: '상', type: 'abstract', def: 'Auspicous' },
+  { rom: 'Yeong', hangul: '영', type: 'abstract', def: 'Eternal' },
+  { rom: 'Gwang', hangul: '광', type: 'abstract', def: 'Light' },
+  { rom: 'Il', hangul: '일', type: 'abstract', def: 'One/Sun' },
 ];
 
 // ==========================================
-// 3. NATIVE KOREAN ROOTS (Pure Korean)
+// 3. NATIVE KOREAN (Pure Korean)
 // ==========================================
-export const KO_ROOTS_NATIVE: KoreanComponent[] = [
-  { rom: 'Han', hangul: '한', type: 'native_root', def: 'Big/Leader' },
-  { rom: 'Arae', hangul: '아래', type: 'native_root', def: 'Below' },
-  { rom: 'Wit', hangul: '윗', type: 'native_root', def: 'Above' },
-  { rom: 'Saem', hangul: '샘', type: 'native_root', def: 'Spring' },
-  { rom: 'Dol', hangul: '돌', type: 'native_root', def: 'Stone' },
-  { rom: 'Bat', hangul: '밭', type: 'native_root', def: 'Field' },
-  { rom: 'Non', hangul: '논', type: 'native_root', def: 'Paddy' },
-  { rom: 'Gol', hangul: '골', type: 'native_root', def: 'Valley' },
-  { rom: 'Moe', hangul: '뫼', type: 'native_root', def: 'Mountain' },
-  { rom: 'Nae', hangul: '내', type: 'native_root', def: 'Stream' },
-  { rom: 'Sol', hangul: '솔', type: 'native_root', def: 'Pine' },
-  { rom: 'Beol', hangul: '벌', type: 'native_root', def: 'Plain' },
-  { rom: 'Gae', hangul: '개', type: 'native_root', def: 'Inlet' },
-  { rom: 'Got', hangul: '곶', type: 'native_root', def: 'Cape' },
-  { rom: 'Muri', hangul: '무리', type: 'native_root', def: 'Cluster' },
-  { rom: 'Ul', hangul: '울', type: 'native_root', def: 'Fence (Seoul root)' },
-  { rom: 'Som', hangul: '솜', type: 'native_root', def: 'Cotton' },
-  { rom: 'Bam', hangul: '밤', type: 'native_root', def: 'Chestnut/Night' },
-  { rom: 'Hwangi', hangul: '황이', type: 'native_root', def: 'Sulfur' },
-  { rom: 'Kkot', hangul: '꽃', type: 'native_root', def: 'Flower' },
-  { rom: 'Byeol', hangul: '별', type: 'native_root', def: 'Star' },
-  { rom: 'Dara', hangul: '다라', type: 'native_root', def: 'High place (Archaic)' },
-  { rom: 'Mir', hangul: '미르', type: 'native_root', def: 'Dragon (Archaic)' },
-  { rom: 'Gar', hangul: '갈', type: 'native_root', def: 'Reed' },
-  { rom: 'Mul', hangul: '물', type: 'native_root', def: 'Water' },
-  { rom: 'Bul', hangul: '불', type: 'native_root', def: 'Fire' },
-  { rom: 'So', hangul: '소', type: 'native_root', def: 'Pool' },
-  { rom: 'Mal', hangul: '말', type: 'native_root', def: 'Horse/End' },
-  { rom: 'Dur', hangul: '들', type: 'native_root', def: 'Field' },
+export const KO_NATIVE: KoreanComponent[] = [
+  // Descriptors
+  { rom: 'Han', hangul: '한', type: 'native_desc', def: 'Big/Great' },
+  { rom: 'Saet', hangul: '샛', type: 'native_desc', def: 'New/Morning' },
+  { rom: 'Dol', hangul: '돌', type: 'native_desc', def: 'Stone' },
+  { rom: 'Sol', hangul: '솔', type: 'native_desc', def: 'Pine' },
+  { rom: 'Bul', hangul: '불', type: 'native_desc', def: 'Fire' },
+  { rom: 'Mul', hangul: '물', type: 'native_desc', def: 'Water' },
+  { rom: 'Keun', hangul: '큰', type: 'native_desc', def: 'Big' },
+  { rom: 'Jageun', hangul: '작은', type: 'native_desc', def: 'Small' },
+  { rom: 'Dwit', hangul: '뒷', type: 'native_desc', def: 'Back/Behind' },
+  { rom: 'Ap', hangul: '앞', type: 'native_desc', def: 'Front' },
+  { rom: 'Saem', hangul: '샘', type: 'native_desc', def: 'Spring' },
+  
+  // Geographics
+  { rom: 'Gol', hangul: '골', type: 'native_geo', def: 'Valley' },
+  { rom: 'Moe', hangul: '뫼', type: 'native_geo', def: 'Mountain' },
+  { rom: 'Nae', hangul: '내', type: 'native_geo', def: 'Stream' },
+  { rom: 'Gae', hangul: '개', type: 'native_geo', def: 'Inlet' },
+  { rom: 'Bat', hangul: '밭', type: 'native_geo', def: 'Field' },
+  { rom: 'Maru', hangul: '마루', type: 'native_geo', def: 'Summit/Ridge' },
+  { rom: 'Deul', hangul: '들', type: 'native_geo', def: 'Plains' },
+  { rom: 'U', hangul: '우', type: 'native_geo', def: 'Well' },
+  { rom: 'Ul', hangul: '울', type: 'native_geo', def: 'Fence' },
+  { rom: 'Teo', hangul: '터', type: 'native_geo', def: 'Site/Lot' },
+  { rom: 'Bawi', hangul: '바위', type: 'native_geo', def: 'Rock' },
+  { rom: 'Gogae', hangul: '고개', type: 'native_geo', def: 'Hill Pass' },
 ];
 
 // ==========================================
-// 4. SUFFIXES (Administrative & Geographical)
+// 4. SUFFIXES (Administrative & Common Endings)
 // ==========================================
 export const KO_SUFFIXES: KoreanComponent[] = [
-  // Administrative
+  // Administrative - Typically hyphenated in Romanization (e.g. Gangnam-gu)
   { rom: 'si', hangul: '시', type: 'suffix', def: 'City' },
   { rom: 'gun', hangul: '군', type: 'suffix', def: 'County' },
   { rom: 'gu', hangul: '구', type: 'suffix', def: 'District' },
   { rom: 'dong', hangul: '동', type: 'suffix', def: 'Neighborhood' },
   { rom: 'eup', hangul: '읍', type: 'suffix', def: 'Town' },
-  { rom: 'myeon', hangul: '면', type: 'suffix', def: 'Township' },
   { rom: 'ri', hangul: '리', type: 'suffix', def: 'Village' },
-  { rom: 'ga', hangul: '가', type: 'suffix', def: 'Street/Block' },
-  // Geographical Suffixes (often used as endings)
-  { rom: 'do', hangul: '도', type: 'suffix', def: 'Island/Province' },
-  { rom: 'san', hangul: '산', type: 'suffix', def: 'Mountain' },
-  { rom: 'gang', hangul: '강', type: 'suffix', def: 'River' },
-  { rom: 'cheon', hangul: '천', type: 'suffix', def: 'Stream' },
-  { rom: 'gok', hangul: '곡', type: 'suffix', def: 'Valley' },
-  { rom: 'ryeong', hangul: '령', type: 'suffix', def: 'Pass' },
-  { rom: 'chi', hangul: '치', type: 'suffix', def: 'Pass' },
-  { rom: 'jae', hangul: '재', type: 'suffix', def: 'Pass (Native)' },
-  { rom: 'got', hangul: '곶', type: 'suffix', def: 'Cape' },
-  { rom: 'man', hangul: '만', type: 'suffix', def: 'Bay' },
-  { rom: 'bong', hangul: '봉', type: 'suffix', def: 'Peak' },
-  { rom: 'dae', hangul: '대', type: 'suffix', def: 'Platform' },
-  { rom: 'ak', hangul: '악', type: 'suffix', def: 'Peak' },
-  { rom: 'neung', hangul: '능', type: 'suffix', def: 'Tomb' },
-  // Native Suffixes
-  { rom: 'ma-eul', hangul: '마을', type: 'suffix', def: 'Village (Native)' },
-  { rom: 'bat', hangul: '밭', type: 'suffix', def: 'Field (Native)' },
-  { rom: 'gol', hangul: '골', type: 'suffix', def: 'Valley (Native)' },
-  { rom: 'nae', hangul: '내', type: 'suffix', def: 'Stream (Native)' },
+  { rom: 'do', hangul: '도', type: 'suffix', def: 'Province/Island' },
+  { rom: 'ga', hangul: '가', type: 'suffix', def: 'Street Block' },
+  
+  // Geographic Endings - Typically fused (e.g. Bukhansan)
+  { rom: 'san', hangul: '산', type: 'geo', def: 'Mountain' },
+  { rom: 'gang', hangul: '강', type: 'geo', def: 'River' },
+  { rom: 'cheon', hangul: '천', type: 'geo', def: 'Stream' },
+  { rom: 'bong', hangul: '봉', type: 'geo', def: 'Peak' },
+  { rom: 'got', hangul: '곶', type: 'geo', def: 'Cape' },
+  { rom: 'Dae', hangul: '대', type: 'geo', def: 'Platform/Terrace' },
+  { rom: 'Gok', hangul: '곡', type: 'geo', def: 'Valley' },
+  { rom: 'Tan', hangul: '탄', type: 'geo', def: 'Shoal/Beach' },
 ];
 
+// ==========================================
+// 5. NUMBERS (Sino-Korean)
+// ==========================================
 export const KO_NUMBERS: KoreanComponent[] = [
-  { rom: 'Il', hangul: '일', type: 'number', def: 'One' },
-  { rom: 'I', hangul: '이', type: 'number', def: 'Two' },
-  { rom: 'Sam', hangul: '삼', type: 'number', def: 'Three' },
-  { rom: 'Sa', hangul: '사', type: 'number', def: 'Four' },
-  { rom: 'O', hangul: '오', type: 'number', def: 'Five' },
-  { rom: 'Yuk', hangul: '육', type: 'number', def: 'Six' },
-  { rom: 'Chil', hangul: '칠', type: 'number', def: 'Seven' },
-  { rom: 'Pal', hangul: '팔', type: 'number', def: 'Eight' },
-  { rom: 'Gu', hangul: '구', type: 'number', def: 'Nine' },
-  { rom: 'Sip', hangul: '십', type: 'number', def: 'Ten' },
+  { rom: 'Il', hangul: '일', type: 'number', def: '1' },
+  { rom: 'I', hangul: '이', type: 'number', def: '2' },
+  { rom: 'Sam', hangul: '삼', type: 'number', def: '3' },
+  { rom: 'Sa', hangul: '사', type: 'number', def: '4' },
+  { rom: 'O', hangul: '오', type: 'number', def: '5' },
+  { rom: 'Yuk', hangul: '육', type: 'number', def: '6' },
+  { rom: 'Chil', hangul: '칠', type: 'number', def: '7' },
+  { rom: 'Pal', hangul: '팔', type: 'number', def: '8' },
+  { rom: 'Gu', hangul: '구', type: 'number', def: '9' },
+  { rom: 'Sip', hangul: '십', type: 'number', def: '10' },
 ];
