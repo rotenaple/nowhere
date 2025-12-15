@@ -2,56 +2,100 @@ import { GeneratedResult } from "../../../types";
 import { getRandomElement } from "../../utils";
 import { ROMANCE_DATA, getRomData } from "../../dictionaries/romanceDict";
 
-export const getItalianCapacity = () => {
-  const roots = ROMANCE_DATA.filter(c => c.it && c.type === 'root');
-  const suffixes = ROMANCE_DATA.filter(c => c.it && c.type === 'suffix');
-  const prefixes = ROMANCE_DATA.filter(c => c.it && c.type === 'prefix');
+const getPool = (types: string[]) => 
+  ROMANCE_DATA.filter(c => c.it && types.includes(c.type));
 
-  const c1 = prefixes.length * roots.length;
-  const c2 = roots.length * suffixes.length;
-  const c3 = roots.length * roots.length;
-  return c1 + c2 + c3;
+export const getItalianCapacity = () => {
+  const prefixes = getPool(['prefix']);
+  const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
+  const allAdjs = getPool(['adj_geo', 'adj_color', 'adj_quality']);
+  const allTails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  const suffixes = getPool(['suffix']);
+
+  const c1 = prefixes.length * nouns.length;
+  const c2 = nouns.length * allAdjs.length;
+  const c3 = nouns.length * allTails.length;
+  const c4 = nouns.length * suffixes.length;
+
+  return c1 + c2 + c3 + c4;
 }
 
 export const generateItalianPlace = (): GeneratedResult => {
   let word = "";
+  const roll = Math.random();
+
+  const formatAdj = (adj: string, gender: string) => {
+      if (gender === 'f') {
+          if (adj.endsWith('o')) return adj.slice(0, -1) + 'a';
+          if (adj === 'Santo') return 'Santa';
+          if (adj === 'Nuovo') return 'Nuova';
+          if (adj === 'Vecchio') return 'Vecchia';
+          if (adj === 'Bello') return 'Bella';
+          if (adj === 'Buon') return 'Buona';
+      }
+      return adj;
+  };
+
+  // 1. San / Castel / Prefix Pattern
+  if (roll < 0.25) {
+      if (Math.random() < 0.5) {
+          // Saint
+          const target = getRandomElement(getPool(['bio_fauna', 'abstract', 'bio_flora']));
+          const tData = getRomData(target.it);
+          
+          let prefix = 'San';
+          if (tData.gender === 'f') {
+              prefix = 'Santa';
+          } else {
+              if (tData.val.startsWith('S') && !['a','e','i','o','u'].includes(tData.val.charAt(1))) prefix = 'Santo';
+              else if (tData.val.startsWith('Z')) prefix = 'Santo';
+              else prefix = 'San';
+          }
+          word = `${prefix} ${tData.val}`;
+      } else {
+          // Common prefixes
+          const prefixObj = getRandomElement(getPool(['prefix']));
+          const rootObj = getRandomElement(getPool(['settlement', 'geo_major']));
+          
+          let p = getRomData(prefixObj.it).val;
+          let r = getRomData(rootObj.it).val;
+          if (p === 'Ca\'' || p.length <= 3) word = `${p} ${r}`; 
+          else word = `${p} ${r}`;
+      }
+  }
   
-  const getPool = (t: string) => ROMANCE_DATA.filter(c => c.it && c.type === t);
-  const roots = getPool('root');
-
-  const type = Math.random();
-
-  // 1. Prefix + Root
-  if (type < 0.40) {
-    const prefixObj = getRandomElement(getPool('prefix'));
-    const rootObj = getRandomElement([...roots, ...getPool('adjective')]);
+  // 2. Root + Adjective
+  else if (roll < 0.55) {
+    const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
     
-    let p = getRomData(prefixObj.it).val;
-    let rData = getRomData(rootObj.it);
+    // EXPANSION: Universal Adjectives
+    let adjTypes = ['adj_quality', 'adj_color'];
+    if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
+    const adjObj = getRandomElement(getPool(adjTypes));
+    
+    const rData = getRomData(rootObj.it);
     let r = rData.val;
+    const gender = rData.gender || 'm';
     
-    // Logic: Check tag 'fem_head' in dictionary for Villa, Isola, etc.
-    if (prefixObj.tags?.includes('fem_head') || p.endsWith('a')) {
-        if (r.endsWith('o')) r = r.slice(0, -1) + 'a';
-        else if (r === 'Santo') r = 'Santa';
-        else if (r === 'Nuovo') r = 'Nuova';
-        else if (r === 'Vecchio') r = 'Vecchia';
-        else if (r === 'San') r = 'Santa';
-    }
+    let a = formatAdj(getRomData(adjObj.it).val, gender);
     
-    // Heuristic: Short prefixes have space, long ones fuse
-    // Or use tag 'fuse'
-    if (p.length <= 3 || Math.random() < 0.3) {
-        word = `${p} ${r}`; 
+    if (adjObj.tags?.includes('pre')) {
+        if (a === 'Bello') a = 'Bel';
+        if (a === 'Grande') a = 'Gran';
+        if (a === 'Santo') a = 'San';
+        if (a === 'Buono') a = 'Buon';
+        
+        word = `${a} ${r}`;
     } else {
-        word = p + r.toLowerCase(); 
+        word = `${r} ${a}`;
     }
   }
   
-  // 2. Root + Suffix
-  else if (type < 0.75) {
-    let rootObj = getRandomElement(roots);
-    const suffixObj = getRandomElement(getPool('suffix'));
+  // 3. Root + Suffix
+  else if (roll < 0.75) {
+    // EXPANSION: Allow suffixing Geo Major
+    const rootObj = getRandomElement(getPool(['geo_minor', 'settlement', 'bio_flora', 'geo_major']));
+    const suffixObj = getRandomElement(getPool(['suffix']));
     
     let base = getRomData(rootObj.it).val;
     const sVal = getRomData(suffixObj.it).val;
@@ -62,14 +106,38 @@ export const generateItalianPlace = (): GeneratedResult => {
     word = base + sVal;
   }
   
-  // 3. "Di" Construction
+  // 4. "Di" Construction
   else {
-    const headObj = getRandomElement(roots);
-    const tailObj = getRandomElement(roots);
-    let h = getRomData(headObj.it).val;
-    let t = getRomData(tailObj.it).val;
+    const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
+    // EXPANSION: Universal Tails
+    const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
     
-    word = `${h} di ${t}`;
+    let h = getRomData(headObj.it).val;
+    const tData = getRomData(tailObj.it);
+    let t = tData.val;
+    
+    let connector = 'di';
+    const useArticle = !['name'].includes(tailObj.type); 
+    
+    if (useArticle) {
+        if (tData.gender === 'f') {
+            connector = ['a','e','i','o','u'].includes(t.charAt(0).toLowerCase()) ? "dell'" : "della";
+        } else {
+            if (['z', 'gn', 'ps'].includes(t.slice(0,1).toLowerCase()) || (t.startsWith('s') && !['a','e','i','o','u'].includes(t.charAt(1)))) {
+                connector = "dello";
+            } else if (['a','e','i','o','u'].includes(t.charAt(0).toLowerCase())) {
+                connector = "dell'";
+            } else {
+                connector = "del";
+            }
+        }
+    }
+    
+    if (connector.endsWith("'")) {
+        word = `${h} ${connector}${t}`;
+    } else {
+        word = `${h} ${connector} ${t}`;
+    }
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);

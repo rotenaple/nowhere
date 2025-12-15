@@ -1,129 +1,132 @@
 import { GeneratedResult } from "../../../types";
 import { getRandomElement } from "../../utils";
-import { ROMANCE_DATA, getRomData } from "../../dictionaries/romanceDict";
+import { ROMANCE_DATA, getRomData, RomanceComponent } from "../../dictionaries/romanceDict";
+
+// Helper to filter by multiple types
+const getPool = (types: string[]) => 
+  ROMANCE_DATA.filter(c => c.es && types.includes(c.type));
 
 export const getSpanishCapacity = () => {
-  const roots = ROMANCE_DATA.filter(c => c.es && c.type === 'root');
-  const suffixes = ROMANCE_DATA.filter(c => c.es && c.type === 'suffix');
-  const prefixes = ROMANCE_DATA.filter(c => c.es && c.type === 'prefix');
+  const suffixes = getPool(['suffix']);
   
-  const c1 = prefixes.length * roots.length;
-  const c2 = roots.length * roots.length;
-  const c3 = roots.length * suffixes.length;
-  return c1 + c2 + c3;
+  // Recipe 1: San Patterns (Abstract/Bio)
+  const recipe1 = getPool(['prefix']).length * getPool(['bio_fauna', 'bio_flora', 'abstract']).length; 
+  
+  // Recipe 2: Noun + Universal Adjective
+  const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
+  const allAdjs = getPool(['adj_geo', 'adj_color', 'adj_quality']);
+  const recipe2 = nouns.length * allAdjs.length;
+  
+  // Recipe 3: Noun + de + Universal Tail
+  const allTails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  const recipe3 = nouns.length * allTails.length; 
+  
+  // Recipe 4: Root + Suffix
+  const roots = getPool(['bio_flora', 'geo_minor', 'settlement', 'geo_major']);
+  const recipe4 = roots.length * suffixes.length;
+
+  return recipe1 + recipe2 + recipe3 + recipe4;
 }
 
 export const generateSpanishPlace = (): GeneratedResult => {
   let word = "";
-  
-  const getPool = (t: string) => ROMANCE_DATA.filter(c => c.es && c.type === t);
-  const roots = getPool('root');
+  const roll = Math.random();
 
-  const type = Math.random();
-  
-  // 1. Head (Prefix) + Root/Adj
-  // e.g. San Pedro, Villa Real, La Nueva
-  if (type < 0.40) {
-    const headObj = getRandomElement(getPool('prefix'));
-    const rootObj = getRandomElement([...roots, ...getPool('adjective')]);
+  // Helper for gender agreement
+  const formatAdjective = (nounGender: string, adjObj: RomanceComponent) => {
+    let adj = getRomData(adjObj.es).val;
+    if (nounGender === 'f') {
+      if (adj.endsWith('o')) return adj.slice(0, -1) + 'a';
+      if (adj === 'Santo') return 'Santa'; 
+      if (adj === 'Buen') return 'Buena';
+      if (adj === 'Mal') return 'Mala';
+    }
+    if (nounGender === 'm' && adj === 'Santo') {
+        return 'Santo'; 
+    }
+    return adj;
+  };
+
+  // --- RECIPE 1: The "San" Pattern ---
+  if (roll < 0.15) {
+    const target = getRandomElement(getPool(['bio_fauna', 'bio_flora', 'abstract'])); 
+    const tData = getRomData(target.es);
     
-    let h = getRomData(headObj.es).val;
-    const rData = getRomData(rootObj.es);
-    let r = rData.val;
-
-    // STEP 1: Determine Target Gender
-    let targetGender = 'm'; // Default
-
-    if (rootObj.type === 'root') {
-        // If Root is a Noun, it dictates the gender (e.g. Mesa -> f)
-        targetGender = rData.gender || 'm';
-    } else {
-        // If Root is an Adjective, the Prefix dictates the gender (e.g. Villa -> f)
-        // Check tags or explicit feminine strings
-        if (headObj.tags?.includes('fem_head') || h === 'La' || h.endsWith('a')) {
-            targetGender = 'f';
-        } else {
-            targetGender = 'm';
-        }
+    let prefix = (tData.gender === 'f') ? 'Santa' : 'San';
+    if (prefix === 'San' && (tData.val.startsWith('Do') || tData.val.startsWith('To'))) {
+        prefix = 'Santo';
     }
-
-    // STEP 2: Align Prefix to Target Gender
-    // Handle Articles
-    if (['El', 'La', 'Los', 'Las'].includes(h)) {
-        h = (targetGender === 'f') ? 'La' : 'El';
-    }
-    // Handle Saints
-    else if (['San', 'Santo', 'Santa'].includes(h)) {
-        if (targetGender === 'f') {
-            h = 'Santa';
-        } else {
-            // Masculine: Default to San, but use Santo for phonetic exceptions
-            if (r.startsWith('Do') || r.startsWith('To')) h = 'Santo';
-            else h = 'San';
-        }
-    }
-
-    // STEP 3: Align Adjective (if applicable) to Target Gender
-    if (rootObj.type === 'adjective') {
-        if (targetGender === 'f') {
-            // Feminize
-            if (r.endsWith('o')) r = r.slice(0, -1) + 'a'; // Nuevo -> Nueva
-            else if (r === 'Santo') r = 'Santa'; // Specific irregularities
-            else if (r === 'Buen') r = 'Buena';
-            else if (r === 'Mal') r = 'Mala';
-            // Words ending in 'e' (Verde) or consonants (Real) usually stay invariant in Spanish 
-            // unless they are specific nationality endings, which aren't in this dict.
-        } else {
-            // Masculinize (restore 'o' if it was somehow 'a', e.g., irregular dict entry)
-            if (r.endsWith('a') && !rootObj.tags?.includes('invariant')) {
-               r = r.slice(0, -1) + 'o';
-            }
-        }
-    }
-    
-    word = `${h} ${r}`;
+    word = `${prefix} ${tData.val}`;
   }
-  
-  // 2. Root + Suffix
-  // e.g. Almeria
-  else if (type < 0.70) {
-    const rootObj = getRandomElement(roots);
-    const suffixObj = getRandomElement(getPool('suffix'));
+
+  // --- RECIPE 2: Geo/Settlement + Universal Adjective ---
+  else if (roll < 0.50) {
+    const nounObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
+    const nData = getRomData(nounObj.es);
+    const nGender = nData.gender || 'm';
+
+    // EXPANSION: Colors and Quality apply to EVERYTHING. Geo adjectives only to Geo nouns.
+    let adjTypes = ['adj_color', 'adj_quality']; 
+    if (['geo_major', 'geo_minor'].includes(nounObj.type)) {
+        adjTypes.push('adj_geo');
+    }
+    
+    const adjObj = getRandomElement(getPool(adjTypes));
+    let adj = formatAdjective(nGender, adjObj);
+
+    if (adjObj.tags?.includes('pre')) {
+        if (adj === 'Grande' || adj === 'Grandes') adj = 'Gran'; 
+        if (adj === 'Bueno') adj = 'Buen';
+        if (adj === 'Malo') adj = 'Mal';
+        if (adj === 'Santo') adj = 'San'; 
+        word = `${adj} ${nData.val}`;
+    } else {
+        word = `${nData.val} ${adj}`;
+    }
+  }
+
+  // --- RECIPE 3: The "De" Construction (Universal Tail) ---
+  else if (roll < 0.85) {
+    const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
+    // EXPANSION: Tail can be almost anything now (City of the Mountain, Bridge of the King)
+    const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
+    
+    const h = getRomData(headObj.es).val;
+    const tData = getRomData(tailObj.es);
+    const t = tData.val;
+
+    let connector = 'de';
+    // Use article for concrete nouns, usually skip for abstract/proper-sounding ones
+    const useArticle = ['bio_fauna', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type) || Math.random() > 0.6;
+    
+    if (useArticle) {
+        if (tData.gender === 'f') connector = 'de la';
+        else connector = 'del';
+    }
+
+    word = `${h} ${connector} ${t}`;
+  }
+
+  // --- RECIPE 4: Suffix Modification ---
+  else {
+    // EXPANSION: Allow suffixing Geo Majors (Montana -> Montanilla)
+    const rootObj = getRandomElement(getPool(['bio_flora', 'geo_minor', 'settlement', 'geo_major']));
+    const suffixObj = getRandomElement(getPool(['suffix']));
     
     let base = getRomData(rootObj.es).val;
     const sVal = getRomData(suffixObj.es).val;
-    
-    // Vowel collision: Costa + al -> Costal
-    if (['a','o','e'].includes(base.slice(-1)) && ['a','e','i','o'].includes(sVal.charAt(0))) {
-        base = base.slice(0, -1);
-    }
-    word = base + sVal;
-  }
-  
-  // 3. "De" Construction
-  // e.g. Puerto de la Cruz
-  else {
-    const headObj = getRandomElement(roots);
-    const tailObj = getRandomElement([...roots, ...getPool('adjective')]);
-    
-    let h = getRomData(headObj.es).val;
-    const tData = getRomData(tailObj.es);
-    let t = tData.val;
-    
-    let connector = 'de';
-    
-    // Contraction Logic: de + el = del
-    // We only contract if we are sure the tail is masculine. 
-    // Adjectives (no gender in Data) are risky, so we tend to assume 'de' or check ending.
-    if (Math.random() < 0.3 && !['El','La','Los'].includes(t)) {
-        let isTailFem = tData.gender === 'f' || t.endsWith('a');
-        let isTailMasc = tData.gender === 'm' || t.endsWith('o');
 
-        if (isTailFem) connector = 'de la';
-        else if (isTailMasc) connector = 'del';
+    const baseEndsVowel = ['a','e','i','o','u'].includes(base.slice(-1).toLowerCase());
+    const suffStartsVowel = ['a','e','i','o','u'].includes(sVal.charAt(0).toLowerCase());
+
+    if (baseEndsVowel && suffStartsVowel) {
+        base = base.slice(0, -1);
+    } 
+    else if (sVal === 'ez' && baseEndsVowel) {
+         base = base.slice(0, -1);
     }
-    
-    word = `${h} ${connector} ${t}`;
+
+    word = base + sVal;
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);

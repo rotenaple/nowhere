@@ -2,88 +2,105 @@ import { GeneratedResult } from "../../../types";
 import { getRandomElement, transliteratePortugueseToAscii } from "../../utils";
 import { ROMANCE_DATA, getRomData } from "../../dictionaries/romanceDict";
 
+const getPool = (types: string[]) => 
+  ROMANCE_DATA.filter(c => c.pt && types.includes(c.type));
+
 export const getPortugueseCapacity = () => {
-  const roots = ROMANCE_DATA.filter(c => c.pt && c.type === 'root');
-  const adjectives = ROMANCE_DATA.filter(c => c.pt && c.type === 'adjective');
-  const prefixes = ROMANCE_DATA.filter(c => c.pt && c.type === 'prefix');
+  const recipe1 = getPool(['prefix']).length * getPool(['abstract', 'bio_fauna', 'bio_flora']).length; 
   
-  const c1 = prefixes.length * roots.length;
-  const c2 = roots.length * adjectives.length;
-  const c3 = roots.length * roots.length;
+  const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
+  const allAdjs = getPool(['adj_geo', 'adj_color', 'adj_quality']);
+  const recipe2 = nouns.length * allAdjs.length;
   
-  return c1 + c2 + c3;
+  const allTails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  const recipe3 = nouns.length * allTails.length;
+  
+  return recipe1 + recipe2 + recipe3;
 }
 
 export const generatePortuguesePlace = (): GeneratedResult => {
   let word = "";
+  const roll = Math.random();
   
-  const getPool = (t: string) => ROMANCE_DATA.filter(c => c.pt && c.type === t);
-  const roots = getPool('root');
+  // 1. Saint / Prefix Pattern
+  if (roll < 0.25) {
+      const useSaint = Math.random() < 0.5;
+      
+      if (useSaint) {
+        const saintTarget = getRandomElement(getPool(['bio_fauna', 'bio_flora', 'abstract']));
+        const tData = getRomData(saintTarget.pt);
+        const prefix = (tData.gender === 'f') ? 'Santa' : 'São';
+        word = `${prefix} ${tData.val}`;
+      } else {
+        const prefixObj = getRandomElement(getPool(['prefix']));
+        const commonPrefixRoots = getPool(['settlement', 'geo_major']).filter(r => r.tags?.includes('common_prefix'));
+        
+        let p = getRomData(prefixObj.pt).val;
+        if (Math.random() < 0.6 && commonPrefixRoots.length > 0) {
+             const rootAsPrefix = getRandomElement(commonPrefixRoots);
+             p = getRomData(rootAsPrefix.pt).val;
+        }
+        
+        // Combine with a noun or an adjective
+        const tailObj = getRandomElement(getPool(['adj_quality', 'adj_color', 'bio_flora', 'settlement']));
+        const tData = getRomData(tailObj.pt);
+        let t = tData.val;
 
-  const type = Math.random();
-  
-  // 1. Prefix + Root
-  if (type < 0.3) {
-      const prefixObj = getRandomElement(getPool('prefix'));
-      
-      // Use roots tagged as 'common_prefix' (Vila, Porto, Cabo) instead of hardcoded list
-      const commonPrefixRoots = roots.filter(r => r.tags?.includes('common_prefix'));
-      
-      let p = getRomData(prefixObj.pt).val;
-      if (Math.random() < 0.6 && commonPrefixRoots.length > 0) {
-          const rootAsPrefix = getRandomElement(commonPrefixRoots);
-          p = getRomData(rootAsPrefix.pt).val;
+        if (tailObj.type.startsWith('adj')) {
+            const pGender = (p.endsWith('a') || p === 'Santa') ? 'f' : 'm';
+            if (pGender === 'f') {
+                 if (t.endsWith('o')) t = t.slice(0, -1) + 'a';
+                 if (t === 'Novo') t = 'Nova';
+            }
+        }
+        word = `${p} ${t}`;
       }
-      
-      let r = getRomData(getRandomElement(roots).pt).val;
-      word = `${p} ${r}`;
   }
   
   // 2. Root + Adjective
-  else if (type < 0.6) {
-      const rootObj = getRandomElement(roots);
-      const adjObj = getRandomElement(getPool('adjective'));
+  else if (roll < 0.60) {
+      const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
+      
+      // EXPANSION: Universal Adjectives
+      let adjTypes = ['adj_quality', 'adj_color'];
+      if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
+      const adjObj = getRandomElement(getPool(adjTypes));
       
       const rData = getRomData(rootObj.pt);
       let r = rData.val;
       let a = getRomData(adjObj.pt).val;
-      
-      let gender = rData.gender || 'm';
+      const gender = rData.gender || 'm';
       
       if (gender === 'f') {
           if (a.endsWith('o')) a = a.slice(0, -1) + 'a';
           if (a === 'Bom') a = 'Boa';
           if (a === 'Mau') a = 'Má';
-          if (a === 'São') a = 'Santa';
           if (a === 'Novo') a = 'Nova';
           if (a === 'Belo') a = 'Bela';
+          if (a === 'Santo') a = 'Santa';
       }
       
       word = `${r} ${a}`;
   }
   
-  // 3. Root + de + Root
+  // 3. Composite (De)
   else {
-      // Pick Head: Nature/Common Prefix
-      const heads = roots.filter(r => r.tags?.includes('nature') || r.tags?.includes('common_prefix') || Math.random() < 0.1);
-      const r1Obj = getRandomElement(heads.length > 0 ? heads : roots);
+      const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
+      // EXPANSION: Universal Tails
+      const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
       
-      // Pick Tail: Animal/Tree/Civic
-      const tails = roots.filter(r => r.tags?.includes('animal') || r.tags?.includes('tree') || r.tags?.includes('civic'));
-      const r2Obj = getRandomElement(tails.length > 0 ? tails : roots);
-      
-      const r1 = getRomData(r1Obj.pt).val;
-      const r2Data = getRomData(r2Obj.pt);
+      const hData = getRomData(headObj.pt);
+      const tData = getRomData(tailObj.pt);
       
       let connector = 'de';
+      const useArticle = ['bio_fauna', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type) || Math.random() < 0.7;
       
-      // Contraction Logic
-      if (r2Data.gender === 'm') connector = 'do';
-      else if (r2Data.gender === 'f') connector = 'da';
-      
-      if (Math.random() < 0.2) connector = 'de';
+      if (useArticle) {
+          if (tData.gender === 'f') connector = 'da';
+          else connector = 'do';
+      }
 
-      word = `${r1} ${connector} ${r2Data.val}`;
+      word = `${hData.val} ${connector} ${tData.val}`;
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
