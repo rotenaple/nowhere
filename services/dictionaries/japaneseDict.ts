@@ -190,7 +190,7 @@ export const JA_ROOTS: JaComponent[] = [
   { kanji: '都', kana: 'ミヤコ', romaji: 'miyako', type: 'civic', def: 'capital, metropolis' },
   { kanji: '社', kana: 'ヤシロ', romaji: 'yashiro', type: 'civic', def: 'shintō shrine' },
   { kanji: '庄', kana: 'ショウ', romaji: 'shou', type: 'civic', def: 'manor, estate' },
-  { kanji: '部', kana: 'ヘ', romaji: 'he', type: 'civic', rendaku: { kana: 'ベ', romaji: 'be' }, def: 'section, part'},
+  { kanji: '部', kana: 'ヘ', romaji: 'he', type: 'civic', rendaku: { kana: 'ベ', romaji: 'be' }, def: 'section, part' },
   { kanji: '隅', kana: 'スミ', romaji: 'sumi', type: 'civic', rendaku: { kana: 'ズミ', romaji: 'zumi' }, def: 'corner' },
   { kanji: '越', kana: 'コシ', romaji: 'koshi', type: 'civic', rendaku: { kana: 'ゴシ', romaji: 'goshi' }, def: 'crossing, beyond' },
   { kanji: '縄', kana: 'ナワ', romaji: 'nawa', type: 'civic', def: 'rope, cord' },
@@ -201,6 +201,18 @@ export const JA_ROOTS: JaComponent[] = [
   { kanji: '紙', kana: 'カミ', romaji: 'kami', type: 'civic', rendaku: { kana: 'ガミ', romaji: 'gami' }, def: 'paper' },
   { kanji: '金', kana: 'カネ', romaji: 'kane', type: 'civic', rendaku: { kana: 'ガネ', romaji: 'gane' }, def: 'gold, money' },
   { kanji: '久保', kana: 'クボ', romaji: 'kubo', type: 'civic', rendaku: { kana: 'グボ', romaji: 'gubo' }, def: 'long preservation' },
+
+  // Wago Roots Expansion
+  { kanji: '浜', kana: 'ハマ', romaji: 'hama', type: 'nature', def: 'beach' },
+  { kanji: '津', kana: 'ツ', romaji: 'tsu', type: 'civic', def: 'port, harbor' },
+  { kanji: '崎', kana: 'サキ', romaji: 'saki', type: 'nature', rendaku: { kana: 'ザキ', romaji: 'zaki' }, def: 'cape' },
+  { kanji: '原', kana: 'ハラ', romaji: 'hara', type: 'nature', rendaku: { kana: 'バラ', romaji: 'bara' }, def: 'field' },
+  { kanji: '野', kana: 'ノ', romaji: 'no', type: 'nature', def: 'field' },
+  { kanji: '瀬', kana: 'セ', romaji: 'se', type: 'nature', rendaku: { kana: 'ゼ', romaji: 'ze' }, def: 'shallows' },
+  { kanji: '波', kana: 'ナミ', romaji: 'nami', type: 'nature', def: 'wave' },
+  { kanji: '船', kana: 'フネ', romaji: 'fune', type: 'civic', rendaku: { kana: 'ブネ', romaji: 'bune' }, def: 'ship' },
+  { kanji: '館', kana: 'タテ', romaji: 'tate', type: 'civic', rendaku: { kana: 'ダテ', romaji: 'date' }, def: 'mansion' },
+  { kanji: '庭', kana: 'ニワ', romaji: 'niwa', type: 'civic', def: 'garden' },
 ];
 
 // ==========================================
@@ -260,6 +272,26 @@ export const JA_MODIFIERS: JaComponent[] = [
   { kanji: '駒', kana: 'コマ', romaji: 'koma', type: 'modifier', def: 'pony, chess piece' },
   { kanji: '守', kana: 'モリ', romaji: 'mori', type: 'modifier', def: 'guard, protect' },
   { kanji: '住', kana: 'スミ', romaji: 'sumi', type: 'modifier', def: 'dwell, live' },
+
+  // Seasons / Time
+  { kanji: '春', kana: 'ハル', romaji: 'haru', type: 'modifier', def: 'spring' },
+  { kanji: '夏', kana: 'ナツ', romaji: 'natsu', type: 'modifier', def: 'summer' },
+  { kanji: '秋', kana: 'アキ', romaji: 'aki', type: 'modifier', def: 'autumn' },
+  { kanji: '冬', kana: 'フユ', romaji: 'fuyu', type: 'modifier', def: 'winter' },
+  { kanji: '朝', kana: 'アサ', romaji: 'asa', type: 'modifier', def: 'morning' },
+  { kanji: '夕', kana: 'ユウ', romaji: 'yuu', type: 'modifier', def: 'evening' },
+  { kanji: '夜', kana: 'ヨル', romaji: 'yoru', type: 'modifier', def: 'night' },
+
+  // Additional Descriptions
+  { kanji: '荒', kana: 'アラ', romaji: 'ara', type: 'modifier', def: 'wild, rough' },
+  { kanji: '長', kana: 'ナガ', romaji: 'naga', type: 'modifier', def: 'long' },
+  { kanji: '永', kana: 'ナガ', romaji: 'naga', type: 'modifier', def: 'eternal, long' },
+  { kanji: '高', kana: 'タカ', romaji: 'taka', type: 'modifier', def: 'high' },
+  { kanji: '松', kana: 'マツ', romaji: 'matsu', type: 'modifier', def: 'pine' },
+  { kanji: '竹', kana: 'タケ', romaji: 'take', type: 'modifier', def: 'bamboo' },
+  { kanji: '梅', kana: 'ウメ', romaji: 'ume', type: 'modifier', def: 'plum' },
+  { kanji: '鶴', kana: 'ツル', romaji: 'tsuru', type: 'modifier', def: 'crane' },
+  { kanji: '亀', kana: 'カメ', romaji: 'kame', type: 'modifier', def: 'turtle' },
 ];
 
 // ==========================================

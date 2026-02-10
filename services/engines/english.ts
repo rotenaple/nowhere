@@ -1,19 +1,19 @@
 
 import { GeneratedResult } from "../../types";
 import { getRandomElement, getTargetSyllableCount, weightedRandom } from "../utils";
-import { 
-  EN_SUFFIXES_PHONETIC, EN_ROOTS_ANGLO, EN_SUFFIXES_ANGLO, 
-  EN_ONSETS_NEUTRAL, EN_ONSETS_HARD, EN_ONSETS_K, 
+import {
+  EN_SUFFIXES_PHONETIC, EN_ROOTS_ANGLO, EN_SUFFIXES_ANGLO,
+  EN_ONSETS_NEUTRAL, EN_ONSETS_HARD, EN_ONSETS_K,
   EN_NUC_BACK, EN_NUC_FRONT, EN_CODAS_HEAVY, EN_CODAS_LIGHT
 } from "../dictionaries/englishDict";
 
 export const getEnglishCapacity = (style: 'modern' | 'old' | 'mixed') => {
   // 8 prefixes + 1 no-prefix = 9 permutations per root-suffix pair
-  const oldCapacity = EN_ROOTS_ANGLO.length * EN_SUFFIXES_ANGLO.length * 9; 
-  
+  const oldCapacity = EN_ROOTS_ANGLO.length * EN_SUFFIXES_ANGLO.length * 9;
+
   if (style === 'old') return oldCapacity;
   if (style === 'mixed') return "Infinite";
-  
+
   // Phonetic Mode is effectively infinite
   return "Infinite";
 }
@@ -43,9 +43,9 @@ const generateEnglishRoot = (isTerminal: boolean): string => {
 const generateStrictAngloPlace = (): string => {
   const root = getRandomElement(EN_ROOTS_ANGLO);
   const suffix = getRandomElement(EN_SUFFIXES_ANGLO);
-  
+
   if (root.toLowerCase().endsWith(suffix.toLowerCase())) return root;
-  
+
   let connector = "";
   if (Math.random() < 0.1 && !root.endsWith('s')) connector = "s";
 
@@ -65,26 +65,45 @@ export const generateEnglishPlace = (style: 'modern' | 'old' | 'mixed' = 'modern
   }
 
   const sylCount = getTargetSyllableCount();
-  const hasSuffix = Math.random() < 0.7; 
-  
-  if (!hasSuffix) {
-    let root = generateEnglishRoot(true);
-    if (sylCount > 1) {
-       root += generateEnglishRoot(true).toLowerCase();
+  const hasSuffix = Math.random() < 0.7;
+
+  // Retry loop for Phonotactic Quality Control
+  for (let i = 0; i < 10; i++) {
+    let candidate = "";
+
+    if (!hasSuffix) {
+      let root = generateEnglishRoot(true);
+      if (sylCount > 1) {
+        root += generateEnglishRoot(true).toLowerCase();
+      }
+      candidate = root.charAt(0).toUpperCase() + root.slice(1);
+    } else {
+      let root = generateEnglishRoot(false);
+      if (sylCount > 2) {
+        root += generateEnglishRoot(false).toLowerCase();
+      }
+
+      const suffix = getRandomElement(EN_SUFFIXES_PHONETIC);
+      candidate = root + suffix;
+      candidate = candidate.replace(/(.)\1{2,}/g, '$1$1');
+      candidate = candidate.charAt(0).toUpperCase() + candidate.slice(1);
     }
-    const name = root.charAt(0).toUpperCase() + root.slice(1);
-    return { word: name, ascii: name };
+
+    // PHONOTACTIC FILTER
+    // Reject impossible clusters (e.g. 'cp', 'mt' in specific positions, though we check broad bad pairs here)
+    // We check case-insensitive for the middle of word clusters
+    const check = candidate.toLowerCase();
+
+    // Bad Clusters (Impossible English Onsets or Coda transitions that look wrong)
+    // e.g. 'bq', 'cj', 'fp', 'gx', 'jq', 'mx', 'pv', 'tq', 'vb', 'zf'
+    // Also repeating 'aa', 'ii', 'uu' unless specific cases
+    const BAD_CLUSTERS = /(bq|cj|fp|gx|jq|mx|pv|tq|vb|zf|qk|yy|j|q$|v$|u$)/;
+
+    if (BAD_CLUSTERS.test(check)) continue;
+
+    return { word: candidate, ascii: candidate };
   }
 
-  let root = generateEnglishRoot(false); 
-  if (sylCount > 2) {
-      root += generateEnglishRoot(false).toLowerCase();
-  }
-  
-  const suffix = getRandomElement(EN_SUFFIXES_PHONETIC);
-  let name = root + suffix;
-  name = name.replace(/(.)\1{2,}/g, '$1$1'); 
-
-  name = name.charAt(0).toUpperCase() + name.slice(1);
-  return { word: name, ascii: name };
+  // Fallback if retries fail
+  return { word: "Westford", ascii: "Westford" };
 };
