@@ -18,6 +18,7 @@ Options:
   --count, -c     Number of words to generate (default: 10)
   --min           Minimum length (default: 5)
   --max           Maximum length (default: 40)
+  --corruption    Corruption level 0-1 (default: 0)
   --raw           Output only the generated words (no header/footer)
   --ascii         Output ASCII transliteration only
   --help, -h      Show this help message
@@ -53,6 +54,7 @@ const main = async () => {
   const countArg = getArgValue('count', 'c') || '10';
   const minArg = getArgValue('min') || '5';
   const maxArg = getArgValue('max') || '40';
+  const corruptionArg = getArgValue('corruption') || '0';
   const rawMode = args.includes('--raw');
   const asciiMode = args.includes('--ascii');
 
@@ -78,7 +80,8 @@ const main = async () => {
     mixSettings: { ...DEFAULT_MIX_SETTINGS },
     chineseMixSettings: { ...DEFAULT_CHINESE_MIX },
     arabicMixSettings: { ...DEFAULT_ARABIC_MIX },
-    englishMixSettings: { ...DEFAULT_ENGLISH_MIX }
+    englishMixSettings: { ...DEFAULT_ENGLISH_MIX },
+    corruption: parseFloat(corruptionArg)
   };
 
   if (!rawMode) {

@@ -1,6 +1,7 @@
 
 import { Language, PlaceName, GenerationParams, GeneratedResult } from "../types";
 import { weightedRandom } from "./utils";
+import { applyCorruption } from "./corruption";
 import { generateJapanesePlace, getJapaneseCapacity } from "./engines/japanese";
 import { generateEnglishPlace, getEnglishCapacity } from "./engines/english";
 import { generateGermanPlace, getGermanCapacity } from "./engines/germanic/german";
@@ -250,6 +251,17 @@ export const generateNonceWords = async (params: GenerationParams): Promise<Plac
       default: 
         generated = { word: "Error", ascii: "Error" };
         displayLang = 'err';
+    }
+
+    // Apply historical sound-change corruption
+    if (params.corruption > 0) {
+      const langCode = displayLang === 'en-ang' ? 'en-ang' : displayLang === 'en-phon' ? 'en-phon' : 'en';
+      const sameOrthography = generated.word === generated.ascii;
+      const corrupted = applyCorruption(generated.word, generated.ascii, langCode, params.corruption);
+      generated = {
+        word: corrupted.word,
+        ascii: sameOrthography ? corrupted.word : corrupted.ascii,
+      };
     }
 
     const len = generated.ascii.length;

@@ -26,6 +26,11 @@ for (const langs of Object.values(LANGUAGE_GROUPS)) {
 const countInput = document.getElementById("count") as HTMLInputElement;
 const minLenInput = document.getElementById("minLen") as HTMLInputElement;
 const maxLenInput = document.getElementById("maxLen") as HTMLInputElement;
+const corruptionSlider = document.getElementById("corruption") as HTMLInputElement;
+const corruptionVal = document.getElementById("corruptionVal") as HTMLSpanElement;
+corruptionSlider.addEventListener("input", () => {
+  corruptionVal.textContent = (parseInt(corruptionSlider.value) / 100).toFixed(2);
+});
 const generateBtn = document.getElementById("generateBtn") as HTMLButtonElement;
 const resultsEl = document.getElementById("results") as HTMLDivElement;
 
@@ -50,6 +55,7 @@ document.getElementById("form")!.addEventListener("submit", async (e) => {
       chineseMixSettings: { ...DEFAULT_CHINESE_MIX },
       arabicMixSettings: { ...DEFAULT_ARABIC_MIX },
       englishMixSettings: { ...DEFAULT_ENGLISH_MIX },
+      corruption: parseInt(corruptionSlider.value) / 100,
     });
 
     const copyAll = (key: "word" | "ascii") => {

@@ -48,8 +48,9 @@ export type GenerationParams = {
   romanizationStyle: 'cn' | 'tw' | 'hk' | 'mixed';
   arabicStyle: 'standard' | 'egyptian' | 'levantine' | 'gulf' | 'maghrebi' | 'mixed';
   englishStyle: 'modern' | 'old' | 'mixed';
-  mixSettings: Record<string, number>; // Weights for Global Mixed mode
-  chineseMixSettings: Record<string, number>; // Weights for Chinese Mixed mode
-  arabicMixSettings: Record<string, number>; // Weights for Arabic Mixed mode
-  englishMixSettings: Record<string, number>; // Weights for English Mixed mode
+  mixSettings: Record<string, number>;
+  chineseMixSettings: Record<string, number>;
+  arabicMixSettings: Record<string, number>;
+  englishMixSettings: Record<string, number>;
+  corruption: number; // 0-1, probability multiplier for historical sound-change rules
 };
