@@ -1,7 +1,7 @@
 
 import { Language, PlaceName, GenerationParams, GeneratedResult } from "../types";
 import { weightedRandom } from "./utils";
-import { applyCorruption } from "./corruption";
+import { applyCorruption, debugCorruption, TraceEntry } from "./corruption";
 import { generateJapanesePlace, getJapaneseCapacity } from "./engines/japanese";
 import { generateEnglishPlace, getEnglishCapacity } from "./engines/english";
 import { generateGermanPlace, getGermanCapacity } from "./engines/germanic/german";
@@ -79,6 +79,264 @@ export const getCapacity = (params: GenerationParams): string => {
   return val > 1000 ? (val / 1000).toFixed(1) + "k" : val.toString();
 };
 
+function generateForLanguage(
+  targetLang: Language,
+  enStyle: string,
+  style: string,
+  arStyle: string
+): { generated: GeneratedResult; displayLang: string } {
+  let generated: GeneratedResult;
+  let displayLang = 'xx';
+  let resolvedEn = enStyle;
+  let resolvedStyle = style;
+  let resolvedAr = arStyle;
+
+  switch (targetLang) {
+    case Language.English:
+      if (resolvedEn === 'mixed') resolvedEn = 'modern';
+      generated = generateEnglishPlace(resolvedEn as 'modern' | 'old');
+      displayLang = resolvedEn === 'old' ? 'en-ang' : 'en-phon';
+      break;
+    case Language.German:
+      generated = generateGermanPlace();
+      displayLang = 'de';
+      break;
+    case Language.French:
+      generated = generateFrenchPlace();
+      displayLang = 'fr';
+      break;
+    case Language.Spanish:
+      generated = generateSpanishPlace();
+      displayLang = 'es';
+      break;
+    case Language.Italian:
+      generated = generateItalianPlace();
+      displayLang = 'it';
+      break;
+    case Language.Japanese:
+      generated = generateJapanesePlace();
+      displayLang = 'ja';
+      break;
+    case Language.Chinese:
+      if (resolvedStyle === 'mixed') resolvedStyle = 'cn';
+      generated = generateChinesePlace(resolvedStyle as 'cn' | 'tw' | 'hk');
+      if (resolvedStyle === 'hk') displayLang = 'zh-HK';
+      else if (resolvedStyle === 'tw') displayLang = 'zh-TW';
+      else displayLang = 'zh-CN';
+      break;
+    case Language.Korean:
+      generated = generateKoreanPlace();
+      displayLang = 'ko';
+      break;
+    case Language.Vietnamese:
+      generated = generateVietnamesePlace();
+      displayLang = 'vi';
+      break;
+    case Language.Swedish:
+      generated = generateSwedishPlace();
+      displayLang = 'sv';
+      break;
+    case Language.Danish:
+      generated = generateDanishPlace();
+      displayLang = 'da';
+      break;
+    case Language.Dutch:
+      generated = generateDutchPlace();
+      displayLang = 'nl';
+      break;
+    case Language.Polish:
+      generated = generatePolishPlace();
+      displayLang = 'pl';
+      break;
+    case Language.Irish:
+      generated = generateIrishPlace();
+      displayLang = 'ga';
+      break;
+    case Language.Czech:
+      generated = generateCzechPlace();
+      displayLang = 'cs';
+      break;
+    case Language.Russian:
+      generated = generateRussianPlace();
+      displayLang = 'ru';
+      break;
+    case Language.Ukrainian:
+      generated = generateUkrainianPlace();
+      displayLang = 'uk';
+      break;
+    case Language.Slovak:
+      generated = generateSlovakPlace();
+      displayLang = 'sk';
+      break;
+    case Language.Bulgarian:
+      generated = generateBulgarianPlace();
+      displayLang = 'bg';
+      break;
+    case Language.Portuguese:
+      generated = generatePortuguesePlace();
+      displayLang = 'pt';
+      break;
+    case Language.Romanian:
+      generated = generateRomanianPlace();
+      displayLang = 'ro';
+      break;
+    case Language.Indonesian:
+      generated = generateIndonesianPlace('id');
+      displayLang = 'id';
+      break;
+    case Language.Malay:
+      generated = generateIndonesianPlace('ms');
+      displayLang = 'ms';
+      break;
+    case Language.Tagalog:
+      generated = generateTagalogPlace();
+      displayLang = 'tl';
+      break;
+    case Language.Arabic:
+      if (resolvedAr === 'mixed') resolvedAr = 'standard';
+      generated = generateArabicPlace(resolvedAr as any);
+      if (resolvedAr === 'egyptian') displayLang = 'ar-EG';
+      else if (resolvedAr === 'levantine') displayLang = 'ar-LB';
+      else if (resolvedAr === 'gulf') displayLang = 'ar-AE';
+      else if (resolvedAr === 'maghrebi') displayLang = 'ar-MA';
+      else displayLang = 'ar-SA';
+      break;
+    default:
+      generated = { word: "Error", ascii: "Error" };
+      displayLang = 'err';
+  }
+
+  return { generated, displayLang };
+}
+
+export type DebugGenerateResult = {
+  word: string;
+  ascii: string;
+  language: string;
+  rawWord: string;
+  rawAscii: string;
+  langCode: string;
+  corruptionTrace: TraceEntry[];
+  seed: number;
+  rulesConsidered: number;
+  rulesActive: number;
+  corruptionLevel: number;
+};
+
+export const debugGenerateNonceWords = async (
+  params: GenerationParams,
+  seed?: number
+): Promise<DebugGenerateResult[]> => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  const results: DebugGenerateResult[] = [];
+  const generatedKeys = new Set<string>();
+
+  let attempts = 0;
+  const maxAttempts = params.count * 20;
+
+  while (results.length < params.count && attempts < maxAttempts) {
+    attempts++;
+    let targetLang = params.language;
+    let style = params.romanizationStyle;
+    let arStyle = params.arabicStyle;
+    let enStyle = params.englishStyle;
+
+    if (targetLang === Language.All) {
+      const dynamicWeights = Object.entries(params.mixSettings).map(([lang, weight]) => ({
+        val: lang,
+        weight: weight
+      }));
+      targetLang = weightedRandom(dynamicWeights) as Language;
+
+      if (targetLang === Language.Chinese) {
+        const mix = Object.entries(params.chineseMixSettings).map(([val, weight]) => ({val, weight}));
+        style = weightedRandom(mix) as any;
+      }
+      if (targetLang === Language.Arabic) {
+        const mix = Object.entries(params.arabicMixSettings).map(([val, weight]) => ({val, weight}));
+        arStyle = weightedRandom(mix) as any;
+      }
+      if (targetLang === Language.English) {
+        const mix = Object.entries(params.englishMixSettings).map(([val, weight]) => ({val, weight}));
+        enStyle = weightedRandom(mix) as any;
+      }
+    } else {
+      if (targetLang === Language.Chinese && style === 'mixed') {
+        const mix = Object.entries(params.chineseMixSettings).map(([val, weight]) => ({val, weight}));
+        style = weightedRandom(mix) as any;
+      }
+      if (targetLang === Language.Arabic && arStyle === 'mixed') {
+        const mix = Object.entries(params.arabicMixSettings).map(([val, weight]) => ({val, weight}));
+        arStyle = weightedRandom(mix) as any;
+      }
+      if (targetLang === Language.English && enStyle === 'mixed') {
+        const mix = Object.entries(params.englishMixSettings).map(([val, weight]) => ({val, weight}));
+        enStyle = weightedRandom(mix) as any;
+      }
+    }
+
+    const { generated: rawGenerated, displayLang } = generateForLanguage(targetLang, enStyle, style, arStyle);
+
+    const rawWord = rawGenerated.word;
+    const rawAscii = rawGenerated.ascii;
+    let corrupted = { ...rawGenerated };
+
+    if (params.corruption > 0) {
+      const langCode = displayLang;
+      const sameOrthography = rawGenerated.word === rawGenerated.ascii;
+      const debugResult = debugCorruption(rawGenerated.word, rawGenerated.ascii, langCode, params.corruption, seed);
+      corrupted = {
+        word: debugResult.word,
+        ascii: sameOrthography ? debugResult.word : debugResult.ascii,
+      };
+
+      const len = corrupted.ascii.length;
+      if (len < params.minLength || len > params.maxLength) continue;
+
+      const key = corrupted.word + ":" + targetLang;
+      if (generatedKeys.has(key)) continue;
+      generatedKeys.add(key);
+
+      results.push({
+        word: corrupted.word,
+        ascii: corrupted.ascii,
+        language: displayLang,
+        rawWord,
+        rawAscii,
+        langCode: displayLang,
+        corruptionTrace: debugResult.trace,
+        seed: debugResult.seed,
+        rulesConsidered: debugResult.rulesConsidered,
+        rulesActive: debugResult.rulesActive,
+        corruptionLevel: params.corruption,
+      });
+    } else {
+      const len = corrupted.ascii.length;
+      if (len < params.minLength || len > params.maxLength) continue;
+
+      const key = corrupted.word + ":" + targetLang;
+      if (generatedKeys.has(key)) continue;
+      generatedKeys.add(key);
+
+      results.push({
+        word: corrupted.word,
+        ascii: corrupted.ascii,
+        language: displayLang,
+        rawWord,
+        rawAscii,
+        langCode: displayLang,
+        corruptionTrace: [],
+        seed: 0,
+        rulesConsidered: 0,
+        rulesActive: 0,
+        corruptionLevel: 0,
+      });
+    }
+  }
+  return results;
+};
+
 export const generateNonceWords = async (params: GenerationParams): Promise<PlaceName[]> => {
   await new Promise(resolve => setTimeout(resolve, 300)); 
 
@@ -134,151 +392,36 @@ export const generateNonceWords = async (params: GenerationParams): Promise<Plac
         }
     }
 
-    let generated: GeneratedResult;
-    let displayLang = 'xx';
+    const { generated, displayLang } = generateForLanguage(targetLang, enStyle, style, arStyle);
 
-    switch (targetLang) {
-      case Language.English: 
-        if (enStyle === 'mixed') enStyle = 'modern'; // Fallback safely
-        generated = generateEnglishPlace(enStyle); 
-        displayLang = enStyle === 'old' ? 'en-ang' : 'en-phon';
-        break;
-      case Language.German: 
-        generated = generateGermanPlace(); 
-        displayLang = 'de';
-        break;
-      case Language.French: 
-        generated = generateFrenchPlace(); 
-        displayLang = 'fr';
-        break;
-      case Language.Spanish: 
-        generated = generateSpanishPlace(); 
-        displayLang = 'es';
-        break;
-      case Language.Italian: 
-        generated = generateItalianPlace(); 
-        displayLang = 'it';
-        break;
-      case Language.Japanese: 
-        generated = generateJapanesePlace(); 
-        displayLang = 'ja';
-        break;
-      case Language.Chinese: 
-        // Ensure style is valid for generation function
-        if (style === 'mixed') style = 'cn'; // Fallback safely if loop logic somehow failed
-        generated = generateChinesePlace(style as 'cn' | 'tw' | 'hk');
-        if (style === 'hk') displayLang = 'zh-HK';
-        else if (style === 'tw') displayLang = 'zh-TW';
-        else displayLang = 'zh-CN';
-        break;
-      case Language.Korean: 
-        generated = generateKoreanPlace(); 
-        displayLang = 'ko';
-        break;
-      case Language.Vietnamese:
-        generated = generateVietnamesePlace();
-        displayLang = 'vi';
-        break;
-      case Language.Swedish:
-        generated = generateSwedishPlace();
-        displayLang = 'sv';
-        break;
-      case Language.Danish:
-        generated = generateDanishPlace();
-        displayLang = 'da';
-        break;
-      case Language.Dutch:
-        generated = generateDutchPlace();
-        displayLang = 'nl';
-        break;
-      case Language.Polish:
-        generated = generatePolishPlace();
-        displayLang = 'pl';
-        break;
-      case Language.Irish:
-        generated = generateIrishPlace();
-        displayLang = 'ga';
-        break;
-      case Language.Czech:
-        generated = generateCzechPlace();
-        displayLang = 'cs';
-        break;
-      case Language.Russian:
-        generated = generateRussianPlace();
-        displayLang = 'ru';
-        break;
-      case Language.Ukrainian:
-        generated = generateUkrainianPlace();
-        displayLang = 'uk';
-        break;
-      case Language.Slovak:
-        generated = generateSlovakPlace();
-        displayLang = 'sk';
-        break;
-      case Language.Bulgarian:
-        generated = generateBulgarianPlace();
-        displayLang = 'bg';
-        break;
-      case Language.Portuguese:
-        generated = generatePortuguesePlace();
-        displayLang = 'pt';
-        break;
-      case Language.Romanian:
-        generated = generateRomanianPlace();
-        displayLang = 'ro';
-        break;
-      case Language.Indonesian:
-        generated = generateIndonesianPlace('id');
-        displayLang = 'id';
-        break;
-      case Language.Malay:
-        generated = generateIndonesianPlace('ms');
-        displayLang = 'ms';
-        break;
-      case Language.Tagalog:
-        generated = generateTagalogPlace();
-        displayLang = 'tl';
-        break;
-      case Language.Arabic:
-        if (arStyle === 'mixed') arStyle = 'standard'; // Fallback safely
-        generated = generateArabicPlace(arStyle as any);
-        if (arStyle === 'egyptian') displayLang = 'ar-EG';
-        else if (arStyle === 'levantine') displayLang = 'ar-LB';
-        else if (arStyle === 'gulf') displayLang = 'ar-AE';
-        else if (arStyle === 'maghrebi') displayLang = 'ar-MA';
-        else displayLang = 'ar-SA';
-        break;
-      default: 
-        generated = { word: "Error", ascii: "Error" };
-        displayLang = 'err';
-    }
+    let finalWord = generated.word;
+    let finalAscii = generated.ascii;
 
-    // Apply historical sound-change corruption
     if (params.corruption > 0) {
-      const langCode = displayLang === 'en-ang' ? 'en-ang' : displayLang === 'en-phon' ? 'en-phon' : 'en';
+      const langCode = displayLang;
       const sameOrthography = generated.word === generated.ascii;
       const corrupted = applyCorruption(generated.word, generated.ascii, langCode, params.corruption);
-      generated = {
-        word: corrupted.word,
-        ascii: sameOrthography ? corrupted.word : corrupted.ascii,
-      };
+      finalWord = corrupted.word;
+      finalAscii = sameOrthography ? corrupted.word : corrupted.ascii;
     }
 
-    const len = generated.ascii.length;
+    const len = finalAscii.length;
     if (len < params.minLength || len > params.maxLength) {
       continue;
     }
     
-    const key = generated.word + ":" + targetLang;
+    const key = finalWord + ":" + targetLang;
     if (generatedKeys.has(key)) {
       continue;
     }
     generatedKeys.add(key);
 
     results.push({
-      ...generated,
+      word: finalWord,
+      ascii: finalAscii,
       language: displayLang
     });
+
   }
   return results;
 };

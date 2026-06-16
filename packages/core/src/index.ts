@@ -9,7 +9,15 @@ export {
   LANGUAGE_GROUPS,
 } from './constants';
 
-export { generateNonceWords, getCapacity } from './services/generator';
+export { generateNonceWords, debugGenerateNonceWords, getCapacity } from './services/generator';
+export type { DebugGenerateResult } from './services/generator';
+
+export {
+  applyCorruption,
+  debugCorruption,
+  CORRUPTION_RULES,
+} from './services/corruption';
+export type { CorruptionRule, TraceEntry, CorruptionDebugResult } from './services/corruption';
 
 export {
   getRandomElement,
