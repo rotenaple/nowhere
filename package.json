@@ -1,26 +1,22 @@
 {
-  "name": "nowhere",
+  "name": "nowhere-monorepo",
   "private": true,
-  "version": "1.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/core",
+    "packages/frontend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
+    "dev": "npm run dev -w @nowhere/frontend",
+    "build": "npm run build -w @nowhere/core && npm run build -w @nowhere/frontend",
+    "preview": "npm run preview -w @nowhere/frontend",
+    "build:core": "npm run build -w @nowhere/core",
+    "build:frontend": "npm run build -w @nowhere/frontend",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
-  },
-  "dependencies": {
-    "lucide-react": "^0.559.0",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "deploy": "gh-pages -d packages/frontend/dist"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
     "gh-pages": "^6.3.0",
-    "typescript": "^5.6.2",
-    "vite": "^5.4.10"
+    "typescript": "^5.6.2"
   }
 }

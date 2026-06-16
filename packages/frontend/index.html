@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>nowhere</title>
+</head>
+<body>
+<h1>nowhere</h1>
+<p><small>placename generator</small></p>
+<hr>
+<form id="form">
+<label>language <select id="lang"></select></label>
+<br>
+<label>count <input type="number" id="count" value="50" min="1" max="500" size="4"></label>
+<br>
+<label>min len <input type="number" id="minLen" value="6" min="1" max="40" size="3"></label>
+<br>
+<label>max len <input type="number" id="maxLen" value="15" min="1" max="40" size="3"></label>
+<br>
+<button type="submit" id="generateBtn">generate</button>
+</form>
+<hr>
+<div id="results"></div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
