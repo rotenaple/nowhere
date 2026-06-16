@@ -1,60 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>nowhere</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'system-ui', 'sans-serif'],
-              mono: ['Fira Code', 'monospace'],
-            },
-            colors: {
-              brand: {
-                50: '#f0f9ff',
-                100: '#e0f2fe',
-                200: '#bae6fd',
-                300: '#7dd3fc',
-                400: '#38bdf8',
-                500: '#0ea5e9',
-                600: '#0284c7',
-                700: '#0369a1',
-                800: '#075985',
-                900: '#0c4a6e',
-              }
-            }
-          },
-        },
-      }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Inter', sans-serif;
-      }
-    </style>
-
-<script type="importmap">
-{
-  "imports": {
-    "vite": "https://esm.sh/vite@^7.2.7",
-    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom": "https://esm.sh/react-dom@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
-  }
-}
-</script>
-  <script type="module" crossorigin src="/nowhere/assets/index-DvZPgIIS.js"></script>
+<head>
+<meta charset="UTF-8">
+<title>nowhere</title>
+  <script type="module" crossorigin src="/nowhere/assets/index-CyCrYPIi.js"></script>
 </head>
-  <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 antialiased min-h-screen transition-colors duration-200">
-    <div id="root"></div>
-  </body>
+<body>
+<h1>nowhere</h1>
+<p><small>placename generator</small></p>
+<hr>
+<form id="form">
+<label>language <select id="lang"></select></label>
+<br>
+<label>count <input type="number" id="count" value="50" min="1" max="500" size="4"></label>
+<br>
+<label>min len <input type="number" id="minLen" value="6" min="1" max="40" size="3"></label>
+<br>
+<label>max len <input type="number" id="maxLen" value="15" min="1" max="40" size="3"></label>
+<br>
+<label>corruption <input type="range" id="corruption" min="0" max="50" value="0.3"><span id="corruptionVal">0</span></label>
+<br>
+<button type="submit" id="generateBtn">generate</button>
+</form>
+<hr>
+<div id="results"></div>
+</body>
 </html>
