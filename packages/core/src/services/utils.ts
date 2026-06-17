@@ -257,16 +257,29 @@ export const inflectSlavicAdjective = (
     if (targetNumber === 'pl') {
         switch (lang) {
             case 'bg': 
-                // Remove -en/-ak/-ok ending if present, add -i
-                if (inflectedSrc.endsWith('ен') || inflectedSrc.endsWith('ък') || inflectedSrc.endsWith('ок')) {
-                    if (!isStableBgAdj(inflectedSrc)) {
-                        inflectedSrc = inflectedSrc.slice(0, -2);
-                        if (inflectedRom) inflectedRom = inflectedRom.slice(0, -2); // Approx
-                    }
+                if (inflectedSrc.endsWith('ски') || inflectedSrc.endsWith('ти')) {
+                    return { src: inflectedSrc, rom: inflectedRom };
                 }
-                // If it ends in consonant, add -i
-                inflectedSrc += 'и';
-                if (inflectedRom) inflectedRom += 'i';
+                if (isStableBgAdj(inflectedSrc)) {
+                    inflectedSrc += 'и';
+                    if (inflectedRom) inflectedRom += 'i';
+                }
+                else if (inflectedSrc.endsWith('ен')) {
+                    inflectedSrc = inflectedSrc.slice(0, -2) + 'ни';
+                    if (inflectedRom) inflectedRom = inflectedRom.slice(0, -2) + 'ni';
+                }
+                else if (inflectedSrc.endsWith('ък') || inflectedSrc.endsWith('ок')) {
+                    inflectedSrc = inflectedSrc.slice(0, -2) + 'ки';
+                    if (inflectedRom) inflectedRom = inflectedRom.slice(0, -2) + 'ki';
+                }
+                else if (inflectedSrc.endsWith('ър')) {
+                    inflectedSrc = inflectedSrc.slice(0, -2) + 'ри';
+                    if (inflectedRom) inflectedRom = inflectedRom.slice(0, -2) + 'ri';
+                }
+                else {
+                    inflectedSrc += 'и';
+                    if (inflectedRom) inflectedRom += 'i';
+                }
                 return { src: inflectedSrc, rom: inflectedRom };
 
             case 'ru': 
@@ -320,8 +333,8 @@ export const inflectSlavicAdjective = (
 
     switch (lang) {
         case 'bg': 
-            mascEndingSrc = /ен|ък|ок|ър$/; 
-            mascEndingRom = /en|ak|ok|ar$/;
+            mascEndingSrc = /ен$/; 
+            mascEndingRom = /en$/;
             femEndingSrc = 'на'; femEndingRom = 'na';
             neutEndingSrc = 'но'; neutEndingRom = 'no';
             break;
@@ -425,9 +438,13 @@ export const inflectSlavicAdjective = (
                     inflectedRom = adjInfo.rom!.slice(0, -2) + 'ko';
                 }
             }
-             else if (adjInfo.src.endsWith('ър')) {
+            else if (adjInfo.src.endsWith('ър')) {
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ро';
                 inflectedRom = adjInfo.rom!.slice(0, -2) + 'ro';
+            }
+            else {
+                inflectedSrc += 'о';
+                if (inflectedRom) inflectedRom += 'o';
             }
         } 
         else if (lang === 'uk' && adjInfo.src.endsWith('ий')) {
