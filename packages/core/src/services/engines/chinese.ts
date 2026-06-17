@@ -159,35 +159,39 @@ const getStructure = (region: RegionCode): { parts: ChineseComponent[], rule: st
   return { parts, rule };
 };
 
+const getComponentRomanization = (c: ChineseComponent, mode: 'cn' | 'tw' | 'hk'): string => {
+  const raw = c[mode] || '';
+  if (raw.includes(',')) {
+    const choices = raw.split(',').map(choice => choice.trim()).filter(Boolean);
+    if (choices.length > 0) {
+      return getRandomElement(choices);
+    }
+  }
+  return raw;
+};
+
 const formatChineseName = (parts: ChineseComponent[], mode: 'cn' | 'tw' | 'hk'): GeneratedResult => {
   const hanzi = parts.map(p => getChar(p, mode)).join('');
   
-  // Smart Anglification
-  const lastPart = parts[parts.length - 1];
-  const allowedEnglishSuffixes = ['Bay', 'Port', 'Island', 'River', 'Lake', 'Mountain', 'Peak', 'Gate', 'Bridge', 'Harbor'];
-  
-  const useEnglishSuffix = 
-    lastPart.english && 
-    allowedEnglishSuffixes.includes(lastPart.english) && 
-    parts.length >= 2 &&
-    Math.random() < 0.35; 
+  const useEnglishSuffix = false; 
 
   const capitalize = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
   const nameParts = useEnglishSuffix ? parts.slice(0, -1) : parts;
+  const lastPart = parts[parts.length - 1];
 
   let ascii = '';
 
   if (mode === 'cn') {
     // Pinyin: No spaces
-    ascii = capitalize(nameParts.map(p => p.cn).join(''));
+    ascii = capitalize(nameParts.map(p => getComponentRomanization(p, 'cn')).join(''));
   } 
   else if (mode === 'tw') {
     // Wade-Giles: Hyphenated
-    ascii = nameParts.map(p => capitalize(p.tw || '')).join('-');
+    ascii = nameParts.map(p => capitalize(getComponentRomanization(p, 'tw'))).join('-');
   } 
   else {
     // HK: Spaced
-    ascii = nameParts.map(p => capitalize(p.hk || '')).join(' ');
+    ascii = nameParts.map(p => capitalize(getComponentRomanization(p, 'hk'))).join(' ');
   }
 
   if (useEnglishSuffix && lastPart.english) {

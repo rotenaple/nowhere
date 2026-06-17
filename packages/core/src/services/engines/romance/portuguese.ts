@@ -30,7 +30,7 @@ export const generatePortuguesePlace = (): GeneratedResult => {
       const useSaint = Math.random() < 0.5;
       
       if (useSaint) {
-        const saintPool = getPool(['bio_fauna', 'bio_flora', 'abstract']).filter(c => !c.tags?.includes('no_saint'));
+        const saintPool = ROMANCE_DATA.filter(c => c.pt && c.tags?.includes('saint_ok'));
         const saintTarget = getRandomElement(saintPool);
         const tData = getRomData(saintTarget.pt);
         const prefix = (tData.gender === 'f') ? 'Santa' : 'São';

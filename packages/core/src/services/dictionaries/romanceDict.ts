@@ -203,7 +203,7 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Inn', type: 'settlement', tags: ['civic'], es: ['Posada', 'f'], it: ['Locanda', 'f'], fr: ['Auberge', 'f'], pt: ['Pousada', 'f'], ro: ['Han', 'n'] },
   { def: 'Camp', type: 'settlement', tags: ['civic'], es: ['Campo', 'm'], it: ['Campo', 'm'], fr: ['Camp', 'm'], pt: ['Campo', 'm'], ro: ['Tabără', 'f'] },
   { def: 'Well', type: 'settlement', tags: ['civic'], es: ['Pozo', 'm'], it: ['Pozzo', 'm'], fr: ['Puits', 'm'], pt: ['Poço', 'm'], ro: ['Puț', 'n'] },
-  { def: 'Cross', type: 'settlement', tags: ['civic'], es: ['Cruz', 'f'], it: ['Croce', 'f'], fr: ['Croix', 'f'], pt: ['Cruz', 'f'], ro: ['Cruce', 'f'] },
+  { def: 'Cross', type: 'settlement', tags: ['civic', 'saint_ok'], es: ['Cruz', 'f'], it: ['Croce', 'f'], fr: ['Croix', 'f'], pt: ['Cruz', 'f'], ro: ['Cruce', 'f'] },
   { def: 'Abbey', type: 'settlement', tags: ['civic'], es: ['Abadía', 'f'], it: ['Abbazia', 'f'], fr: ['Abbaye', 'f'], pt: ['Abadia', 'f'], ro: ['Abație', 'f'] },
   { def: 'Monastery', type: 'settlement', tags: ['civic'], es: ['Monasterio', 'm'], it: ['Monastero', 'm'], fr: ['Monastère', 'm'], pt: ['Mosteiro', 'm'], ro: ['Mănăstire', 'f'] },
   { def: 'Hermitage', type: 'settlement', tags: ['civic'], es: ['Ermita', 'f'], it: ['Eremo', 'm'], fr: ['Ermitage', 'm'], pt: ['Ermida', 'f'], ro: ['Schit', 'n'] },
@@ -333,11 +333,11 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Milk', type: 'abstract', tags: ['no_saint'], es: ['Leche', 'f'], it: ['Latte', 'm'], fr: ['Lait', 'm'], pt: ['Leite', 'm'], ro: ['Lapte', 'm'] },
   { def: 'Cheese', type: 'abstract', tags: ['no_saint'], es: ['Queso', 'm'], it: ['Formaggio', 'm'], fr: ['Fromage', 'm'], pt: ['Queijo', 'm'], ro: ['Brânză', 'f'] },
   { def: 'War', type: 'abstract', es: ['Guerra', 'f'], it: ['Guerra', 'f'], fr: ['Guerre', 'f'], pt: ['Guerra', 'f'], ro: ['Război', 'n'] },
-  { def: 'Peace', type: 'abstract', es: ['Paz', 'f'], it: ['Pace', 'f'], fr: ['Paix', 'f'], pt: ['Paz', 'f'], ro: ['Pace', 'f'] },
-  { def: 'Victory', type: 'abstract', es: ['Victoria', 'f'], it: ['Vittoria', 'f'], fr: ['Victoire', 'f'], pt: ['Vitória', 'f'], ro: ['Victorie', 'f'] },
-  { def: 'Glory', type: 'abstract', es: ['Gloria', 'f'], it: ['Gloria', 'f'], fr: ['Gloire', 'f'], pt: ['Glória', 'f'], ro: ['Glorie', 'f'] },
+  { def: 'Peace', type: 'abstract', tags: ['saint_ok'], es: ['Paz', 'f'], it: ['Pace', 'f'], fr: ['Paix', 'f'], pt: ['Paz', 'f'], ro: ['Pace', 'f'] },
+  { def: 'Victory', type: 'abstract', tags: ['saint_ok'], es: ['Victoria', 'f'], it: ['Vittoria', 'f'], fr: ['Victoire', 'f'], pt: ['Vitória', 'f'], ro: ['Victorie', 'f'] },
+  { def: 'Glory', type: 'abstract', tags: ['saint_ok'], es: ['Gloria', 'f'], it: ['Gloria', 'f'], fr: ['Gloire', 'f'], pt: ['Glória', 'f'], ro: ['Glorie', 'f'] },
   { def: 'Freedom', type: 'abstract', es: ['Libertad', 'f'], it: ['Libertà', 'f'], fr: ['Liberté', 'f'], pt: ['Liberdade', 'f'], ro: ['Libertate', 'f'] },
-  { def: 'Hope', type: 'abstract', es: ['Esperanza', 'f'], it: ['Speranza', 'f'], fr: ['Espoir', 'm'], pt: ['Esperança', 'f'], ro: ['Speranță', 'f'] },
+  { def: 'Hope', type: 'abstract', tags: ['saint_ok'], es: ['Esperanza', 'f'], it: ['Speranza', 'f'], fr: ['Espoir', 'm'], pt: ['Esperança', 'f'], ro: ['Speranță', 'f'] },
   { def: 'Love', type: 'abstract', es: ['Amor', 'm'], it: ['Amore', 'm'], fr: ['Amour', 'm'], pt: ['Amor', 'm'], ro: ['Iubire', 'f'] },
   { def: 'Soul', type: 'abstract', es: ['Alma', 'f'], it: ['Anima', 'f'], fr: ['Âme', 'f'], pt: ['Alma', 'f'], ro: ['Suflet', 'n'] },
   { def: 'Life', type: 'abstract', es: ['Vida', 'f'], it: ['Vita', 'f'], fr: ['Vie', 'f'], pt: ['Vida', 'f'], ro: ['Viață', 'f'] },
@@ -345,6 +345,16 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Fisher', type: 'abstract', es: ['Pescador', 'm'], it: ['Pescatore', 'm'], fr: ['Pêcheur', 'm'], pt: ['Pescador', 'm'], ro: ['Pescar', 'm'] },
   { def: 'Smith', type: 'abstract', es: ['Herrero', 'm'], it: ['Fabbro', 'm'], fr: ['Forgeron', 'm'], pt: ['Ferreiro', 'm'], ro: ['Fierar', 'm'] },
   { def: 'Miller', type: 'abstract', es: ['Molinero', 'm'], it: ['Mugnaio', 'm'], fr: ['Meunier', 'm'], pt: ['Moleiro', 'm'], ro: ['Morar', 'm'] },
+
+  // Saint names
+  { def: 'Mary', type: 'abstract', tags: ['saint_ok'], es: ['María', 'f'], it: ['Maria', 'f'], fr: ['Marie', 'f'], pt: ['Maria', 'f'], ro: ['Maria', 'f'] },
+  { def: 'John', type: 'abstract', tags: ['saint_ok'], es: ['Juan', 'm'], it: ['Giovanni', 'm'], fr: ['Jean', 'm'], pt: ['João', 'm'], ro: ['Ioan', 'm'] },
+  { def: 'Peter', type: 'abstract', tags: ['saint_ok'], es: ['Pedro', 'm'], it: ['Pietro', 'm'], fr: ['Pierre', 'm'], pt: ['Pedro', 'm'], ro: ['Petru', 'm'] },
+  { def: 'Paul', type: 'abstract', tags: ['saint_ok'], es: ['Pablo', 'm'], it: ['Paolo', 'm'], fr: ['Paul', 'm'], pt: ['Paulo', 'm'], ro: ['Pavel', 'm'] },
+  { def: 'Michael', type: 'abstract', tags: ['saint_ok'], es: ['Miguel', 'm'], it: ['Michele', 'm'], fr: ['Michel', 'm'], pt: ['Miguel', 'm'], ro: ['Mihai', 'm'] },
+  { def: 'Anthony', type: 'abstract', tags: ['saint_ok'], es: ['Antonio', 'm'], it: ['Antonio', 'm'], fr: ['Antoine', 'm'], pt: ['António', 'm'], ro: ['Anton', 'm'] },
+  { def: 'Anne', type: 'abstract', tags: ['saint_ok'], es: ['Ana', 'f'], it: ['Anna', 'f'], fr: ['Anne', 'f'], pt: ['Ana', 'f'], ro: ['Ana', 'f'] },
+  { def: 'Clara', type: 'abstract', tags: ['saint_ok'], es: ['Clara', 'f'], it: ['Chiara', 'f'], fr: ['Claire', 'f'], pt: ['Clara', 'f'], ro: ['Clara', 'f'] },
 
   // ==========================
   // 10. PREFIXES & HONORIFICS

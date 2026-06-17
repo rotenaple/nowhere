@@ -55,7 +55,11 @@ export const generateFrenchPlace = (): GeneratedResult => {
   if (roll < 0.20) {
     rule = "Saint-X / Prefix-X";
     const prefixObj = getRandomElement(getPool(['prefix']));
-    const rootObj = getRandomElement(getPool(['settlement', 'geo_major', 'bio_flora']));
+    const isSaintPrefix = ['San', 'Santa', 'Notre', 'Dame'].includes(prefixObj.def);
+    const rootPool = isSaintPrefix 
+      ? ROMANCE_DATA.filter(c => c.fr && c.tags?.includes('saint_ok'))
+      : getPool(['settlement', 'geo_major', 'bio_flora']);
+    const rootObj = getRandomElement(rootPool);
     components.push(JSON.stringify(prefixObj), JSON.stringify(rootObj));
     
     const rData = getRomData(rootObj.fr);

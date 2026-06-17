@@ -131,7 +131,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
             tailObj = saintTail;
         } else {
             // Pick concepts (Peace, Cross) or Nature (Rose, Lily)
-            const saintPool = getRomancePool(['abstract', 'bio_flora', 'bio_fauna']).filter(c => !c.tags?.includes('no_saint'));
+            const saintPool = ROMANCE_DATA.filter(c => c.es && c.tags?.includes('saint_ok'));
             const obj = getRandomElement(saintPool); 
             const data = getRomData(obj.es);
             saintTail = data.val;

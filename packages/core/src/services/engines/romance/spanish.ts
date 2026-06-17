@@ -52,7 +52,7 @@ export const generateSpanishPlace = (): GeneratedResult => {
   // --- RECIPE 1: The "San" Pattern ---
   if (roll < 0.15) {
     rule = 'The "San" Pattern';
-    const saintPool = getPool(['bio_fauna', 'bio_flora', 'abstract']).filter(c => !c.tags?.includes('no_saint'));
+    const saintPool = ROMANCE_DATA.filter(c => c.es && c.tags?.includes('saint_ok'));
     const target = getRandomElement(saintPool); 
     components.push(JSON.stringify(target));
     const tData = getRomData(target.es);
