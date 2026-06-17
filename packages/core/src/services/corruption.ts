@@ -322,7 +322,6 @@ const FRENCH_RULES: CorruptionRule[] = [
 const SPANISH_RULES: CorruptionRule[] = [
   // Suffixes
   { find: /ez$/gi, replace: 'es', weight: 0.10, desc: '-ez → -es (simplified)' },
-  { find: /illo$/gi, replace: 'illa', weight: 0.08, desc: '-illo → -illa (gender shift)' },
   { find: /ón$/gi, replace: 'on', weight: 0.10, desc: '-ón → -on (accent loss)' },
   { find: /ción$/gi, replace: 'ccion', weight: 0.08, desc: '-ción → -ccion (older spelling)' },
 
@@ -350,9 +349,6 @@ const SPANISH_RULES: CorruptionRule[] = [
  * - Dialectal plural (-a→-e)
  */
 const ITALIAN_RULES: CorruptionRule[] = [
-  { find: /ano$/gi, replace: 'ana', weight: 0.08, desc: '-ano → -ana (gender shift)' },
-  { find: /ino$/gi, replace: 'ina', weight: 0.08, desc: '-ino → -ina (gender shift)' },
-  { find: /ello$/gi, replace: 'ella', weight: 0.06, desc: '-ello → -ella (gender shift)' },
   { find: /g(?=i)/gi, replace: 'gh', weight: 0.08, desc: 'g → gh before i (orthographic)' },
   { find: /c(?=i)/gi, replace: 'ch', weight: 0.08, desc: 'c → ch before i (orthographic)' },
   { find: /ggio$/gi, replace: 'gio', weight: 0.06, desc: '-ggio → -gio (simplified)' },
@@ -503,7 +499,6 @@ const CZECH_RULES: CorruptionRule[] = [
   { find: /ov$/gi, replace: 'ův', weight: 0.08, desc: '-ov → -ův (possessive form shift)' },
   { find: /ice$/gi, replace: 'itz', weight: 0.10, desc: '-ice → -itz (German-influenced)' },
   { find: /ů/gi, replace: 'uo', weight: 0.08, desc: 'ů → uo (older Hus reform spelling)' },
-  { find: /ov$/gi, replace: 'ová', weight: 0.08, desc: '-ov → -ová (feminine form)' },
   { find: /ř/gi, replace: 'rz', weight: 0.06, desc: 'ř → rz (Germanized in Silesia)' },
 ];
 
@@ -516,7 +511,6 @@ const CZECH_RULES: CorruptionRule[] = [
  * - Older spelling (ô→uo)
  */
 const SLOVAK_RULES: CorruptionRule[] = [
-  { find: /ov$/gi, replace: 'ovo', weight: 0.08, desc: '-ov → -ovo (neuter endings)' },
   { find: /ä/gi, replace: 'e', weight: 0.10, desc: 'ä → e (standard)' },
   { find: /ô/gi, replace: 'uo', weight: 0.08, desc: 'ô → uo (older spelling)' },
 ];
@@ -534,8 +528,6 @@ const SLOVAK_RULES: CorruptionRule[] = [
 const BULGARIAN_RULES: CorruptionRule[] = [
   ...SLAVIC_RULES,
   { find: /ъ/gi, replace: 'а', weight: 0.10, desc: 'ъ → а (Western dialect)' },
-  { find: /ски$/gi, replace: 'ска', weight: 0.08, desc: '-ски → -ска (gender agreement shift)' },
-  { find: /ец$/gi, replace: 'ица', weight: 0.06, desc: '-ец → -ица (diminutive suffix shift)' },
   { find: /ия$/gi, replace: 'ий', weight: 0.06, desc: '-ия → -ий (final yat variation)' },
   { find: /яд/gi, replace: 'ед', weight: 0.08, desc: 'яд → ед (yat border variation)' },
 ];

@@ -360,9 +360,17 @@ export const inflectSlavicAdjective = (
                 inflectedRom = inflectedRom.replace(mascEndingRom, femEndingRom);
             }
         } 
-        // Special Case: Bulgarian fleeting vowels
+        // Special Case: Bulgarian fleeting vowels and -ski / -ti adjectives
         else if (lang === 'bg') {
-            if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
+            if (adjInfo.src.endsWith('ски')) {
+                inflectedSrc = adjInfo.src.slice(0, -3) + 'ска';
+                inflectedRom = inflectedRom ? inflectedRom.slice(0, -3) + 'ska' : undefined;
+            }
+            else if (adjInfo.src.endsWith('ти')) {
+                inflectedSrc = adjInfo.src.slice(0, -2) + 'та';
+                inflectedRom = inflectedRom ? inflectedRom.slice(0, -2) + 'ta' : undefined;
+            }
+            else if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ка';
                 inflectedRom = adjInfo.rom!.slice(0, -2) + 'ka';
             }
@@ -388,7 +396,15 @@ export const inflectSlavicAdjective = (
             }
         } 
         else if (lang === 'bg') {
-            if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
+            if (adjInfo.src.endsWith('ски')) {
+                inflectedSrc = adjInfo.src.slice(0, -3) + 'ско';
+                inflectedRom = inflectedRom ? inflectedRom.slice(0, -3) + 'sko' : undefined;
+            }
+            else if (adjInfo.src.endsWith('ти')) {
+                inflectedSrc = adjInfo.src.slice(0, -2) + 'то';
+                inflectedRom = inflectedRom ? inflectedRom.slice(0, -2) + 'to' : undefined;
+            }
+            else if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ко'; 
                 inflectedRom = adjInfo.rom!.slice(0, -2) + 'ko'; 
             }

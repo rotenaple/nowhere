@@ -38,22 +38,32 @@ export const generateSlovakPlace = (): GeneratedResult => {
         isDerived = true;
     }
 
+    let shiftedSuffixSk = isDerived ? selectedSuffix?.sk : undefined;
+    let suffixSrc = "";
+    if (isDerived && selectedSuffix) {
+        const suffixInfo = getSlavicData(selectedSuffix.sk!);
+        suffixSrc = suffixInfo.src;
+        if (suffixSrc === 'ov' && Math.random() < 0.08) {
+            suffixSrc = 'ovo';
+            shiftedSuffixSk = [['ovo'], 'n'];
+        }
+    }
+
     // UPDATED
-    const { gender, number } = getCompositeAttributes(selectedRootComponent.sk, selectedSuffix?.sk);
+    const { gender, number } = getCompositeAttributes(selectedRootComponent.sk, shiftedSuffixSk);
     const { src: inflectedAdjSrc } = inflectSlavicAdjective(selectedAdj.sk!, gender, 'sk', number);
 
     const rootInfo = getSlavicData(selectedRootComponent.sk);
     let finalNounSrc = rootInfo.src;
 
     if (isDerived && selectedSuffix) {
-        const suffixInfo = getSlavicData(selectedSuffix.sk!);
         const rootEndsInVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(finalNounSrc.slice(-1));
-        const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixInfo.src.charAt(0));
+        const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
 
         if (rootEndsInVowel && suffixStartsVowel) {
             finalNounSrc = finalNounSrc.slice(0, -1);
         }
-        finalNounSrc += suffixInfo.src;
+        finalNounSrc += suffixSrc;
     }
 
     wordSrc = `${inflectedAdjSrc} ${finalNounSrc}`;
@@ -70,13 +80,19 @@ export const generateSlovakPlace = (): GeneratedResult => {
     const suffixInfo = getSlavicData(selectedSuffix.sk!);
 
     let baseSrc = rootInfo.src;
+    let suffixSrc = suffixInfo.src;
+
+    if (suffixSrc === 'ov' && Math.random() < 0.08) {
+        suffixSrc = 'ovo';
+    }
+
     const rootEndsInVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(baseSrc.slice(-1));
-    const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixInfo.src.charAt(0));
+    const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
 
     if (rootEndsInVowel && suffixStartsVowel) {
         baseSrc = baseSrc.slice(0, -1);
     }
-    wordSrc = baseSrc + suffixInfo.src;
+    wordSrc = baseSrc + suffixSrc;
     components.push(JSON.stringify(selectedRoot));
   }
   // 3. Adjective + (Root + Suffix) - Explicit Path
@@ -86,21 +102,29 @@ export const generateSlovakPlace = (): GeneratedResult => {
     const selectedRootComponent = getRandomElement(rootsAndStems);
     const selectedSuffix = getRandomElement(suffixes);
     
+    const suffixInfo = getSlavicData(selectedSuffix.sk!);
+    let suffixSrc = suffixInfo.src;
+    let shiftedSuffixSk = selectedSuffix.sk;
+
+    if (suffixSrc === 'ov' && Math.random() < 0.08) {
+        suffixSrc = 'ovo';
+        shiftedSuffixSk = [['ovo'], 'n'];
+    }
+
     // UPDATED
-    const { gender, number } = getCompositeAttributes(selectedRootComponent.sk, selectedSuffix.sk);
+    const { gender, number } = getCompositeAttributes(selectedRootComponent.sk, shiftedSuffixSk);
     const { src: inflectedAdjSrc } = inflectSlavicAdjective(selectedAdj.sk!, gender, 'sk', number);
 
     const rootInfo = getSlavicData(selectedRootComponent.sk);
-    const suffixInfo = getSlavicData(selectedSuffix.sk!);
 
     let derivedNounSrc = rootInfo.src;
     const rootEndsInVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(derivedNounSrc.slice(-1));
-    const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixInfo.src.charAt(0));
+    const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
 
     if (rootEndsInVowel && suffixStartsVowel) {
         derivedNounSrc = derivedNounSrc.slice(0, -1);
     }
-    derivedNounSrc += suffixInfo.src;
+    derivedNounSrc += suffixSrc;
 
     wordSrc = `${inflectedAdjSrc} ${derivedNounSrc}`;
     components.push(JSON.stringify(selectedAdj));
@@ -117,13 +141,19 @@ export const generateSlovakPlace = (): GeneratedResult => {
     if (Math.random() < 0.6) { // Optionally add suffix
         const selectedSuffix = getRandomElement(suffixes);
         const suffixInfo = getSlavicData(selectedSuffix.sk!);
+        let suffixSrc = suffixInfo.src;
+
+        if (suffixSrc === 'ov' && Math.random() < 0.08) {
+            suffixSrc = 'ovo';
+        }
+
         const rootEndsInVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(baseSrc.slice(-1));
-        const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixInfo.src.charAt(0));
+        const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
 
         if (rootEndsInVowel && suffixStartsVowel) {
             baseSrc = baseSrc.slice(0, -1);
         }
-        baseSrc += suffixInfo.src;
+        baseSrc += suffixSrc;
     }
     
     const riverInfo = getSlavicData(selectedRiver.sk!);

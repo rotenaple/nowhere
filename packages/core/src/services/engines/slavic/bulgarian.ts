@@ -43,8 +43,22 @@ export const generateBulgarianPlace = (): GeneratedResult => {
          isDerived = true;
       }
       
+      let shiftedSuffixBg = isDerived ? selectedSuffix?.bg : undefined;
+      let suffixSrc = "";
+      let suffixRom = "";
+      if (isDerived && selectedSuffix) {
+          const suffixInfo = getSlavicData(selectedSuffix.bg!);
+          suffixSrc = suffixInfo.src;
+          suffixRom = suffixInfo.rom || "";
+          if (suffixSrc === 'ец' && Math.random() < 0.06) {
+              suffixSrc = 'ица';
+              suffixRom = 'itsa';
+              shiftedSuffixBg = [['ица', 'itsa'], 'f'];
+          }
+      }
+
       // UPDATED: Get Gender AND Number
-      const { gender, number } = getCompositeAttributes(selectedRootComponent.bg, selectedSuffix?.bg);
+      const { gender, number } = getCompositeAttributes(selectedRootComponent.bg, shiftedSuffixBg);
       
       // UPDATED: Pass number to inflector
       const { src: inflectedAdjSrc, rom: inflectedAdjRom } = inflectSlavicAdjective(selectedAdj.bg!, gender, 'bg', number);
@@ -54,19 +68,17 @@ export const generateBulgarianPlace = (): GeneratedResult => {
       let finalNounRom = rootInfo.rom || transliterateBulgarianToAscii(rootInfo.src);
 
       if (isDerived && selectedSuffix) {
-          const suffixInfo = getSlavicData(selectedSuffix.bg!);
-          
           // Vowel Truncation
           const rootEndsInVowel = ['а','е','о','я','и'].includes(finalNounSrc.slice(-1));
-          const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixInfo.src.charAt(0));
+          const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixSrc.charAt(0));
 
           if (rootEndsInVowel && suffixStartsVowel) {
               finalNounSrc = finalNounSrc.slice(0, -1);
               finalNounRom = finalNounRom.slice(0, -1);
           }
 
-          finalNounSrc += suffixInfo.src;
-          finalNounRom += suffixInfo.rom;
+          finalNounSrc += suffixSrc;
+          finalNounRom += suffixRom;
       }
 
       wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
@@ -85,17 +97,24 @@ export const generateBulgarianPlace = (): GeneratedResult => {
 
       let baseSrc = rootInfo.src;
       let baseRom = rootInfo.rom || transliterateBulgarianToAscii(rootInfo.src);
+      let suffixSrc = suffixInfo.src;
+      let suffixRom = suffixInfo.rom || "";
+
+      if (suffixSrc === 'ец' && Math.random() < 0.06) {
+          suffixSrc = 'ица';
+          suffixRom = 'itsa';
+      }
       
       const rootEndsInVowel = ['а','е','о','я','и'].includes(baseSrc.slice(-1));
-      const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixInfo.src.charAt(0));
+      const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixSrc.charAt(0));
 
       if (rootEndsInVowel && suffixStartsVowel) {
             baseSrc = baseSrc.slice(0, -1);
             baseRom = baseRom.slice(0, -1);
       }
 
-      wordCyrillic = baseSrc + suffixInfo.src;
-      wordAscii = baseRom + suffixInfo.rom;
+      wordCyrillic = baseSrc + suffixSrc;
+      wordAscii = baseRom + suffixRom;
       components.push(JSON.stringify(selectedRoot));
   }
   // 3. Base + "na" + River
@@ -111,16 +130,23 @@ export const generateBulgarianPlace = (): GeneratedResult => {
       if (Math.random() < 0.5) {
           const selectedSuffix = getRandomElement(suffixes);
           const suffixInfo = getSlavicData(selectedSuffix.bg!);
+          let suffixSrc = suffixInfo.src;
+          let suffixRom = suffixInfo.rom || "";
+
+          if (suffixSrc === 'ец' && Math.random() < 0.06) {
+              suffixSrc = 'ица';
+              suffixRom = 'itsa';
+          }
           
           const rootEndsInVowel = ['а','е','о','я','и'].includes(basePartSrc.slice(-1));
-          const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixInfo.src.charAt(0));
+          const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixSrc.charAt(0));
 
           if (rootEndsInVowel && suffixStartsVowel) {
               basePartSrc = basePartSrc.slice(0, -1);
               basePartRom = basePartRom.slice(0, -1);
           }
-          basePartSrc += suffixInfo.src;
-          basePartRom += suffixInfo.rom;
+          basePartSrc += suffixSrc;
+          basePartRom += suffixRom;
       }
       
       const riverInfo = getSlavicData(selectedRiver.bg!);

@@ -82,7 +82,18 @@ export const generateItalianPlace = (): GeneratedResult => {
     
     const rData = getRomData(rootObj.it);
     let r = rData.val;
-    const gender = rData.gender || 'm';
+    let gender = rData.gender || 'm';
+
+    if (r.endsWith('ano') && Math.random() < 0.08) {
+        r = r.slice(0, -3) + 'ana';
+        gender = 'f';
+    } else if (r.endsWith('ino') && Math.random() < 0.08) {
+        r = r.slice(0, -3) + 'ina';
+        gender = 'f';
+    } else if (r.endsWith('ello') && Math.random() < 0.06) {
+        r = r.slice(0, -4) + 'ella';
+        gender = 'f';
+    }
     
     let a = formatAdj(getRomData(adjObj.it).val, gender);
     
@@ -107,7 +118,15 @@ export const generateItalianPlace = (): GeneratedResult => {
     components.push(JSON.stringify(rootObj));
     
     let base = getRomData(rootObj.it).val;
-    const sVal = getRomData(suffixObj.it).val;
+    let sVal = getRomData(suffixObj.it).val;
+
+    if (sVal === 'ano' && Math.random() < 0.08) {
+        sVal = 'ana';
+    } else if (sVal === 'ino' && Math.random() < 0.08) {
+        sVal = 'ina';
+    } else if (sVal === 'ello' && Math.random() < 0.06) {
+        sVal = 'ella';
+    }
 
     if (['a','e','i','o'].includes(base.slice(-1))) {
       base = base.slice(0, -1);
@@ -126,12 +145,24 @@ export const generateItalianPlace = (): GeneratedResult => {
     let h = getRomData(headObj.it).val;
     const tData = getRomData(tailObj.it);
     let t = tData.val;
+    let tGender = tData.gender || 'm';
+
+    if (t.endsWith('ano') && Math.random() < 0.08) {
+        t = t.slice(0, -3) + 'ana';
+        tGender = 'f';
+    } else if (t.endsWith('ino') && Math.random() < 0.08) {
+        t = t.slice(0, -3) + 'ina';
+        tGender = 'f';
+    } else if (t.endsWith('ello') && Math.random() < 0.06) {
+        t = t.slice(0, -4) + 'ella';
+        tGender = 'f';
+    }
     
     let connector = 'di';
     const useArticle = !['name'].includes(tailObj.type); 
     
     if (useArticle) {
-        if (tData.gender === 'f') {
+        if (tGender === 'f') {
             connector = ['a','e','i','o','u'].includes(t.charAt(0).toLowerCase()) ? "dell'" : "della";
         } else {
             if (['z', 'gn', 'ps'].includes(t.slice(0,1).toLowerCase()) || (t.startsWith('s') && !['a','e','i','o','u'].includes(t.charAt(1)))) {

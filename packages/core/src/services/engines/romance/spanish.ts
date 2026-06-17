@@ -68,7 +68,13 @@ export const generateSpanishPlace = (): GeneratedResult => {
     rule = 'Geo/Settlement + Universal Adjective';
     const nounObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
     const nData = getRomData(nounObj.es);
-    const nGender = nData.gender || 'm';
+    let nGender = nData.gender || 'm';
+    let nounVal = nData.val;
+
+    if (nounVal.endsWith('illo') && Math.random() < 0.08) {
+        nounVal = nounVal.slice(0, -4) + 'illa';
+        nGender = 'f';
+    }
 
     // EXPANSION: Colors and Quality apply to EVERYTHING. Geo adjectives only to Geo nouns.
     let adjTypes = ['adj_color', 'adj_quality']; 
@@ -85,9 +91,9 @@ export const generateSpanishPlace = (): GeneratedResult => {
         if (adj === 'Bueno') adj = 'Buen';
         if (adj === 'Malo') adj = 'Mal';
         if (adj === 'Santo') adj = 'San'; 
-        word = `${adj} ${nData.val}`;
+        word = `${adj} ${nounVal}`;
     } else {
-        word = `${nData.val} ${adj}`;
+        word = `${nounVal} ${adj}`;
     }
   }
 
@@ -101,14 +107,20 @@ export const generateSpanishPlace = (): GeneratedResult => {
     
     const h = getRomData(headObj.es).val;
     const tData = getRomData(tailObj.es);
-    const t = tData.val;
+    let t = tData.val;
+    let tGender = tData.gender || 'm';
+
+    if (t.endsWith('illo') && Math.random() < 0.08) {
+        t = t.slice(0, -4) + 'illa';
+        tGender = 'f';
+    }
 
     let connector = 'de';
     // Use article for concrete nouns, usually skip for abstract/proper-sounding ones
     const useArticle = ['bio_fauna', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type) || Math.random() > 0.6;
     
     if (useArticle) {
-        if (tData.gender === 'f') connector = 'de la';
+        if (tGender === 'f') connector = 'de la';
         else connector = 'del';
     }
 
@@ -124,7 +136,11 @@ export const generateSpanishPlace = (): GeneratedResult => {
     components.push(JSON.stringify(rootObj));
     
     let base = getRomData(rootObj.es).val;
-    const sVal = getRomData(suffixObj.es).val;
+    let sVal = getRomData(suffixObj.es).val;
+
+    if (sVal === 'illo' && Math.random() < 0.08) {
+        sVal = 'illa';
+    }
 
     const baseEndsVowel = ['a','e','i','o','u'].includes(base.slice(-1).toLowerCase());
     const suffStartsVowel = ['a','e','i','o','u'].includes(sVal.charAt(0).toLowerCase());
