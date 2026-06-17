@@ -1,6 +1,6 @@
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
-import { AR_HEADS, AR_ROOTS, AR_ADJECTIVES, ArabicComponent } from "../dictionaries/arabicDict";
+import { AR_HEADS, AR_ROOTS, AR_ADJECTIVES, AR_SUFFIXES, ArabicComponent } from "../dictionaries/arabicDict";
 
 /**
  * Helper to filter heads based on the selected region style.
@@ -100,6 +100,18 @@ export const getArabicCapacity = (style: 'standard' | 'egyptian' | 'levantine' |
     }
   }
 
+  // Pattern 5: [Root] + Suffix
+  for (const root of AR_ROOTS) {
+    for (const suffix of AR_SUFFIXES) {
+      let base = root.rom.toLowerCase();
+      const sVal = suffix.rom.toLowerCase();
+      if (base.endsWith('a') || base.endsWith('h')) {
+        base = base.slice(0, -1);
+      }
+      set.add((base + sVal).trim().toLowerCase());
+    }
+  }
+
   return set.size;
 }
 
@@ -156,7 +168,7 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
 
   // Pattern 1: [Head] [Root] (Idafa Construction - Genitive)
   // e.g. Sharm El-Sheikh, Kafr El-Sheikh, Deir Al-Balah
-  if (type < 0.40) {
+  if (type < 0.35) {
     rule = "[Head] [Root] (Idafa)";
     const head = getRandomElement(heads);
     const root = getRandomElement(AR_ROOTS);
@@ -169,7 +181,7 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   
   // Pattern 2: Al-[Root] (Definite Noun)
   // e.g. Al-Riyadh, Al-Manamah, Al-Fayyum
-  else if (type < 0.60) {
+  else if (type < 0.55) {
     rule = "Al-[Root] (Definite Noun)";
     const root = getRandomElement(AR_ROOTS);
     components.push(JSON.stringify(root));
@@ -180,7 +192,7 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   
   // Pattern 3: [Head] [Adjective] (Noun-Adjective)
   // e.g. Bahr Ahmar (Red Sea), Al-Madina Al-Munawwarah
-  else if (type < 0.80) {
+  else if (type < 0.75) {
     rule = "[Head] [Adjective]";
     const head = getRandomElement(heads);
     const adj = getRandomElement(AR_ADJECTIVES);
@@ -217,7 +229,7 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   
   // Pattern 4: [Root] + [Adjective] 
   // e.g. Riyadh Al-Khabra
-  else {
+  else if (type < 0.90) {
     rule = "[Root] [Adjective]";
     const root = getRandomElement(AR_ROOTS);
     const adj = getRandomElement(AR_ADJECTIVES);
@@ -229,6 +241,26 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
     
     wordAr = `${artRoot.ar}${root.ar} ${artAdj.ar}${inflectedAdj.ar}`;
     wordRom = `${artRoot.rom}${root.rom} ${artAdj.rom}${inflectedAdj.rom}`;
+  }
+  
+  // Pattern 5: [Root] + Suffix
+  // e.g. Zahriyya, Sabkhiyya
+  else {
+    rule = "[Root] + Suffix";
+    const root = getRandomElement(AR_ROOTS);
+    const suffix = getRandomElement(AR_SUFFIXES);
+    components.push(JSON.stringify(root), JSON.stringify(suffix));
+    
+    let baseAr = root.ar;
+    let baseRom = root.rom.toLowerCase();
+    
+    if (baseRom.endsWith('a') || baseRom.endsWith('h')) {
+      baseAr = baseAr.slice(0, -1);
+      baseRom = baseRom.slice(0, -1);
+    }
+    
+    wordAr = baseAr + suffix.ar;
+    wordRom = baseRom + suffix.rom;
   }
 
   return { word: wordAr, ascii: wordRom, generationRules: [rule], dictionaryComponents: components };

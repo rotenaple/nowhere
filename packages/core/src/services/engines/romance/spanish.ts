@@ -249,8 +249,8 @@ export const generateSpanishPlace = (): GeneratedResult => {
         sVal = 'illa';
     }
 
-    const baseEndsVowel = ['a','e','i','o','u'].includes(base.slice(-1).toLowerCase());
-    const suffStartsVowel = ['a','e','i','o','u'].includes(sVal.charAt(0).toLowerCase());
+    const baseEndsVowel = ['a','e','i','o','u','á','é','í','ó','ú','ü'].includes(base.slice(-1).toLowerCase());
+    const suffStartsVowel = ['a','e','i','o','u','á','é','í','ó','ú','ü'].includes(sVal.charAt(0).toLowerCase());
 
     if (baseEndsVowel && suffStartsVowel) {
         base = base.slice(0, -1);

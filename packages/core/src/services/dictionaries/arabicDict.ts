@@ -62,6 +62,17 @@ export const AR_HEADS: ArabicComponent[] = [
   { id: 'Midan', ar: 'ميدان', rom: 'Midan', type: 'head', gender: 'm', def: 'Square' },
   { id: 'Sahat', ar: 'ساحة', rom: 'Sahat', type: 'head', gender: 'f', sun: true, def: 'Courtyard/Square' },
   { id: 'Hadiq', ar: 'حديقة', rom: 'Hadiq', type: 'head', gender: 'f', def: 'Garden' },
+
+  // Dialect-specific heads
+  { id: 'Kom', ar: 'كوم', rom: 'Kom', type: 'head', gender: 'm', tags: ['egypt'], def: 'Hill/Mound' },
+  { id: 'Minya', ar: 'منية', rom: 'Minya', type: 'head', gender: 'f', tags: ['egypt'], def: 'Monastic settlement' },
+  { id: 'Shubra', ar: 'شبرا', rom: 'Shubra', type: 'head', gender: 'f', tags: ['egypt'], def: 'Village/Hamlet' },
+  { id: 'Tizi', ar: 'تيزي', rom: 'Tizi', type: 'head', gender: 'm', tags: ['maghreb'], def: 'Mountain pass (Berber)' },
+  { id: 'Ait', ar: 'آيت', rom: 'Ait', type: 'head', gender: 'm', tags: ['maghreb'], def: 'People of (Berber)' },
+  { id: 'Ighil', ar: 'إيغيل', rom: 'Ighil', type: 'head', gender: 'm', tags: ['maghreb'], def: 'Hill (Berber)' },
+  { id: 'Tala', ar: 'تالة', rom: 'Tala', type: 'head', gender: 'f', tags: ['maghreb'], def: 'Spring (Berber)' },
+  { id: 'Bandar', ar: 'بندر', rom: 'Bandar', type: 'head', gender: 'm', tags: ['gulf'], def: 'Port' },
+  { id: 'Fasht', ar: 'فشت', rom: 'Fasht', type: 'head', gender: 'm', tags: ['gulf'], def: 'Reef/Shoal' },
 ];
 
 export const AR_ROOTS: ArabicComponent[] = [
@@ -237,6 +248,18 @@ export const AR_ROOTS: ArabicComponent[] = [
   { id: 'Jihad', ar: 'جهاد', rom: 'Jihad', type: 'root', gender: 'm', def: 'Struggle' },
   { id: 'Fath', ar: 'فتح', rom: 'Fath', type: 'root', gender: 'm', def: 'Conquest' },
   { id: 'Hukm', ar: 'حكم', rom: 'Hukm', type: 'root', gender: 'm', def: 'Rule' },
+  { id: 'Sabkha', ar: 'سبخة', rom: 'Sabkha', type: 'root', gender: 'f', sun: true, def: 'Salt flat' },
+  { id: 'Harra', ar: 'حرة', rom: 'Harra', type: 'root', gender: 'f', def: 'Volcanic field' },
+  { id: 'Thaniyya', ar: 'ثنية', rom: 'Thaniyya', type: 'root', gender: 'f', sun: true, def: 'Mountain pass' },
+  { id: 'Hima', ar: 'حمى', rom: 'Hima', type: 'root', gender: 'f', def: 'Sanctuary' },
+  { id: 'Rawd', ar: 'روض', rom: 'Rawd', type: 'root', gender: 'm', sun: true, def: 'Garden/Meadow' },
+  { id: 'Qaa', ar: 'قاع', rom: 'Qaa', type: 'root', gender: 'm', def: 'Low ground' },
+  { id: 'Lajat', ar: 'لجاة', rom: 'Lajat', type: 'root', gender: 'f', def: 'Stony refuge' },
+  { id: 'Khabt', ar: 'خبت', rom: 'Khabt', type: 'root', gender: 'm', def: 'Soft low ground' },
+  { id: 'Nasi', ar: 'ناصية', rom: 'Nasi', type: 'root', gender: 'f', sun: true, def: 'Sand dune' },
+  { id: 'Athl', ar: 'أثل', rom: 'Athl', type: 'root', gender: 'm', def: 'Tamarisk' },
+  { id: 'Sidr', ar: 'سدر', rom: 'Sidr', type: 'root', gender: 'm', sun: true, def: 'Lote tree' },
+  { id: 'Safsaf', ar: 'صفصاف', rom: 'Safsaf', type: 'root', gender: 'm', sun: true, def: 'Willow' },
   { id: 'Mulk', ar: 'ملك', rom: 'Mulk', type: 'root', gender: 'm', def: 'Kingdom' },
   { id: 'Dawla', ar: 'دولة', rom: 'Dawla', type: 'root', gender: 'f', sun: true, def: 'State' },
   { id: 'Umma', ar: 'أمة', rom: 'Umma', type: 'root', gender: 'f', def: 'Nation' },
@@ -336,6 +359,12 @@ export const AR_ADJECTIVES: ArabicComponent[] = [
   { id: 'Gharbi', ar: 'غربي', rom: 'Gharbi', type: 'adjective', def: 'Western' },
   { id: 'Wusta', ar: 'وسطى', rom: 'Wusta', type: 'adjective', def: 'Central' },
   { id: 'Fawqa', ar: 'فوقا', rom: 'Fawqa', type: 'adjective', def: 'Upper' },
+];
+
+export const AR_SUFFIXES: ArabicComponent[] = [
+  { id: 'iya', ar: 'ية', rom: 'iya', type: 'suffix', def: 'iyya (abstract/quality)' },
+  { id: 'iyyah', ar: 'يـة', rom: 'iyyah', type: 'suffix', def: 'iyyah (variant)' },
+  { id: 'an', ar: 'ان', rom: 'an', type: 'suffix', def: 'an (place suffix)' },
 ];
 
 export const AR_COUNTRY_SUFFIXES: ArabicComponent[] = [

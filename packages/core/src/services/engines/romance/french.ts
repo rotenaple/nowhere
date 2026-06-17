@@ -117,7 +117,7 @@ export const getFrenchCapacity = () => {
     for (const suffixObj of suffixes) {
       let base = getRomData(rootObj.fr).val.toLowerCase();
       const sVal = getRomData(suffixObj.fr).val;
-      if (['a','e','i','o','u','y'].includes(base.slice(-1)) && ['a','e','i','o','u','y'].includes(sVal.charAt(0))) {
+      if (['a','e','i','o','u','y','à','â','é','è','ê','ë','î','ï','ô','û','ù','ü'].includes(base.slice(-1)) && ['a','e','i','o','u','y','à','â','é','è','ê','ë','î','ï','ô','û','ù','ü'].includes(sVal.charAt(0))) {
         base = base.slice(0, -1);
       }
       set.add((base + sVal).trim().toLowerCase());
@@ -284,7 +284,7 @@ export const generateFrenchPlace = (): GeneratedResult => {
     let base = getRomData(rootObj.fr).val.toLowerCase();
     const sVal = getRomData(suffixObj.fr).val;
     
-    if (['a','e','i','o','u','y'].includes(base.slice(-1)) && ['a','e','i','o','u','y'].includes(sVal.charAt(0))) {
+    if (['a','e','i','o','u','y','à','â','é','è','ê','ë','î','ï','ô','û','ù','ü'].includes(base.slice(-1)) && ['a','e','i','o','u','y','à','â','é','è','ê','ë','î','ï','ô','û','ù','ü'].includes(sVal.charAt(0))) {
         base = base.slice(0, -1);
     }
     word = base + sVal;

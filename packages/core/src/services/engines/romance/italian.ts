@@ -47,10 +47,14 @@ export const getItalianCapacity = () => {
 
       const firstChar = rootVal.charAt(0).toUpperCase();
       let word = "";
-      if (['A','E','I','O','U','Y'].includes(firstChar) && (p === 'Il' || p === 'La' || p === 'Santa')) {
-        if (p === 'Santa' || p === 'La') p = "L'";
-        else if (p === 'Il') p = "L'";
-        word = `${p}${rootVal}`;
+      if (['A','E','I','O','U','Y'].includes(firstChar)) {
+        if (p === 'San' || p === 'Santa' || p === 'Santo') {
+          word = `Sant'${rootVal}`;
+        } else if (p === 'Il' || p === 'La') {
+          word = `L'${rootVal}`;
+        } else {
+          word = `${p} ${rootVal}`;
+        }
       } else {
         word = `${p} ${rootVal}`;
       }
@@ -115,7 +119,7 @@ export const getItalianCapacity = () => {
     for (const suffixObj of suffixes) {
       let base = getRomData(rootObj.it).val.toLowerCase();
       const sVal = getRomData(suffixObj.it).val;
-      if (['a','e','i','o','u'].includes(base.slice(-1)) && ['a','e','i','o','u'].includes(sVal.charAt(0))) {
+      if (['a','e','i','o','u','à','è','é','ì','î','ò','ù'].includes(base.slice(-1)) && ['a','e','i','o','u','à','è','é','ì','î','ò','ù'].includes(sVal.charAt(0))) {
         base = base.slice(0, -1);
       }
       set.add((base + sVal).trim().toLowerCase());
@@ -161,7 +165,12 @@ export const generateItalianPlace = (): GeneratedResult => {
               else prefix = 'San';
           }
           components.push(JSON.stringify({ val: prefix, type: 'prefix' }), JSON.stringify(target));
-          word = `${prefix} ${tData.val}`;
+          const startsWithVowel = ['a','e','i','o','u'].includes(tData.val.charAt(0).toLowerCase());
+          if (startsWithVowel) {
+              word = `Sant'${tData.val}`;
+          } else {
+              word = `${prefix} ${tData.val}`;
+          }
       } else {
           // Common prefixes
           const prefixObj = getRandomElement(getPool(['prefix']));
@@ -234,7 +243,7 @@ export const generateItalianPlace = (): GeneratedResult => {
         sVal = 'ella';
     }
 
-    if (['a','e','i','o'].includes(base.slice(-1))) {
+    if (['a','e','i','o','u','à','è','é','ì','î','ò','ù'].includes(base.slice(-1))) {
       base = base.slice(0, -1);
     }
     word = base + sVal;
@@ -289,6 +298,6 @@ export const generateItalianPlace = (): GeneratedResult => {
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  const ascii = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, "");
+  const ascii = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, " ").replace(/\s+/g, " ").trim();
   return { word, ascii, generationRules: [rule], dictionaryComponents: components };
 };

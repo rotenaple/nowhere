@@ -67,6 +67,20 @@ export const getPortugueseCapacity = () => {
     }
   }
 
+  // 4. Root + Suffix
+  const suffixRoots = getPool(['settlement', 'geo_major', 'geo_minor', 'bio_flora']);
+  const suffixes = getPool(['suffix']);
+  for (const rootObj of suffixRoots) {
+    for (const suffixObj of suffixes) {
+      let base = getRomData(rootObj.pt).val.toLowerCase();
+      const sVal = getRomData(suffixObj.pt).val;
+      if (['a','e','i','o','u','á','à','â','ã','é','ê','í','ó','ô','õ','ú'].includes(base.slice(-1)) && ['a','e','i','o','u','á','à','â','ã','é','ê','í','ó','ô','õ','ú'].includes(sVal.charAt(0))) {
+        base = base.slice(0, -1);
+      }
+      set.add((base + sVal).trim().toLowerCase());
+    }
+  }
+
   return set.size;
 }
 
@@ -89,7 +103,7 @@ export const generatePortuguesePlace = (): GeneratedResult => {
         components.push(JSON.stringify({ val: prefix, type: 'prefix' }), JSON.stringify(saintTarget));
         word = `${prefix} ${tData.val}`;
       } else {
-        const prefixObj = getRandomElement(getPool(['prefix']));
+        const prefixObj = getRandomElement(getPool(['prefix']).filter(p => p.def !== 'San' && p.def !== 'Santa' && p.def !== 'Santo'));
         const commonPrefixRoots = getPool(['settlement', 'geo_major']).filter(r => r.tags?.includes('common_prefix'));
         
         let p = getRomData(prefixObj.pt).val;
@@ -116,11 +130,10 @@ export const generatePortuguesePlace = (): GeneratedResult => {
   }
   
   // 2. Root + Adjective
-  else if (roll < 0.60) {
+  else if (roll < 0.50) {
       rule = "Root + Adjective";
       const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
       
-      // EXPANSION: Universal Adjectives
       let adjTypes = ['adj_quality', 'adj_color'];
       if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
       const adjObj = getRandomElement(getPool(adjTypes));
@@ -144,10 +157,9 @@ export const generatePortuguesePlace = (): GeneratedResult => {
   }
   
   // 3. Composite (De)
-  else {
+  else if (roll < 0.75) {
       rule = "Composite (De)";
       const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
-      // EXPANSION: Universal Tails
       const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
       components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
       
@@ -155,7 +167,6 @@ export const generatePortuguesePlace = (): GeneratedResult => {
       const tData = getRomData(tailObj.pt);
       
       let connector = 'de';
-      // Use article for all nouns/adjectives except those tagged with 'no_saint' (materials/weather)
       const useArticle = !tailObj.tags?.includes('no_saint');
       
       if (useArticle) {
@@ -164,6 +175,22 @@ export const generatePortuguesePlace = (): GeneratedResult => {
       }
 
       word = `${hData.val} ${connector} ${tData.val}`;
+  }
+  
+  // 4. Root + Suffix
+  else {
+      rule = "Root + Suffix";
+      const rootObj = getRandomElement(getPool(['settlement', 'geo_major', 'geo_minor', 'bio_flora']));
+      const suffixObj = getRandomElement(getPool(['suffix']));
+      components.push(JSON.stringify(rootObj), JSON.stringify(suffixObj));
+      
+      let base = getRomData(rootObj.pt).val.toLowerCase();
+      const sVal = getRomData(suffixObj.pt).val;
+      
+      if (['a','e','i','o','u','á','à','â','ã','é','ê','í','ó','ô','õ','ú'].includes(base.slice(-1)) && ['a','e','i','o','u','á','à','â','ã','é','ê','í','ó','ô','õ','ú'].includes(sVal.charAt(0))) {
+          base = base.slice(0, -1);
+      }
+      word = base + sVal;
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);

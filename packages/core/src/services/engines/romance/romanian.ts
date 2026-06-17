@@ -70,7 +70,7 @@ export const getRomanianCapacity = () => {
     for (const suffixObj of suffixes) {
       let base = getRomData(rootObj.ro).val;
       const sVal = getRomData(suffixObj.ro).val;
-      if (['a','e','i','o','u','ă'].includes(base.slice(-1).toLowerCase()) && ['a','e','i','o','u','ă'].includes(sVal.charAt(0).toLowerCase())) {
+      if (['a','e','i','o','u','ă','â','î'].includes(base.slice(-1).toLowerCase()) && ['a','e','i','o','u','ă','â','î'].includes(sVal.charAt(0).toLowerCase())) {
         base = base.slice(0, -1);
       }
       set.add((base + sVal).trim().toLowerCase());
@@ -87,6 +87,17 @@ export const getRomanianCapacity = () => {
     }
   }
 
+  // 4. Saint prefix + Root
+  const saintPool = ROMANCE_DATA.filter(c => c.ro && c.tags?.includes('saint_ok'));
+  for (const target of saintPool) {
+    const tData = getRomData(target.ro);
+    if (tData.gender === 'f') {
+      set.add(("Sfânta " + tData.val).trim().toLowerCase());
+    } else {
+      set.add(("Sân" + tData.val).trim().toLowerCase());
+    }
+  }
+
   return set.size;
 }
 
@@ -97,11 +108,10 @@ export const generateRomanianPlace = (): GeneratedResult => {
   const roll = Math.random();
   
   // 1. Root + Adjective
-  if (roll < 0.40) {
+  if (roll < 0.35) {
       rule = "Root + Adjective";
       const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
       
-      // EXPANSION: Allow Color/Quality on Settlements too
       let adjTypes = ['adj_color', 'adj_quality'];
       if (['geo_major', 'geo_minor'].includes(rootObj.type)) {
           adjTypes.push('adj_geo');
@@ -120,9 +130,8 @@ export const generateRomanianPlace = (): GeneratedResult => {
   }
   
   // 2. Root + Suffix
-  else if (roll < 0.70) {
+  else if (roll < 0.60) {
       rule = "Root + Suffix";
-      // EXPANSION: Allow suffixing Geo Major
       const rootObj = getRandomElement(getPool(['settlement', 'geo_minor', 'bio_flora', 'geo_major']));
       const suffixObj = getRandomElement(getPool(['suffix']));
       components.push(JSON.stringify(rootObj), JSON.stringify(suffixObj));
@@ -130,18 +139,32 @@ export const generateRomanianPlace = (): GeneratedResult => {
       let base = getRomData(rootObj.ro).val;
       const sVal = getRomData(suffixObj.ro).val;
       
-      if (['a','ă','e','i','u'].includes(base.slice(-1))) {
+      if (['a','ă','â','e','i','î','o','u'].includes(base.slice(-1))) {
           base = base.slice(0, -1);
       }
       
       word = base + sVal;
   }
   
-  // 3. Composite (The X of Y)
+  // 3. Saint prefix
+  else if (roll < 0.80) {
+      rule = "Saint prefix";
+      const saintPool = ROMANCE_DATA.filter(c => c.ro && c.tags?.includes('saint_ok'));
+      const target = getRandomElement(saintPool);
+      components.push(JSON.stringify(target));
+      
+      const tData = getRomData(target.ro);
+      if (tData.gender === 'f') {
+          word = "Sfânta " + tData.val;
+      } else {
+          word = "Sân" + tData.val.charAt(0).toLowerCase() + tData.val.slice(1);
+      }
+  }
+  
+  // 4. Composite (The X of Y)
   else {
       rule = "Composite (de)";
       const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
-      // EXPANSION: Universal Tails
       const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
       components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
       

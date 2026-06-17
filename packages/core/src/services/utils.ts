@@ -59,7 +59,7 @@ export const transliterateDutchToAscii = (word: string): string => {
   return word
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/ë/g, 'e').replace(/ï/g, 'i')
-    .replace(/'/g, ""); 
+    .replace(/'/g, " ").replace(/\s+/g, " ").trim(); 
 };
 
 export const transliterateFrenchToAscii = (word: string): string => {
@@ -67,7 +67,7 @@ export const transliterateFrenchToAscii = (word: string): string => {
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
     .replace(/œ/g, "oe").replace(/Œ/g, "Oe")
     .replace(/æ/g, "ae").replace(/Æ/g, "Ae")
-    .replace(/'/g, ""); 
+    .replace(/'/g, " ").replace(/\s+/g, " ").trim(); 
 };
 
 export const transliteratePolishToAscii = (word: string): string => {
@@ -141,7 +141,7 @@ export const transliterateBulgarianToAscii = (word: string): string => {
 export const transliteratePortugueseToAscii = (word: string): string => {
   return word
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/'/g, "");
+    .replace(/'/g, " ").replace(/\s+/g, " ").trim();
 };
 
 export const transliterateRomanianToAscii = (word: string): string => {

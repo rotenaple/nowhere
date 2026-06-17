@@ -148,6 +148,12 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Desert', type: 'geo_major', es: ['Desierto', 'm'], it: ['Deserto', 'm'], fr: ['Désert', 'm'], pt: ['Deserto', 'm'], ro: ['Deșert', 'n'] },
   { def: 'Field', type: 'geo_major', tags: ['common_prefix'], es: ['Campo', 'm'], it: ['Campo', 'm'], fr: ['Champ', 'm'], pt: ['Campo', 'm'], ro: ['Câmp', 'n'] },
   { def: 'Meadow', type: 'geo_major', es: ['Prado', 'm'], it: ['Prato', 'm'], fr: ['Pré', 'm'], pt: ['Prado', 'm'], ro: ['Luncă', 'f'] },
+  { def: 'Plateau', type: 'geo_major', es: ['Meseta', 'f'], it: ['Altopiano', 'm'], fr: ['Plateau', 'm'], pt: ['Planalto', 'm'], ro: ['Podis', 'n'] },
+  { def: 'Volcano', type: 'geo_major', es: ['Volcán', 'm'], it: ['Vulcano', 'm'], fr: ['Volcan', 'm'], pt: ['Vulcão', 'm'], ro: ['Vulcan', 'm'] },
+  { def: 'Oasis', type: 'geo_major', es: ['Oasis', 'm'], it: ['Oasi', 'f'], fr: ['Oasis', 'm'], pt: ['Oásis', 'm'], ro: ['Oază', 'f'] },
+  { def: 'Glacier', type: 'geo_major', es: ['Glaciar', 'm'], it: ['Ghiacciaio', 'm'], fr: ['Glacier', 'm'], pt: ['Geleira', 'f'], ro: ['Ghețar', 'n'] },
+  { def: 'Archipelago', type: 'geo_major', es: ['Archipiélago', 'm'], it: ['Arcipelago', 'm'], fr: ['Archipel', 'm'], pt: ['Arquipélago', 'm'], ro: ['Arhipelag', 'n'] },
+  { def: 'Canyon', type: 'geo_major', es: ['Cañón', 'm'], it: ['Canyon', 'm'], fr: ['Canyon', 'm'], pt: ['Cânion', 'm'], ro: ['Canion', 'n'] },
 
   // ==========================
   // 5. NOUNS - GEO MINOR (Objects, Small Features)
@@ -169,6 +175,10 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Reef', type: 'geo_minor', es: ['Arrecife', 'm'], it: ['Scoglio', 'm'], fr: ['Récif', 'm'], pt: ['Recife', 'm'], ro: ['Recif', 'n'] },
   { def: 'Ford', type: 'geo_minor', es: ['Vado', 'm'], it: ['Guado', 'm'], fr: ['Gué', 'm'], pt: ['Vau', 'm'], ro: ['Vad', 'n'] },
   { def: 'Pass', type: 'geo_minor', es: ['Paso', 'm'], it: ['Passo', 'm'], fr: ['Col', 'm'], pt: ['Passo', 'm'], ro: ['Pas', 'n'] },
+  { def: 'Waterfall', type: 'geo_minor', es: ['Cascada', 'f'], it: ['Cascata', 'f'], fr: ['Cascade', 'f'], pt: ['Cachoeira', 'f'], ro: ['Cascadă', 'f'] },
+  { def: 'Ravine', type: 'geo_minor', es: ['Barranco', 'm'], it: ['Burrone', 'm'], fr: ['Ravin', 'm'], pt: ['Barranco', 'm'], ro: ['Ravină', 'f'] },
+  { def: 'Mound', type: 'geo_minor', es: ['Montículo', 'm'], it: ['Tumulo', 'm'], fr: ['Monticule', 'm'], pt: ['Outeiro', 'm'], ro: ['Movilă', 'f'] },
+  { def: 'Canal', type: 'geo_minor', es: ['Canal', 'm'], it: ['Canale', 'm'], fr: ['Canal', 'm'], pt: ['Canal', 'm'], ro: ['Canal', 'n'] },
 
   // ==========================
   // 6. NOUNS - SETTLEMENT (Civic, Built)
@@ -221,6 +231,16 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Shelter', type: 'settlement', tags: ['civic'], es: ['Refugio', 'm'], it: ['Rifugio', 'm'], fr: ['Refuge', 'm'], pt: ['Abrigo', 'm'], ro: ['Adăpost', 'n'] },
   { def: 'Dock', type: 'settlement', tags: ['civic'], es: ['Muelle', 'm'], it: ['Molo', 'm'], fr: ['Quai', 'm'], pt: ['Doca', 'f'], ro: ['Doc', 'n'] },
   { def: 'Orchard', type: 'settlement', tags: ['nature'], es: ['Huerto', 'm'], it: ['Frutteto', 'm'], fr: ['Verger', 'm'], pt: ['Pomar', 'm'], ro: ['Livadă', 'f'] },
+  { def: 'Vineyard', type: 'settlement', tags: ['nature'], es: ['Viñedo', 'm'], it: ['Vigneto', 'm'], fr: ['Vignoble', 'm'], pt: ['Vinhedo', 'm'], ro: ['Podgorie', 'f'] },
+  { def: 'Pasture', type: 'settlement', tags: ['nature'], es: ['Pastizal', 'm'], it: ['Pascolo', 'm'], fr: ['Pâturage', 'm'], pt: ['Pastagem', 'f'], ro: ['Pășune', 'f'] },
+  { def: 'Quarry', type: 'settlement', tags: ['nature'], es: ['Cantera', 'f'], it: ['Cava', 'f'], fr: ['Carrière', 'f'], pt: ['Pedreira', 'f'], ro: ['Carieră', 'f'] },
+  { def: 'Forge', type: 'settlement', tags: ['civic'], es: ['Fragua', 'f'], it: ['Fucina', 'f'], fr: ['Forge', 'f'], pt: ['Forja', 'f'], ro: ['Forjă', 'f'] },
+  { def: 'Lighthouse', type: 'settlement', tags: ['civic'], es: ['Faro', 'm'], it: ['Faro', 'm'], fr: ['Phare', 'm'], pt: ['Farol', 'm'], ro: ['Far', 'n'] },
+  { def: 'Cathedral', type: 'settlement', tags: ['civic'], es: ['Catedral', 'f'], it: ['Cattedrale', 'f'], fr: ['Cathédrale', 'f'], pt: ['Catedral', 'f'], ro: ['Catedrală', 'f'] },
+  { def: 'Convent', type: 'settlement', tags: ['civic'], es: ['Convento', 'm'], it: ['Convento', 'm'], fr: ['Couvent', 'm'], pt: ['Convento', 'm'], ro: ['Mănăstire', 'f'] },
+  { def: 'Monument', type: 'settlement', tags: ['civic'], es: ['Monumento', 'm'], it: ['Monumento', 'm'], fr: ['Monument', 'm'], pt: ['Monumento', 'm'], ro: ['Monument', 'n'] },
+  { def: 'Column', type: 'settlement', tags: ['civic'], es: ['Columna', 'f'], it: ['Colonna', 'f'], fr: ['Colonne', 'f'], pt: ['Coluna', 'f'], ro: ['Coloană', 'f'] },
+  { def: 'Reservoir', type: 'settlement', tags: ['nature'], es: ['Embalse', 'm'], it: ['Invaso', 'm'], fr: ['Réservoir', 'm'], pt: ['Represa', 'f'], ro: ['Rezervor', 'n'] },
 
   // ==========================
   // 7. NOUNS - BIO FAUNA (Animals)
@@ -254,6 +274,11 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Owl', type: 'bio_fauna', tags: ['animal'], es: ['Búho', 'm'], it: ['Gufo', 'm'], fr: ['Hibou', 'm'], pt: ['Coruja', 'f'], ro: ['Bufniță', 'f'] },
   { def: 'Frog', type: 'bio_fauna', tags: ['animal'], es: ['Rana', 'f'], it: ['Rana', 'f'], fr: ['Grenouille', 'f'], pt: ['Rã', 'f'], ro: ['Broască', 'f'] },
   { def: 'Butterfly', type: 'bio_fauna', tags: ['animal'], es: ['Mariposa', 'f'], it: ['Farfalla', 'f'], fr: ['Papillon', 'm'], pt: ['Borboleta', 'f'], ro: ['Fluture', 'm'] },
+  { def: 'Badger', type: 'bio_fauna', tags: ['animal'], es: ['Tejón', 'm'], it: ['Tasso', 'm'], fr: ['Blaireau', 'm'], pt: ['Texugo', 'm'], ro: ['Bursuc', 'm'] },
+  { def: 'Otter', type: 'bio_fauna', tags: ['animal'], es: ['Nutria', 'f'], it: ['Lontra', 'f'], fr: ['Loutre', 'f'], pt: ['Lontra', 'f'], ro: ['Vidră', 'f'] },
+  { def: 'Heron', type: 'bio_fauna', tags: ['animal'], es: ['Garza', 'f'], it: ['Airone', 'm'], fr: ['Héron', 'm'], pt: ['Garça', 'f'], ro: ['Stârc', 'm'] },
+  { def: 'Stork', type: 'bio_fauna', tags: ['animal'], es: ['Cigüeña', 'f'], it: ['Cicogna', 'f'], fr: ['Cigogne', 'f'], pt: ['Cegonha', 'f'], ro: ['Barză', 'f'] },
+  { def: 'Partridge', type: 'bio_fauna', tags: ['animal'], es: ['Perdiz', 'f'], it: ['Pernice', 'f'], fr: ['Perdrix', 'f'], pt: ['Perdiz', 'f'], ro: ['Potârniche', 'f'] },
 
   // ==========================
   // 8. NOUNS - BIO FLORA (Plants, Trees)
@@ -287,6 +312,11 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Thorn', type: 'bio_flora', es: ['Espina', 'f'], it: ['Spina', 'f'], fr: ['Épine', 'f'], pt: ['Espinho', 'm'], ro: ['Spin', 'm'] },
   { def: 'Grape', type: 'bio_flora', es: ['Uva', 'f'], it: ['Uva', 'f'], fr: ['Raisin', 'm'], pt: ['Uva', 'f'], ro: ['Strugure', 'm'] },
   { def: 'Lemon', type: 'bio_flora', es: ['Limón', 'm'], it: ['Limone', 'm'], fr: ['Citron', 'm'], pt: ['Limão', 'm'], ro: ['Lămâie', 'f'] },
+  { def: 'Cypress', type: 'bio_flora', tags: ['tree'], es: ['Ciprés', 'm'], it: ['Cipresso', 'm'], fr: ['Cyprès', 'm'], pt: ['Cipreste', 'm'], ro: ['Chiparos', 'm'] },
+  { def: 'Reed', type: 'bio_flora', es: ['Caña', 'f'], it: ['Canna', 'f'], fr: ['Roseau', 'm'], pt: ['Cana', 'f'], ro: ['Stuf', 'n'] },
+  { def: 'Moss', type: 'bio_flora', es: ['Musgo', 'm'], it: ['Muschio', 'm'], fr: ['Mousse', 'f'], pt: ['Musgo', 'm'], ro: ['Mușchi', 'm'] },
+  { def: 'Fern', type: 'bio_flora', es: ['Helecho', 'm'], it: ['Felce', 'f'], fr: ['Fougère', 'f'], pt: ['Samambaia', 'f'], ro: ['Ferigă', 'f'] },
+  { def: 'Ivy', type: 'bio_flora', es: ['Hiedra', 'f'], it: ['Edera', 'f'], fr: ['Lierre', 'm'], pt: ['Hera', 'f'], ro: ['Iederă', 'f'] },
 
   // ==========================
   // 9. NOUNS - ABSTRACT (Concepts, Materials, Titles, Time, Weather)
@@ -345,6 +375,11 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Fisher', type: 'abstract', es: ['Pescador', 'm'], it: ['Pescatore', 'm'], fr: ['Pêcheur', 'm'], pt: ['Pescador', 'm'], ro: ['Pescar', 'm'] },
   { def: 'Smith', type: 'abstract', es: ['Herrero', 'm'], it: ['Fabbro', 'm'], fr: ['Forgeron', 'm'], pt: ['Ferreiro', 'm'], ro: ['Fierar', 'm'] },
   { def: 'Miller', type: 'abstract', es: ['Molinero', 'm'], it: ['Mugnaio', 'm'], fr: ['Meunier', 'm'], pt: ['Moleiro', 'm'], ro: ['Morar', 'm'] },
+  { def: 'Crown', type: 'abstract', es: ['Corona', 'f'], it: ['Corona', 'f'], fr: ['Couronne', 'f'], pt: ['Coroa', 'f'], ro: ['Coroană', 'f'] },
+  { def: 'Bell', type: 'abstract', es: ['Campana', 'f'], it: ['Campana', 'f'], fr: ['Cloche', 'f'], pt: ['Sino', 'm'], ro: ['Clopot', 'n'] },
+  { def: 'Key', type: 'abstract', es: ['Llave', 'f'], it: ['Chiave', 'f'], fr: ['Clé', 'f'], pt: ['Chave', 'f'], ro: ['Cheie', 'f'] },
+  { def: 'Anchor', type: 'abstract', es: ['Ancla', 'f'], it: ['Ancora', 'f'], fr: ['Ancre', 'f'], pt: ['Âncora', 'f'], ro: ['Ancoră', 'f'] },
+  { def: 'Shield', type: 'abstract', es: ['Escudo', 'm'], it: ['Scudo', 'm'], fr: ['Bouclier', 'm'], pt: ['Escudo', 'm'], ro: ['Scut', 'n'] },
 
   // Saint names
   { def: 'Mary', type: 'abstract', tags: ['saint_ok'], es: ['María', 'f'], it: ['Maria', 'f'], fr: ['Marie', 'f'], pt: ['Maria', 'f'], ro: ['Maria', 'f'] },
@@ -355,6 +390,13 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'Anthony', type: 'abstract', tags: ['saint_ok'], es: ['Antonio', 'm'], it: ['Antonio', 'm'], fr: ['Antoine', 'm'], pt: ['António', 'm'], ro: ['Anton', 'm'] },
   { def: 'Anne', type: 'abstract', tags: ['saint_ok'], es: ['Ana', 'f'], it: ['Anna', 'f'], fr: ['Anne', 'f'], pt: ['Ana', 'f'], ro: ['Ana', 'f'] },
   { def: 'Clara', type: 'abstract', tags: ['saint_ok'], es: ['Clara', 'f'], it: ['Chiara', 'f'], fr: ['Claire', 'f'], pt: ['Clara', 'f'], ro: ['Clara', 'f'] },
+  { def: 'George', type: 'abstract', tags: ['saint_ok'], es: ['Jorge', 'm'], it: ['Giorgio', 'm'], fr: ['Georges', 'm'], pt: ['Jorge', 'm'], ro: ['Gheorghe', 'm'] },
+  { def: 'Nicholas', type: 'abstract', tags: ['saint_ok'], es: ['Nicolás', 'm'], it: ['Nicola', 'm'], fr: ['Nicolas', 'm'], pt: ['Nicolau', 'm'], ro: ['Nicolae', 'm'] },
+  { def: 'Stephen', type: 'abstract', tags: ['saint_ok'], es: ['Esteban', 'm'], it: ['Stefano', 'm'], fr: ['Étienne', 'm'], pt: ['Estevão', 'm'], ro: ['Ștefan', 'm'] },
+  { def: 'Andrew', type: 'abstract', tags: ['saint_ok'], es: ['Andrés', 'm'], it: ['Andrea', 'm'], fr: ['André', 'm'], pt: ['André', 'm'], ro: ['Andrei', 'm'] },
+  { def: 'James', type: 'abstract', tags: ['saint_ok'], es: ['Jacobo', 'm'], it: ['Giacomo', 'm'], fr: ['Jacques', 'm'], pt: ['Tiago', 'm'], ro: ['Iacob', 'm'] },
+  { def: 'Catherine', type: 'abstract', tags: ['saint_ok'], es: ['Catalina', 'f'], it: ['Caterina', 'f'], fr: ['Catherine', 'f'], pt: ['Catarina', 'f'], ro: ['Caterina', 'f'] },
+  { def: 'Dominic', type: 'abstract', tags: ['saint_ok'], es: ['Domingo', 'm'], it: ['Domenico', 'm'], fr: ['Dominique', 'm'], pt: ['Domingos', 'm'], ro: ['Dumitru', 'm'] },
 
   // ==========================
   // 10. PREFIXES & HONORIFICS
@@ -448,7 +490,49 @@ export const ROMANCE_DATA: RomanceComponent[] = [
   { def: 'suf_ea', type: 'suffix', ro: 'ea' },
   { def: 'suf_oaia', type: 'suffix', ro: 'oaia' },
   { def: 'suf_is', type: 'suffix', ro: 'iș' },
-  
+  { def: 'suf_uti', type: 'suffix', ro: 'uți' },
+  { def: 'suf_ita', type: 'suffix', ro: 'ița' },
+  { def: 'suf_ari', type: 'suffix', ro: 'ari' },
+  { def: 'suf_asi', type: 'suffix', ro: 'ași' },
+  { def: 'suf_easa', type: 'suffix', ro: 'easa' },
+  { def: 'suf_oara', type: 'suffix', ro: 'oara' },
+  { def: 'suf_eleu', type: 'suffix', ro: 'eleu' },
+
+  // Additional French
+  { def: 'suf_ange', type: 'suffix', fr: 'ange' },
+  { def: 'suf_ain', type: 'suffix', fr: 'ain' },
+  { def: 'suf_ard', type: 'suffix', fr: 'ard' },
+  { def: 'suf_iere', type: 'suffix', fr: 'ière' },
+  { def: 'suf_on', type: 'suffix', fr: 'on' },
+  { def: 'suf_erie', type: 'suffix', fr: 'erie' },
+  // Additional Italian
+  { def: 'suf_engo', type: 'suffix', it: 'engo' },
+  { def: 'suf_ano', type: 'suffix', it: 'ano' },
+  { def: 'suf_azzo', type: 'suffix', it: 'azzo' },
+  { def: 'suf_uzzo', type: 'suffix', it: 'uzzo' },
+  { def: 'suf_aro', type: 'suffix', it: 'aro' },
+  { def: 'suf_iera', type: 'suffix', it: 'iera' },
+  { def: 'suf_ante', type: 'suffix', it: 'ante' },
+
+  // Additional Spanish
+  { def: 'suf_ejo', type: 'suffix', es: 'ejo' },
+  { def: 'suf_eja', type: 'suffix', es: 'eja' },
+  { def: 'suf_uelo', type: 'suffix', es: 'uelo' },
+  { def: 'suf_uela', type: 'suffix', es: 'uela' },
+  { def: 'suf_izo', type: 'suffix', es: 'izo' },
+  { def: 'suf_iza', type: 'suffix', es: 'iza' },
+  { def: 'suf_eno', type: 'suffix', es: 'eño' },
+  { def: 'suf_ena', type: 'suffix', es: 'eña' },
+
+  // Additional Portuguese
+  { def: 'suf_al_pt', type: 'suffix', pt: 'al' },
+  { def: 'suf_ao', type: 'suffix', pt: 'ão' },
+  { def: 'suf_edo', type: 'suffix', pt: 'edo' },
+  { def: 'suf_ico', type: 'suffix', pt: 'iço' },
+  { def: 'suf_aria', type: 'suffix', pt: 'aria' },
+  { def: 'suf_eza', type: 'suffix', pt: 'eza' },
+  { def: 'suf_douro', type: 'suffix', pt: 'douro' },
+
   // ==========================
   // 12. COUNTRY SUFFIXES
   // ==========================

@@ -22,7 +22,7 @@ const TRANSLITERATORS: Record<string, (word: string) => string> = {
   'nl': transliterateDutchToAscii,
   'fr': transliterateFrenchToAscii,
   'es': (w) => w.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
-  'it': (w) => w.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, ""),
+  'it': (w) => w.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, " ").replace(/\s+/g, " ").trim(),
   'pt': transliteratePortugueseToAscii,
   'ro': transliterateRomanianToAscii,
   'pl': transliteratePolishToAscii,
