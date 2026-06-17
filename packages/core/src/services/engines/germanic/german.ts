@@ -51,7 +51,7 @@ export const generateGermanPlace = (): GeneratedResult => {
     let adj = getVal(pre.de);
     let noun = rData.val;
 
-    components.push(JSON.stringify(pre));
+    components.push(JSON.stringify(pre), JSON.stringify(secondPart));
 
     // LOGIC: Only inflect if type is explicitly 'adjective'
     if (pre.type === 'adjective') {

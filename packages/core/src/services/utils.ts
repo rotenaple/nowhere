@@ -237,6 +237,11 @@ export const getCompositeGender = (
 // INFLECTION LOGIC
 // ==========================================
 
+const isStableBgAdj = (src: string): boolean => {
+    const s = src.toLowerCase();
+    return s === 'зелен' || s === 'червен' || s === 'студен' || s === 'широк' || s === 'дълбок';
+};
+
 export const inflectSlavicAdjective = (
     adjEntry: SlavicEntry, 
     targetGender: 'm' | 'f' | 'n',
@@ -254,8 +259,10 @@ export const inflectSlavicAdjective = (
             case 'bg': 
                 // Remove -en/-ak/-ok ending if present, add -i
                 if (inflectedSrc.endsWith('ен') || inflectedSrc.endsWith('ък') || inflectedSrc.endsWith('ок')) {
-                    inflectedSrc = inflectedSrc.slice(0, -2);
-                    if (inflectedRom) inflectedRom = inflectedRom.slice(0, -2); // Approx
+                    if (!isStableBgAdj(inflectedSrc)) {
+                        inflectedSrc = inflectedSrc.slice(0, -2);
+                        if (inflectedRom) inflectedRom = inflectedRom.slice(0, -2); // Approx
+                    }
                 }
                 // If it ends in consonant, add -i
                 inflectedSrc += 'и';
@@ -354,7 +361,7 @@ export const inflectSlavicAdjective = (
     }
 
     if (targetGender === 'f') {
-        if (inflectedSrc.match(mascEndingSrc)) {
+        if (inflectedSrc.match(mascEndingSrc) && !isStableBgAdj(inflectedSrc)) {
             inflectedSrc = inflectedSrc.replace(mascEndingSrc, femEndingSrc);
             if (inflectedRom && mascEndingRom) {
                 inflectedRom = inflectedRom.replace(mascEndingRom, femEndingRom);
@@ -371,8 +378,13 @@ export const inflectSlavicAdjective = (
                 inflectedRom = inflectedRom ? inflectedRom.slice(0, -2) + 'ta' : undefined;
             }
             else if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
-                inflectedSrc = adjInfo.src.slice(0, -2) + 'ка';
-                inflectedRom = adjInfo.rom!.slice(0, -2) + 'ka';
+                if (isStableBgAdj(adjInfo.src)) {
+                    inflectedSrc += 'а';
+                    if (inflectedRom) inflectedRom += 'a';
+                } else {
+                    inflectedSrc = adjInfo.src.slice(0, -2) + 'ка';
+                    inflectedRom = adjInfo.rom!.slice(0, -2) + 'ka';
+                }
             }
             else if (adjInfo.src.endsWith('ър')) {
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ра';
@@ -389,7 +401,7 @@ export const inflectSlavicAdjective = (
         }
 
     } else if (targetGender === 'n') {
-        if (inflectedSrc.match(mascEndingSrc)) {
+        if (inflectedSrc.match(mascEndingSrc) && !isStableBgAdj(inflectedSrc)) {
             inflectedSrc = inflectedSrc.replace(mascEndingSrc, neutEndingSrc);
             if (inflectedRom && mascEndingRom) {
                 inflectedRom = inflectedRom.replace(mascEndingRom, neutEndingRom);
@@ -405,8 +417,13 @@ export const inflectSlavicAdjective = (
                 inflectedRom = inflectedRom ? inflectedRom.slice(0, -2) + 'to' : undefined;
             }
             else if (adjInfo.src.endsWith('ък') || adjInfo.src.endsWith('ок')) { 
-                inflectedSrc = adjInfo.src.slice(0, -2) + 'ко'; 
-                inflectedRom = adjInfo.rom!.slice(0, -2) + 'ko'; 
+                if (isStableBgAdj(adjInfo.src)) {
+                    inflectedSrc += 'о';
+                    if (inflectedRom) inflectedRom += 'o';
+                } else {
+                    inflectedSrc = adjInfo.src.slice(0, -2) + 'ко';
+                    inflectedRom = adjInfo.rom!.slice(0, -2) + 'ko';
+                }
             }
              else if (adjInfo.src.endsWith('ър')) {
                 inflectedSrc = adjInfo.src.slice(0, -2) + 'ро';

@@ -35,7 +35,7 @@ export const generateRomanianPlace = (): GeneratedResult => {
           adjTypes.push('adj_geo');
       }
       const adjObj = getRandomElement(getPool(adjTypes));
-      components.push(JSON.stringify(rootObj));
+      components.push(JSON.stringify(rootObj), JSON.stringify(adjObj));
       
       const rData = getRomData(rootObj.ro);
       let r = rData.val;
@@ -66,7 +66,7 @@ export const generateRomanianPlace = (): GeneratedResult => {
       // EXPANSION: Allow suffixing Geo Major
       const rootObj = getRandomElement(getPool(['settlement', 'geo_minor', 'bio_flora', 'geo_major']));
       const suffixObj = getRandomElement(getPool(['suffix']));
-      components.push(JSON.stringify(rootObj));
+      components.push(JSON.stringify(rootObj), JSON.stringify(suffixObj));
       
       let base = getRomData(rootObj.ro).val;
       const sVal = getRomData(suffixObj.ro).val;
@@ -84,7 +84,7 @@ export const generateRomanianPlace = (): GeneratedResult => {
       const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
       // EXPANSION: Universal Tails
       const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
-      components.push(JSON.stringify(headObj));
+      components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
       
       const hData = getRomData(headObj.ro);
       let head = hData.val;

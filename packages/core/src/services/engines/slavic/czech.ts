@@ -62,7 +62,7 @@ export const generateCzechPlace = (): GeneratedResult => {
         const rootEndsInVowel = ['a','e','i','o','u','y','á','é','í','ý','ů'].includes(finalNounSrc.slice(-1));
         const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
 
-        if (rootEndsInVowel && suffixStartsVowel) {
+        if (rootEndsInVowel) {
             finalNounSrc = finalNounSrc.slice(0, -1);
         }
 
@@ -70,7 +70,7 @@ export const generateCzechPlace = (): GeneratedResult => {
     }
 
     wordSrc = `${inflectedAdjSrc} ${finalNounSrc}`;
-    components.push(JSON.stringify(selectedAdj));
+    components.push(JSON.stringify(selectedAdj), JSON.stringify(selectedRootComponent));
     if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix
@@ -89,15 +89,12 @@ export const generateCzechPlace = (): GeneratedResult => {
         suffixSrc = 'ová';
     }
 
-    const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
-    const isOvIn = ['ov', 'ová', 'ín', 'in'].some(s => suffixSrc.startsWith(s));
-
-    if (['a','e','i','o','u','y','á','é','í','ý','ů'].includes(baseSrc.slice(-1)) && (suffixStartsVowel || isOvIn)) {
+    if (['a','e','i','o','u','y','á','é','í','ý','ů'].includes(baseSrc.slice(-1))) {
         baseSrc = baseSrc.slice(0, -1);
     }
     
     wordSrc = baseSrc + suffixSrc;
-    components.push(JSON.stringify(selectedRoot));
+    components.push(JSON.stringify(selectedRoot), JSON.stringify(selectedSuffix));
   }
   // 3. Adjective + (Root + Suffix) - Explicit Path
   else if (typeRoll < 0.85) {
@@ -122,17 +119,14 @@ export const generateCzechPlace = (): GeneratedResult => {
 
     let derivedNounSrc = rootInfo.src;
     
-    const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
-    const isOvIn = ['ov', 'ová', 'ín', 'in'].some(s => suffixSrc.startsWith(s));
-
-    if (['a','e','i','o','u','y','á','é','í','ý','ů'].includes(derivedNounSrc.slice(-1)) && (suffixStartsVowel || isOvIn)) {
+    if (['a','e','i','o','u','y','á','é','í','ý','ů'].includes(derivedNounSrc.slice(-1))) {
         derivedNounSrc = derivedNounSrc.slice(0, -1);
     }
 
     derivedNounSrc += suffixSrc;
 
     wordSrc = `${inflectedAdjSrc} ${derivedNounSrc}`;
-    components.push(JSON.stringify(selectedAdj));
+    components.push(JSON.stringify(selectedAdj), JSON.stringify(selectedRootComponent), JSON.stringify(selectedSuffix));
   }
   // 4. [Base] nad [River]
   else {
@@ -145,8 +139,9 @@ export const generateCzechPlace = (): GeneratedResult => {
     
     let baseSrc = baseRootInfo.src;
 
+    let selectedSuffix: any = null;
     if (Math.random() < 0.6) { // Optionally add suffix
-        const selectedSuffix = getRandomElement(suffixes);
+        selectedSuffix = getRandomElement(suffixes);
         const suffixInfo = getSlavicData(selectedSuffix.cs!);
         let suffixSrc = suffixInfo.src;
 
@@ -154,10 +149,7 @@ export const generateCzechPlace = (): GeneratedResult => {
             suffixSrc = 'ová';
         }
 
-        const suffixStartsVowel = ['a','e','i','o','u','y','á','é','í','ý'].includes(suffixSrc.charAt(0));
-        const isOvIn = ['ov', 'ová', 'ín', 'in'].some(s => suffixSrc.startsWith(s));
-
-        if (['a','e','i','o','u','y','á','é','í','ý','ů'].includes(baseSrc.slice(-1)) && (suffixStartsVowel || isOvIn)) {
+        if (['a','e','i','o','u','y','á','é','í','ý','ů'].includes(baseSrc.slice(-1))) {
             baseSrc = baseSrc.slice(0, -1);
         }
 
@@ -165,7 +157,8 @@ export const generateCzechPlace = (): GeneratedResult => {
     }
     
     wordSrc = `${baseSrc} nad ${riverInfo.src}`;
-    components.push(JSON.stringify(baseRootComponent));
+    components.push(JSON.stringify(baseRootComponent), JSON.stringify(selectedRiver));
+    if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
 
   wordSrc = wordSrc.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');

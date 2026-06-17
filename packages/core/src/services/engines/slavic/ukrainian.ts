@@ -53,7 +53,7 @@ export const generateUkrainianPlace = (): GeneratedResult => {
           const rootEndsInVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(finalNounSrc.slice(-1));
           const suffixStartsVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(suffixInfo.src.charAt(0));
 
-          if (rootEndsInVowel && suffixStartsVowel) {
+          if (rootEndsInVowel) {
               finalNounSrc = finalNounSrc.slice(0, -1);
               finalNounRom = finalNounRom.slice(0, -1);
           }
@@ -64,7 +64,7 @@ export const generateUkrainianPlace = (): GeneratedResult => {
 
       wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
       wordAscii = `${inflectedAdjRom} ${finalNounRom}`;
-      components.push(JSON.stringify(selectedAdj));
+      components.push(JSON.stringify(selectedAdj), JSON.stringify(selectedRootComponent));
       if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix
@@ -80,16 +80,15 @@ export const generateUkrainianPlace = (): GeneratedResult => {
       let baseRom = rootInfo.rom!;
       
       const rootEndsInVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(baseSrc.slice(-1));
-      const suffixStartsVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(suffixInfo.src.charAt(0));
 
-      if (rootEndsInVowel && suffixStartsVowel) {
+      if (rootEndsInVowel) {
             baseSrc = baseSrc.slice(0, -1);
             baseRom = baseRom.slice(0, -1);
       }
 
       wordCyrillic = baseSrc + suffixInfo.src;
       wordAscii = baseRom + suffixInfo.rom;
-      components.push(JSON.stringify(selectedRoot));
+      components.push(JSON.stringify(selectedRoot), JSON.stringify(selectedSuffix));
   }
   // 3. Base + "nad/po" + River
   else {
@@ -101,14 +100,14 @@ export const generateUkrainianPlace = (): GeneratedResult => {
       let basePartSrc = baseRootInfo.src;
       let basePartRom = baseRootInfo.rom!;
 
+      let selectedSuffix: any = null;
       if (Math.random() < 0.5) {
-          const selectedSuffix = getRandomElement(suffixes);
+          selectedSuffix = getRandomElement(suffixes);
           const suffixInfo = getSlavicData(selectedSuffix.uk!);
 
           const rootEndsInVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(basePartSrc.slice(-1));
-          const suffixStartsVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(suffixInfo.src.charAt(0));
 
-          if (rootEndsInVowel && suffixStartsVowel) {
+          if (rootEndsInVowel) {
               basePartSrc = basePartSrc.slice(0, -1);
               basePartRom = basePartRom.slice(0, -1);
           }
@@ -122,7 +121,8 @@ export const generateUkrainianPlace = (): GeneratedResult => {
       
       const riverRom = riverInfo.rom || transliterateUkrainianToAscii(riverInfo.src);
       wordAscii = `${basePartRom} na ${riverRom}`;
-      components.push(JSON.stringify(baseRootComponent));
+      components.push(JSON.stringify(baseRootComponent), JSON.stringify(selectedRiver));
+      if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
 
   return { 

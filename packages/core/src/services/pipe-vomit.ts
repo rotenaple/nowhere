@@ -3,6 +3,8 @@
  * Tries seeds 0-49 to find cases where rules actually fire.
  * Run: npx tsx packages/core/src/services/pipe-vomit.ts
  */
+import * as fs from 'fs';
+import * as path from 'path';
 import { debugCorruption } from './corruption';
 import { generateEnglishPlace } from './engines/english';
 import { generateGermanPlace } from './engines/germanic/german';
@@ -74,49 +76,71 @@ const ENGINES: EngineSpec[] = [
   { name: 'Arabic (standard)',   gen: () => generateArabicPlace('standard'),  langCodes: ['ar-SA'] },
 ];
 
-console.log('=== FULL PIPELINE (3 samples per engine, seeds 0-49, corr=1.0) ===\n');
-console.log('For each sample shows: raw name, then corruption output + trace for first 3 seeds where rules fire.\n');
+const BATCH_SIZE = 50;
+const OUTPUT_DIR = path.join(process.cwd(), 'output');
+
+if (!fs.existsSync(OUTPUT_DIR)) {
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+}
+
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+console.log('=== FULL PIPELINE DEBUG GENERATION ===');
+console.log(`Batch Size: ${BATCH_SIZE} samples per engine\n`);
+console.log(`Saving outputs to: ${OUTPUT_DIR}\n`);
 
 let totalSamples = 0;
 let totalNamesWithCorruption = 0;
 
 for (const eng of ENGINES) {
-  console.log(SEP);
-  console.log(`\n=== ${eng.name}${eng.note ? ' (' + eng.note + ')' : ''} ===\n`);
+  const filename = `${slugify(eng.name)}.txt`;
+  const filepath = path.join(OUTPUT_DIR, filename);
+  const lines: string[] = [];
 
-  for (let sample = 0; sample < 3; sample++) {
+  lines.push(`=== ${eng.name}${eng.note ? ' (' + eng.note + ')' : ''} ===`);
+  lines.push(`Batch Size: ${BATCH_SIZE}`);
+  lines.push(SEP);
+  lines.push('');
+
+  for (let sample = 0; sample < BATCH_SIZE; sample++) {
     const raw = eng.gen();
     totalSamples++;
 
-    console.log(`  Sample ${sample + 1}:  "${raw.word}"  ascii="${raw.ascii}"`);
+    lines.push(`Sample ${sample + 1}:  "${raw.word}"  ascii="${raw.ascii}"`);
     if (raw.generationRules && raw.generationRules.length > 0) {
-      console.log(`    Generation rules: ${raw.generationRules.join(', ')}`);
+      lines.push(`  Generation rules: ${raw.generationRules.join(', ')}`);
     }
     if (raw.dictionaryComponents && raw.dictionaryComponents.length > 0) {
-      console.log(`    Selected components: ${raw.dictionaryComponents.join(', ')}`);
+      lines.push(`  Selected components: ${raw.dictionaryComponents.join(', ')}`);
     }
 
     for (const langCode of eng.langCodes) {
-      let found = 0;
-      for (let seed = 0; seed < 50 && found < 3; seed++) {
-        const cr = debugCorruption(raw.word, raw.ascii, langCode, 1.0, seed);
-        if (cr.trace.length === 0) continue;
+      const testCr = debugCorruption(raw.word, raw.ascii, langCode, 1.0, 0);
+      if (testCr.rulesConsidered === 0) {
+        lines.push(`  [${langCode}]: "${raw.word}"  ascii="${raw.ascii}" (No corruption rules implemented)`);
+        continue;
+      }
 
-        // Skip if rules canceled out (no visible change)
-        if (cr.word === raw.word && cr.ascii === raw.ascii) continue;
-
-        found++;
+      const seed = sample;
+      const cr = debugCorruption(raw.word, raw.ascii, langCode, 1.0, seed);
+      if (cr.trace.length > 0 && !(cr.word === raw.word && cr.ascii === raw.ascii)) {
         totalNamesWithCorruption++;
-
-        console.log(`    seed=${seed} [${langCode}]: "${cr.word}"  ascii="${cr.ascii}"`);
+        lines.push(`  [${langCode}]: "${cr.word}"  ascii="${cr.ascii}" (seed=${seed})`);
         for (const t of cr.trace) {
-          console.log(`      "${t.before}" → "${t.after}"  ← ${t.ruleDesc}`);
+          lines.push(`    "${t.before}" → "${t.after}"  ← ${t.ruleDesc}`);
         }
+      } else {
+        lines.push(`  [${langCode}]: "${raw.word}"  ascii="${raw.ascii}"`);
       }
     }
-    console.log();
+    lines.push('');
   }
+
+  fs.writeFileSync(filepath, lines.join('\n'));
+  console.log(`- Generated ${filename}`);
 }
 
-console.log(SEP);
-console.log(`\n${totalSamples} raw names generated, ${totalNamesWithCorruption} corruption traces shown.`);
+console.log(`\n${SEP}`);
+console.log(`Done! ${totalSamples} raw names generated, ${totalNamesWithCorruption} corruption traces saved.`);

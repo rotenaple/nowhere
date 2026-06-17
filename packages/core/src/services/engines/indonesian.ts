@@ -153,7 +153,19 @@ export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedR
         const sufObj = getRandomElement(validSuffixes);
         const suf = sufObj.val;
         const sanskritRoots = ['Suka', 'Jaya', 'Maha', 'Tri', 'Panca', 'Adi', 'Wana', 'Giri', 'Tirta', 'Batu', 'Kali'];
-        let stem = Math.random() < 0.5 ? getRandomElement(sanskritRoots) : getRandomElement(roots).val;
+        
+        let stem = "";
+        let stemObj: any = null;
+        
+        if (Math.random() < 0.5) {
+            const rawStem = getRandomElement(sanskritRoots);
+            stem = rawStem;
+            stemObj = { val: rawStem, type: 'root', origin: 'sanskrit_list' };
+        } else {
+            const rootComponent = getRandomElement(roots);
+            stem = rootComponent.val;
+            stemObj = rootComponent;
+        }
         
         // Javanization for Indonesian compounds (Sanskrit influence)
         // e.g. Wana -> Wono, Suka -> Suko, Jaya -> Joyo
@@ -165,7 +177,7 @@ export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedR
         }
         
         word = stem + suf;
-        components.push(JSON.stringify(stem), JSON.stringify(sufObj));
+        components.push(JSON.stringify(stemObj), JSON.stringify(sufObj));
     } else {
         const preObj = getRandomElement(prefixes);
         const pre = preObj.val;

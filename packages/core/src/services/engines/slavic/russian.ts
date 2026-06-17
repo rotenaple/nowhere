@@ -55,7 +55,7 @@ export const generateRussianPlace = (): GeneratedResult => {
           const rootEndsInVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(finalNounSrc.slice(-1));
           const suffixStartsVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(suffixInfo.src.charAt(0));
 
-          if (rootEndsInVowel && suffixStartsVowel) {
+          if (rootEndsInVowel) {
             finalNounSrc = finalNounSrc.slice(0, -1);
             finalNounRom = finalNounRom.slice(0, -1);
           }
@@ -66,7 +66,7 @@ export const generateRussianPlace = (): GeneratedResult => {
 
       wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
       wordAscii = `${inflectedAdjRom} ${finalNounRom}`;
-      components.push(JSON.stringify(selectedAdj));
+      components.push(JSON.stringify(selectedAdj), JSON.stringify(selectedRootComponent));
       if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix
@@ -82,16 +82,15 @@ export const generateRussianPlace = (): GeneratedResult => {
       let baseRom = rootInfo.rom!;
       
       const rootEndsInVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(baseSrc.slice(-1));
-      const suffixStartsVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(suffixInfo.src.charAt(0));
 
-      if (rootEndsInVowel && suffixStartsVowel) {
+      if (rootEndsInVowel) {
           baseSrc = baseSrc.slice(0, -1);
           baseRom = baseRom.slice(0, -1);
       }
       
       wordCyrillic = baseSrc + suffixInfo.src;
       wordAscii = baseRom + suffixInfo.rom;
-      components.push(JSON.stringify(selectedRoot));
+      components.push(JSON.stringify(selectedRoot), JSON.stringify(selectedSuffix));
   }
   // 3. Base + "na" + River (Hyphenated)
   else {
@@ -106,23 +105,24 @@ export const generateRussianPlace = (): GeneratedResult => {
       let baseRom = baseRootInfo.rom!;
 
       // Optional suffix on base before attaching river
+      let suffixComp: any = null;
       if (Math.random() < 0.3) {
-          const suffixComp = getRandomElement(suffixes);
+          suffixComp = getRandomElement(suffixes);
           const suffixInfo = getSlavicData(suffixComp.ru!);
-           const rootEndsInVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(baseSrc.slice(-1));
-          const suffixStartsVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(suffixInfo.src.charAt(0));
-           if (rootEndsInVowel && suffixStartsVowel) {
+          const rootEndsInVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(baseSrc.slice(-1));
+          if (rootEndsInVowel) {
               baseSrc = baseSrc.slice(0, -1);
               baseRom = baseRom.slice(0, -1);
-           }
-           baseSrc += suffixInfo.src;
-           baseRom += suffixInfo.rom;
+          }
+          baseSrc += suffixInfo.src;
+          baseRom += suffixInfo.rom;
       }
       
       wordCyrillic = `${baseSrc}-на-${riverInfo.src}`; 
       const riverRom = riverInfo.rom || transliterateRussianToAscii(riverInfo.src);
       wordAscii = `${baseRom}-na-${riverRom}`;
-      components.push(JSON.stringify(baseRootComponent));
+      components.push(JSON.stringify(baseRootComponent), JSON.stringify(selectedRiver));
+      if (suffixComp) components.push(JSON.stringify(suffixComp));
   }
 
   return { 

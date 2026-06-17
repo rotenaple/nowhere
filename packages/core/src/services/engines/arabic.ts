@@ -99,7 +99,7 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
     rule = "[Head] [Root] (Idafa)";
     const head = getRandomElement(heads);
     const root = getRandomElement(AR_ROOTS);
-    components.push(JSON.stringify(head));
+    components.push(JSON.stringify(head), JSON.stringify(root));
     const article = getDefiniteArticle(root, style); 
     
     wordAr = `${head.ar} ${article.ar}${root.ar}`;
@@ -123,7 +123,7 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
     rule = "[Head] [Adjective]";
     const head = getRandomElement(heads);
     const adj = getRandomElement(AR_ADJECTIVES);
-    components.push(JSON.stringify(head));
+    components.push(JSON.stringify(head), JSON.stringify(adj));
     
     // Agreement
     const inflectedAdj = inflectAdjective(adj, head.gender || 'm');
@@ -160,7 +160,7 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
     rule = "[Root] [Adjective]";
     const root = getRandomElement(AR_ROOTS);
     const adj = getRandomElement(AR_ADJECTIVES);
-    components.push(JSON.stringify(root));
+    components.push(JSON.stringify(root), JSON.stringify(adj));
     const inflectedAdj = inflectAdjective(adj, root.gender || 'm');
     
     const artRoot = getDefiniteArticle(root, style);

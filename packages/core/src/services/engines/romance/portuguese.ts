@@ -31,9 +31,9 @@ export const generatePortuguesePlace = (): GeneratedResult => {
       
       if (useSaint) {
         const saintTarget = getRandomElement(getPool(['bio_fauna', 'bio_flora', 'abstract']));
-        components.push(JSON.stringify(saintTarget));
         const tData = getRomData(saintTarget.pt);
         const prefix = (tData.gender === 'f') ? 'Santa' : 'São';
+        components.push(JSON.stringify({ val: prefix, type: 'prefix' }), JSON.stringify(saintTarget));
         word = `${prefix} ${tData.val}`;
       } else {
         const prefixObj = getRandomElement(getPool(['prefix']));
@@ -47,7 +47,7 @@ export const generatePortuguesePlace = (): GeneratedResult => {
         
         // Combine with a noun or an adjective
         const tailObj = getRandomElement(getPool(['adj_quality', 'adj_color', 'bio_flora', 'settlement']));
-        components.push(JSON.stringify(prefixObj));
+        components.push(JSON.stringify(prefixObj), JSON.stringify(tailObj));
         const tData = getRomData(tailObj.pt);
         let t = tData.val;
 
@@ -71,7 +71,7 @@ export const generatePortuguesePlace = (): GeneratedResult => {
       let adjTypes = ['adj_quality', 'adj_color'];
       if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
       const adjObj = getRandomElement(getPool(adjTypes));
-      components.push(JSON.stringify(rootObj));
+      components.push(JSON.stringify(rootObj), JSON.stringify(adjObj));
       
       const rData = getRomData(rootObj.pt);
       let r = rData.val;
@@ -96,7 +96,7 @@ export const generatePortuguesePlace = (): GeneratedResult => {
       const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
       // EXPANSION: Universal Tails
       const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
-      components.push(JSON.stringify(headObj));
+      components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
       
       const hData = getRomData(headObj.pt);
       const tData = getRomData(tailObj.pt);

@@ -69,7 +69,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
     const word = pre.kanji + root.kanji;
     // Often hyphenated in romanization if it's a major prefix
     const ascii = pre.romaji + root.romaji;
-    components.push(JSON.stringify(pre));
+    components.push(JSON.stringify(pre), JSON.stringify(root));
 
     return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Direction/Prefix + Root"], dictionaryComponents: components };
   }
@@ -88,7 +88,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = mod.kanji + root.kanji;
     const ascii = mod.romaji + finalRomaji;
-    components.push(JSON.stringify(mod));
+    components.push(JSON.stringify(mod), JSON.stringify(root));
     return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Modifier + Root"], dictionaryComponents: components };
   }
 
@@ -108,7 +108,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = root1.kanji + root2.kanji;
     const ascii = root1.romaji + finalRomaji2;
-    components.push(JSON.stringify(root1));
+    components.push(JSON.stringify(root1), JSON.stringify(root2));
     return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Root + Root (Compound)"], dictionaryComponents: components };
   }
 
@@ -119,7 +119,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = first.kanji + 'ヶ' + second.kanji;
     const ascii = first.romaji + 'ga' + second.romaji;
-    components.push(JSON.stringify(first));
+    components.push(JSON.stringify(first), JSON.stringify(second));
     return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Ga Construction"], dictionaryComponents: components };
   }
 
@@ -131,7 +131,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = first.kanji + '之' + second.kanji;
     const ascii = first.romaji + 'no' + second.romaji;
-    components.push(JSON.stringify(first));
+    components.push(JSON.stringify(first), JSON.stringify(second));
     return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["No Construction"], dictionaryComponents: components };
   }
 
@@ -158,6 +158,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
         if (['市', '区', '県', '都', '府', '郡'].includes(c.kanji)) return false;
 
         // Allow specific settlement indicators
+        if (['港', '津', '城', '馆', '町', '村', '宿', '駅'].includes(c.kanji)) return true; // wait, 馆 is hans? In Dict it is 館. Let's make sure it matches.
         if (['港', '津', '城', '館', '町', '村', '宿', '駅'].includes(c.kanji)) return true;
 
         // Allow nature features that often host settlements
@@ -179,7 +180,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
       const word = prefix.kanji + core.kanji + suffix.kanji;
       const ascii = pRom + cRom + sRom;
-      components.push(JSON.stringify(prefix));
+      components.push(JSON.stringify(prefix), JSON.stringify(core), JSON.stringify(suffix));
 
       return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["3-Part Settlement Compound"], dictionaryComponents: components };
     }
@@ -191,7 +192,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = pre.kanji + suf.kanji;
     const ascii = firstRomaji + secondRomaji;
-    components.push(JSON.stringify(pre));
+    components.push(JSON.stringify(pre), JSON.stringify(suf));
     return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["On-yomi Compound"], dictionaryComponents: components };
   }
 };

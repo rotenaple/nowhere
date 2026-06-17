@@ -72,7 +72,7 @@ export const generateBulgarianPlace = (): GeneratedResult => {
           const rootEndsInVowel = ['а','е','о','я','и'].includes(finalNounSrc.slice(-1));
           const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixSrc.charAt(0));
 
-          if (rootEndsInVowel && suffixStartsVowel) {
+          if (rootEndsInVowel) {
               finalNounSrc = finalNounSrc.slice(0, -1);
               finalNounRom = finalNounRom.slice(0, -1);
           }
@@ -83,7 +83,7 @@ export const generateBulgarianPlace = (): GeneratedResult => {
 
       wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
       wordAscii = `${inflectedAdjRom} ${finalNounRom}`;
-      components.push(JSON.stringify(selectedAdj));
+      components.push(JSON.stringify(selectedAdj), JSON.stringify(selectedRootComponent));
       if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix
@@ -106,16 +106,14 @@ export const generateBulgarianPlace = (): GeneratedResult => {
       }
       
       const rootEndsInVowel = ['а','е','о','я','и'].includes(baseSrc.slice(-1));
-      const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixSrc.charAt(0));
-
-      if (rootEndsInVowel && suffixStartsVowel) {
+      if (rootEndsInVowel) {
             baseSrc = baseSrc.slice(0, -1);
             baseRom = baseRom.slice(0, -1);
       }
 
       wordCyrillic = baseSrc + suffixSrc;
       wordAscii = baseRom + suffixRom;
-      components.push(JSON.stringify(selectedRoot));
+      components.push(JSON.stringify(selectedRoot), JSON.stringify(selectedSuffix));
   }
   // 3. Base + "na" + River
   else {
@@ -127,8 +125,9 @@ export const generateBulgarianPlace = (): GeneratedResult => {
       let basePartSrc = baseRootInfo.src;
       let basePartRom = baseRootInfo.rom || transliterateBulgarianToAscii(baseRootInfo.src);
 
+      let selectedSuffix: any = null;
       if (Math.random() < 0.5) {
-          const selectedSuffix = getRandomElement(suffixes);
+          selectedSuffix = getRandomElement(suffixes);
           const suffixInfo = getSlavicData(selectedSuffix.bg!);
           let suffixSrc = suffixInfo.src;
           let suffixRom = suffixInfo.rom || "";
@@ -139,9 +138,8 @@ export const generateBulgarianPlace = (): GeneratedResult => {
           }
           
           const rootEndsInVowel = ['а','е','о','я','и'].includes(basePartSrc.slice(-1));
-          const suffixStartsVowel = ['а','е','о','я','и'].includes(suffixSrc.charAt(0));
 
-          if (rootEndsInVowel && suffixStartsVowel) {
+          if (rootEndsInVowel) {
               basePartSrc = basePartSrc.slice(0, -1);
               basePartRom = basePartRom.slice(0, -1);
           }
@@ -152,7 +150,8 @@ export const generateBulgarianPlace = (): GeneratedResult => {
       const riverInfo = getSlavicData(selectedRiver.bg!);
       wordCyrillic = `${basePartSrc} на ${riverInfo.src}`;
       wordAscii = `${basePartRom} na ${riverInfo.rom || transliterateBulgarianToAscii(riverInfo.src)}`; 
-      components.push(JSON.stringify(baseRootComponent));
+      components.push(JSON.stringify(baseRootComponent), JSON.stringify(selectedRiver));
+      if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
 
   if (!wordAscii || wordAscii.includes('undefined')) wordAscii = transliterateBulgarianToAscii(wordCyrillic);

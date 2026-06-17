@@ -36,7 +36,7 @@ export const generateDanishPlace = (): GeneratedResult => {
     let p = getVal(pre.da);
     let r = getVal(root.da);
     
-    components.push(JSON.stringify(pre));
+    components.push(JSON.stringify(pre), JSON.stringify(root));
     // Adjective Inflection Logic
     if (pre.type === 'adjective') {
         // Stor -> Store, Lil -> Lille usually for definite forms

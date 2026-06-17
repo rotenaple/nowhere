@@ -44,7 +44,6 @@ export const generateItalianPlace = (): GeneratedResult => {
       if (Math.random() < 0.5) {
           // Saint
           const target = getRandomElement(getPool(['bio_fauna', 'abstract', 'bio_flora']));
-          components.push(JSON.stringify(target));
           const tData = getRomData(target.it);
           
           let prefix = 'San';
@@ -55,12 +54,13 @@ export const generateItalianPlace = (): GeneratedResult => {
               else if (tData.val.startsWith('Z')) prefix = 'Santo';
               else prefix = 'San';
           }
+          components.push(JSON.stringify({ val: prefix, type: 'prefix' }), JSON.stringify(target));
           word = `${prefix} ${tData.val}`;
       } else {
           // Common prefixes
           const prefixObj = getRandomElement(getPool(['prefix']));
           const rootObj = getRandomElement(getPool(['settlement', 'geo_major']));
-          components.push(JSON.stringify(prefixObj));
+          components.push(JSON.stringify(prefixObj), JSON.stringify(rootObj));
           
           let p = getRomData(prefixObj.it).val;
           let r = getRomData(rootObj.it).val;
@@ -78,7 +78,7 @@ export const generateItalianPlace = (): GeneratedResult => {
     let adjTypes = ['adj_quality', 'adj_color'];
     if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
     const adjObj = getRandomElement(getPool(adjTypes));
-    components.push(JSON.stringify(rootObj));
+    components.push(JSON.stringify(rootObj), JSON.stringify(adjObj));
     
     const rData = getRomData(rootObj.it);
     let r = rData.val;
@@ -115,7 +115,7 @@ export const generateItalianPlace = (): GeneratedResult => {
     // EXPANSION: Allow suffixing Geo Major
     const rootObj = getRandomElement(getPool(['geo_minor', 'settlement', 'bio_flora', 'geo_major']));
     const suffixObj = getRandomElement(getPool(['suffix']));
-    components.push(JSON.stringify(rootObj));
+    components.push(JSON.stringify(rootObj), JSON.stringify(suffixObj));
     
     let base = getRomData(rootObj.it).val;
     let sVal = getRomData(suffixObj.it).val;
@@ -140,7 +140,7 @@ export const generateItalianPlace = (): GeneratedResult => {
     const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
     // EXPANSION: Universal Tails
     const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
-    components.push(JSON.stringify(headObj));
+    components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
     
     let h = getRomData(headObj.it).val;
     const tData = getRomData(tailObj.it);

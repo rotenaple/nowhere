@@ -42,7 +42,7 @@ export const generateSwedishPlace = (): GeneratedResult => {
     const pre = getRandomElement(prePool);
     const suf = getRandomElement(getPool('suffix'));
     
-    components.push(JSON.stringify(pre));
+    components.push(JSON.stringify(pre), JSON.stringify(suf));
 
     // Adjectives usually fuse with suffixes without 't' inflection
     word = getVal(pre.sv) + getVal(suf.sv).toLowerCase();
@@ -80,7 +80,7 @@ export const generateSwedishPlace = (): GeneratedResult => {
       const rData = getData(root.sv); 
       let p = getVal(pre.sv);
 
-      components.push(JSON.stringify(pre));
+      components.push(JSON.stringify(pre), JSON.stringify(root));
       
       // LOGIC: Neuter inflection only applies if it is truly an Adjective
       if (pre.type === 'adjective') {

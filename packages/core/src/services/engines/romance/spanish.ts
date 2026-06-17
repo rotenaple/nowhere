@@ -84,7 +84,7 @@ export const generateSpanishPlace = (): GeneratedResult => {
     
     const adjObj = getRandomElement(getPool(adjTypes));
     let adj = formatAdjective(nGender, adjObj);
-    components.push(JSON.stringify(nounObj));
+    components.push(JSON.stringify(nounObj), JSON.stringify(adjObj));
 
     if (adjObj.tags?.includes('pre')) {
         if (adj === 'Grande' || adj === 'Grandes') adj = 'Gran'; 
@@ -103,7 +103,7 @@ export const generateSpanishPlace = (): GeneratedResult => {
     const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
     // EXPANSION: Tail can be almost anything now (City of the Mountain, Bridge of the King)
     const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
-    components.push(JSON.stringify(headObj));
+    components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
     
     const h = getRomData(headObj.es).val;
     const tData = getRomData(tailObj.es);
@@ -133,7 +133,7 @@ export const generateSpanishPlace = (): GeneratedResult => {
     // EXPANSION: Allow suffixing Geo Majors (Montana -> Montanilla)
     const rootObj = getRandomElement(getPool(['bio_flora', 'geo_minor', 'settlement', 'geo_major']));
     const suffixObj = getRandomElement(getPool(['suffix']));
-    components.push(JSON.stringify(rootObj));
+    components.push(JSON.stringify(rootObj), JSON.stringify(suffixObj));
     
     let base = getRomData(rootObj.es).val;
     let sVal = getRomData(suffixObj.es).val;

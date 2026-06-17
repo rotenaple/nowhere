@@ -41,7 +41,7 @@ export const generateDutchPlace = (): GeneratedResult => {
     let rData = getData(root.nl);
     let r = rData.val;
     
-    components.push(JSON.stringify(pre));
+    components.push(JSON.stringify(pre), JSON.stringify(root));
     // Adjective inflection logic
     if (pre.type === 'adjective' && ['Nieuw', 'Oud', 'Groot', 'Klein', 'Hoog', 'Laag'].includes(pre.def)) {
         // If Neuter, 50% chance to keep it uninflected (Groot-Ammers)
@@ -87,7 +87,7 @@ export const generateDutchPlace = (): GeneratedResult => {
       const genitives = ['Heeren', 'Graven', 'Hertogen', 'Papen', 'Vrouwen', 'Princen', 'Konings', 'Monniken'];
       const root = getRandomElement(genitives);
       const suf = getRandomElement(getPool('suffix'));
-      components.push(JSON.stringify(suf));
+      components.push(JSON.stringify({ val: root, type: 'genitive_root' }), JSON.stringify(suf));
       word = `'s-${root}${getVal(suf.nl)}`;
   }
   // 4. Root + Root

@@ -46,15 +46,12 @@ export const generatePolishPlace = (): GeneratedResult => {
         derivedNounSrc = derivedNounSrc.slice(0, -1);
     }
 
-    // Vowel truncation
     const rootEndsInVowel = ['a','e','i','o','u','y'].includes(derivedNounSrc.slice(-1));
-    const suffixStartsVowel = ['a','e','i','o','u','y'].includes(suffixInfo.src.charAt(0));
-    
-    if (rootEndsInVowel && suffixStartsVowel) {
+    if (rootEndsInVowel) {
         derivedNounSrc = derivedNounSrc.slice(0, -1);
     }
     
-    components.push(JSON.stringify(selectedAdj));
+    components.push(JSON.stringify(selectedAdj), JSON.stringify(selectedRootComponent), JSON.stringify(selectedSuffix));
     // Separate: [Adj] [Derived Noun]
     if (Math.random() < 0.6) { 
         rule = "Adjective + Noun";
@@ -71,7 +68,7 @@ export const generatePolishPlace = (): GeneratedResult => {
         let lowerRootSrc = rootInfo.src.toLowerCase();
         
         const compoundRootEndsVowel = ['a','e','o'].includes(lowerRootSrc.slice(-1));
-        if (compoundRootEndsVowel && suffixStartsVowel) {
+        if (compoundRootEndsVowel) {
             lowerRootSrc = lowerRootSrc.slice(0, -1);
         }
         wordSrc = `${adjStem}${connector}${lowerRootSrc}${suffixInfo.src}`;
@@ -88,13 +85,12 @@ export const generatePolishPlace = (): GeneratedResult => {
     
     let baseSrc = rootInfo.src;
     const rootEndsInVowel = ['a','e','i','o','u','y'].includes(baseSrc.slice(-1));
-    const suffixStartsVowel = ['a','e','i','o','u','y'].includes(suffixInfo.src.charAt(0));
 
-    if (rootEndsInVowel && suffixStartsVowel) {
+    if (rootEndsInVowel) {
         baseSrc = baseSrc.slice(0, -1);
     }
     wordSrc = baseSrc + suffixInfo.src;
-    components.push(JSON.stringify(selectedRoot));
+    components.push(JSON.stringify(selectedRoot), JSON.stringify(selectedSuffix));
   }
   // 3. Base + nad + River (Instrumental)
   else {
@@ -106,7 +102,7 @@ export const generatePolishPlace = (): GeneratedResult => {
     const riverInfo = getSlavicData(selectedRiver.pl!);
     
     wordSrc = `${rootInfo.src} nad ${riverInfo.src}`;
-    components.push(JSON.stringify(baseRootComponent));
+    components.push(JSON.stringify(baseRootComponent), JSON.stringify(selectedRiver));
   }
 
   wordSrc = wordSrc.replace(/(.)\1+/g, '$1'); // De-dupe

@@ -47,11 +47,11 @@ export const generateKoreanPlace = (): GeneratedResult => {
        const mid = getRandomElement(getPool(KO_ADJECTIVES, ['quality', 'color'])); 
        word = p1.hangul + mid.hangul + p2.hangul;
        ascii = p1.rom + mid.rom.toLowerCase() + p2.rom.toLowerCase();
-       components.push(JSON.stringify(p1));
+       components.push(JSON.stringify(p1), JSON.stringify(mid), JSON.stringify(p2));
     } else {
        word = p1.hangul + p2.hangul;
        ascii = p1.rom + p2.rom.toLowerCase();
-       components.push(JSON.stringify(p1));
+       components.push(JSON.stringify(p1), JSON.stringify(p2));
     }
   }
 
@@ -80,7 +80,7 @@ export const generateKoreanPlace = (): GeneratedResult => {
     const suffix = getRandomElement(getPool(KO_SUFFIXES, ['suffix']));
     word = baseHangul + suffix.hangul;
     ascii = baseRom + '-' + suffix.rom;
-    components.push(JSON.stringify(r1));
+    components.push(JSON.stringify(r1), JSON.stringify(r2), JSON.stringify(suffix));
   }
 
   // --- RECIPE 3: Native Korean Names ---
@@ -93,7 +93,7 @@ export const generateKoreanPlace = (): GeneratedResult => {
 
     word = p1.hangul + p2.hangul;
     ascii = p1.rom + p2.rom.toLowerCase();
-    components.push(JSON.stringify(p1));
+    components.push(JSON.stringify(p1), JSON.stringify(p2));
   }
 
   // --- RECIPE 4: Numeric ---
@@ -105,7 +105,7 @@ export const generateKoreanPlace = (): GeneratedResult => {
     
     word = num.hangul + root.hangul;
     ascii = num.rom + root.rom.toLowerCase();
-    components.push(JSON.stringify(num));
+    components.push(JSON.stringify(num), JSON.stringify(root));
   }
 
   ascii = ascii.charAt(0).toUpperCase() + ascii.slice(1);
