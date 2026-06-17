@@ -131,7 +131,8 @@ export const generateTagalogPlace = (): GeneratedResult => {
             tailObj = saintTail;
         } else {
             // Pick concepts (Peace, Cross) or Nature (Rose, Lily)
-            const obj = getRandomElement(getRomancePool(['abstract', 'bio_flora', 'bio_fauna'])); 
+            const saintPool = getRomancePool(['abstract', 'bio_flora', 'bio_fauna']).filter(c => !c.tags?.includes('no_saint'));
+            const obj = getRandomElement(saintPool); 
             const data = getRomData(obj.es);
             saintTail = data.val;
             targetGender = data.gender || 'm';
@@ -182,8 +183,11 @@ export const generateTagalogPlace = (): GeneratedResult => {
             const tailData = getRomData(tailObj.es);
             
             let connector = 'de';
-            if (tailData.gender === 'f') connector = 'de la';
-            else connector = 'del'; 
+            const useArticle = !tailObj.tags?.includes('no_saint');
+            if (useArticle) {
+                if (tailData.gender === 'f') connector = 'de la';
+                else connector = 'del'; 
+            }
 
             word = `${headVal} ${connector} ${tailData.val}`;
             components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
