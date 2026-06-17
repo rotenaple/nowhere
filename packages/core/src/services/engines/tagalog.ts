@@ -28,18 +28,170 @@ const getTagalogPool = (types: string[]): TagalogComponent[] => {
 };
 
 export const getTagalogCapacity = () => {
-  // Native capacities
-  const c1 = TL_PREFIXES.length * TL_ROOTS.length;
-  const c2 = TL_ROOTS.length * TL_SUFFIXES.length;
-  const c3 = TL_ADJECTIVES.length * TL_ROOTS.length;
+  const set = new Set<string>();
+  
+  const getTagalogPool = (types: string[]): TagalogComponent[] => {
+    return TL_ROOTS.filter(r => types.includes(r.type) && !r.es);
+  };
 
-  // Spanish Colonial capacities
-  const esHeads = getRomancePool(['prefix', 'settlement', 'geo_major']).length;
-  const esTails = getRomancePool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract', 'adj_quality', 'adj_color']).length + PH_HEROES.length;
+  // Pattern 1: Native Prefix
+  const rootCandidates1 = getTagalogPool(['geo', 'nature', 'object', 'abstract']);
+  for (const pre of TL_PREFIXES) {
+    for (const root of rootCandidates1) {
+      let p = pre.val;
+      let r = root.val;
+      const prefixes = [p];
+      if (p === 'Ka') prefixes.push('Ca');
+      
+      for (const pref of prefixes) {
+        if (pref === 'May') {
+          set.add((pref + " " + r).trim().toLowerCase());
+          set.add((pref + r.toLowerCase()).trim().toLowerCase());
+        } else {
+          set.add((pref + r.toLowerCase()).trim().toLowerCase());
+        }
+      }
+    }
+  }
 
-  const c4 = esHeads * esTails;
-  const c5 = TL_ROOTS.length * TL_ROOTS.length; 
-  return c1 + c2 + c3 + c4 + c5;
+  // Pattern 2: Native Locative Suffix
+  const rootCandidates2 = getTagalogPool(['nature', 'object', 'geo']);
+  for (const root of rootCandidates2) {
+    for (const suf of TL_SUFFIXES) {
+      let r = root.val;
+      let s = suf.val;
+      const lastChar = r.slice(-1).toLowerCase();
+      if (['a','e','i','o','u'].includes(lastChar)) {
+        if (!s.startsWith('h')) s = 'h' + s;
+        if (lastChar === 'o') r = r.slice(0, -1) + 'u';
+      } else if (lastChar === 'd') {
+        r = r.slice(0, -1) + 'r';
+        if (s.startsWith('h')) s = s.substring(1);
+      } else {
+        if (s.startsWith('h')) s = s.substring(1);
+      }
+      set.add((r + s).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 3a: Saints
+  const HEROES = [
+    'Rizal', 'Bonifacio', 'Magsaysay', 'Quezon', 'Mabini',
+    'Del Pilar', 'Aguinaldo', 'Luna', 'Recto', 'Burgos',
+    'Lapu-Lapu', 'Silang', 'Jacinto', 'Aquino', 'Osmeña'
+  ];
+  for (const hero of HEROES) {
+    let prefixes = ['San'];
+    if (hero.startsWith('Do') || hero.startsWith('To') || hero.startsWith('Ni')) {
+      prefixes.push('Santo');
+    }
+    for (const pref of prefixes) {
+      set.add((pref + " " + hero).trim().toLowerCase());
+    }
+  }
+
+  const saintPool = ROMANCE_DATA.filter(c => c.es && c.tags?.includes('saint_ok'));
+  for (const target of saintPool) {
+    const tData = getRomData(target.es);
+    let prefixes = ['San'];
+    if (tData.gender === 'f') {
+      prefixes = ['Santa'];
+    } else if (tData.val.startsWith('Do') || tData.val.startsWith('To') || tData.val.startsWith('Ni')) {
+      prefixes.push('Santo');
+    }
+    for (const pref of prefixes) {
+      set.add((pref + " " + tData.val).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 3b: Civic/Geo + Adjective/Noun
+  const headPool3b = getRomancePool(['settlement', 'geo_major', 'geo_minor']);
+  // Noun + Adjective
+  const adjPool3b = getRomancePool(['adj_quality', 'adj_color', 'adj_geo']);
+  for (const headObj of headPool3b) {
+    const headData = getRomData(headObj.es);
+    const headGender = headData.gender || 'm';
+    for (const adjObj of adjPool3b) {
+      let adj = getRomData(adjObj.es).val;
+      if (headGender === 'f') {
+        if (adj.endsWith('o')) adj = adj.slice(0, -1) + 'a';
+        if (adj === 'Santo') adj = 'Santa';
+        if (adj === 'Buen') adj = 'Buena';
+      }
+      
+      if (adjObj.tags?.includes('pre')) {
+        let preAdj = adj;
+        if (preAdj === 'Grande') preAdj = 'Gran';
+        if (preAdj === 'Santo') preAdj = 'San';
+        set.add((preAdj + " " + headData.val).trim().toLowerCase());
+      } else {
+        set.add((headData.val + " " + adj).trim().toLowerCase());
+      }
+    }
+  }
+  // Noun + de + Noun
+  const tailPool3b = getRomancePool(['bio_flora', 'bio_fauna', 'abstract', 'geo_major', 'settlement']);
+  for (const headObj of headPool3b) {
+    const headData = getRomData(headObj.es);
+    for (const tailObj of tailPool3b) {
+      const tailData = getRomData(tailObj.es);
+      const useArticle = !tailObj.tags?.includes('no_saint');
+      const connectors = ['de'];
+      if (useArticle) {
+        if (tailData.gender === 'f') connectors.push('de la');
+        else connectors.push('del');
+      }
+      for (const conn of connectors) {
+        set.add((headData.val + " " + conn + " " + tailData.val).trim().toLowerCase());
+      }
+    }
+  }
+
+  // Pattern 4: Descriptive Native
+  const rootPool4 = TL_ROOTS.filter(r => !r.es);
+  for (const root of rootPool4) {
+    for (const adj of TL_ADJECTIVES) {
+      let a = adj.val;
+      let linker = " na ";
+      if (['a','e','i','o','u'].includes(a.slice(-1))) {
+        linker = "ng ";
+      } else if (a.slice(-1) === 'n') {
+        linker = "g ";
+      }
+      set.add((a + linker + root.val).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 5: Native Compounds
+  const r1Pool5 = getTagalogPool(['nature', 'geo', 'object']);
+  const r2Pool5 = getTagalogPool(['geo', 'nature']);
+  for (const r1 of r1Pool5) {
+    for (const r2 of r2Pool5) {
+      if (r1.val === r2.val) {
+        if (r1.val.length <= 6) {
+          set.add((r1.val + "-" + r1.val.toLowerCase()).trim().toLowerCase());
+        }
+      } else {
+        let part1 = r1.val;
+        let part2 = r2.val.toLowerCase();
+        
+        // Option A: Fused
+        if (part1.length <= 5 && part2.length <= 6) {
+          let p1 = part1;
+          if (['a','e','i','o','u'].includes(p1.slice(-1))) {
+            p1 += 'ng';
+          } else if (p1.endsWith('n')) {
+            p1 += 'g';
+          }
+          set.add((p1 + part2).trim().toLowerCase());
+        }
+        // Option B: Separate
+        set.add((part1 + " " + r2.val).trim().toLowerCase());
+      }
+    }
+  }
+
+  return set.size;
 }
 
 export const generateTagalogPlace = (): GeneratedResult => {

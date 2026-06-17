@@ -5,14 +5,83 @@ import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
 const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
 
 export const getDanishCapacity = () => {
-  const roots = GERMANIC_DATA.filter(c => c.da && c.type === 'root');
-  const suffixes = GERMANIC_DATA.filter(c => c.da && c.type === 'suffix');
+  const set = new Set<string>();
+  const getPool = (t: string) => GERMANIC_DATA.filter(c => c.da && c.type === t);
+  const roots = getPool('root');
+  const suffixes = getPool('suffix');
   const prefixes = GERMANIC_DATA.filter(c => c.da && (c.type === 'adjective' || c.type === 'noun_prefix'));
+  const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
 
-  const c1 = prefixes.length * roots.length;
-  const c2 = roots.length * suffixes.length;
-  const c3 = roots.length * roots.length;
-  return c1 + c2 + c3;
+  // 1. Prefix + Root
+  for (const pre of prefixes) {
+    for (const root of roots) {
+      let p = getVal(pre.da);
+      let r = getVal(root.da);
+      if (pre.type === 'adjective') {
+        if (p === 'Stor') p = 'Store';
+        if (p === 'Lille') p = 'Lille';
+        if (p === 'Ny') p = 'Ny';
+        if (p === 'Gammel') p = 'Gammel';
+
+        if (['Store', 'Lille', 'Gammel'].includes(p)) {
+          set.add(`${p} ${r}`.trim().toLowerCase());
+          set.add((p + r.toLowerCase()).trim().toLowerCase());
+        } else {
+          set.add((p + r.toLowerCase()).trim().toLowerCase());
+        }
+      } else {
+        set.add((p + r.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  // 2. Root + Suffix
+  for (const root of roots) {
+    for (const suf of suffixes) {
+      let r = getVal(root.da);
+      let s = getVal(suf.da);
+      
+      if (r.toLowerCase() === s.toLowerCase()) continue;
+      if (s.includes(r.toLowerCase())) continue;
+
+      const glues = [""];
+      if (['rup', 'drup', 'strup', 'bøl', 'lev', 'sted'].includes(s)) {
+        if (!['s','r','l','n'].includes(r.slice(-1))) {
+          glues.push("s");
+        }
+      }
+
+      for (const glue of glues) {
+        let rootBase = r;
+        if (['e','å','ø'].includes(rootBase.slice(-1)) && ['e','ø','å'].includes(s.charAt(0))) {
+          rootBase = rootBase.slice(0, -1);
+        }
+        set.add((rootBase + glue + s).trim().toLowerCase());
+      }
+    }
+  }
+
+  // 3. Root + Root
+  for (const root1 of roots) {
+    for (const root2 of roots) {
+      const v1 = getVal(root1.da);
+      const v2 = getVal(root2.da);
+
+      if (v1 === v2) continue;
+
+      const glues = [""];
+      if (!v1.endsWith('s')) {
+        glues.push("s");
+      }
+      glues.push("e");
+
+      for (const glue of glues) {
+        set.add((v1 + glue + v2.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  return set.size;
 }
 
 export const generateDanishPlace = (): GeneratedResult => {

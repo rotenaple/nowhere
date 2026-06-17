@@ -4,12 +4,63 @@ import { SLAVIC_DATA, SlavicComponent } from "../../dictionaries/slavicDict";
 import { capitalizeSlavicName } from "../../utils";
 
 export const getSlovakCapacity = () => {
-   const roots = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && (c.type === 'root' || c.type === 'stem'));
-   const suffixes = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === 'suffix');
-   const adjectives = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === 'adjective');
-   const rivers = SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === 'river');
-   
-   return (adjectives.length * roots.length * suffixes.length) + (roots.length * suffixes.length) + (roots.length * rivers.length);
+  const set = new Set<string>();
+  const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === t);
+  const rootsAndStems = [...getPool('root'), ...getPool('stem'), ...getPool('river')];
+  const adjectives = getPool('adjective');
+  const suffixes = getPool('suffix');
+  const rivers = getPool('river');
+
+  // Recipe 1: Adjective + Noun
+  for (const adjObj of adjectives) {
+    for (const rootObj of rootsAndStems) {
+      for (const suffixObj of suffixes) {
+        const rData = getSlavicData(rootObj.sk);
+        const sData = getSlavicData(suffixObj.sk);
+        
+        let gender: 'm' | 'f' | 'n' = 'm';
+        if (suffixObj.tags?.includes('gender_f')) gender = 'f';
+        else if (suffixObj.tags?.includes('gender_n')) gender = 'n';
+        else if (rootObj.tags?.includes('gender_f')) gender = 'f';
+
+        const isPlural = suffixObj.tags?.includes('plural') || false;
+        const adjInflected = inflectSlavicAdjective(adjObj.sk!, gender, 'sk', isPlural ? 'pl' : 'sg');
+        
+        let combinedBase = rData.src;
+        if (['a','o','e','i','y'].includes(combinedBase.slice(-1)) && ['a','o','e','i','y','ě'].includes(sData.src.charAt(0))) {
+          combinedBase = combinedBase.slice(0, -1);
+        }
+        set.add((adjInflected.src + " " + combinedBase + sData.src).trim().toLowerCase());
+      }
+    }
+  }
+
+  // Recipe 2: Suffixed Root
+  for (const rootObj of rootsAndStems) {
+    for (const suffixObj of suffixes) {
+      const rData = getSlavicData(rootObj.sk);
+      const sData = getSlavicData(suffixObj.sk);
+      let combinedBase = rData.src;
+      if (['a','o','e','i','y'].includes(combinedBase.slice(-1)) && ['a','o','e','i','y','ě'].includes(sData.src.charAt(0))) {
+        combinedBase = combinedBase.slice(0, -1);
+      }
+      set.add((combinedBase + sData.src).trim().toLowerCase());
+    }
+  }
+
+  // Recipe 3: River Locative
+  for (const rootObj of rootsAndStems) {
+    for (const riverObj of rivers) {
+      const rData = getSlavicData(rootObj.sk);
+      const rivData = getSlavicData(riverObj.sk);
+      const connectors = [' na ', ' nad ', ' pod ', ' u '];
+      for (const conn of connectors) {
+        set.add((rData.src + conn + rivData.src).trim().toLowerCase());
+      }
+    }
+  }
+
+  return set.size;
 }
 
 export const generateSlovakPlace = (): GeneratedResult => {

@@ -40,19 +40,75 @@ const applySokuon = (a: JaComponent, b: JaComponent): { firstRomaji: string, sec
 };
 
 export const getJapaneseCapacity = () => {
-  // Estimate logic capacity
-  const c1 = JA_MODIFIERS.length * JA_ROOTS.length; // Mod + Root
-  const c2 = JA_ROOTS.length * JA_ROOTS.length; // Root + Root
-  const c3 = JA_ROOTS.length * JA_GA_SUFFIXES.length; // Ga-compounds
-  const c4 = JA_ON_COMPONENTS.length * JA_ON_COMPONENTS.length; // On-compounds
-  const c5 = JA_PREFIXES.length * JA_ROOTS.length; // New/Old + Root
-  const c6 = JA_DIRECTIONS.length * JA_ROOTS.length; // Direction + Root
-  const c7 = (JA_ROOTS.length + JA_NUMBERS.length) * JA_NO_SUFFIXES.length; // No-compounds
+  const set = new Set<string>();
 
-  // New: Prefix + On + On (3-part compound)
-  const c8 = JA_PREFIXES.length * JA_ON_COMPONENTS.length * JA_ON_COMPONENTS.length;
+  // Pattern 1: Direction/Prefix + Root
+  const prefixPools = [JA_DIRECTIONS, JA_PREFIXES];
+  for (const pool of prefixPools) {
+    for (const pre of pool) {
+      for (const root of JA_ROOTS) {
+        set.add((pre.kanji + root.kanji).trim().toLowerCase());
+      }
+    }
+  }
 
-  return c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8;
+  // Pattern 2: Modifier + Root
+  for (const mod of JA_MODIFIERS) {
+    for (const root of JA_ROOTS) {
+      set.add((mod.kanji + root.kanji).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 3: Root + Root
+  for (const root1 of JA_ROOTS) {
+    for (const root2 of JA_ROOTS) {
+      if (root1.romaji === root2.romaji) continue;
+      set.add((root1.kanji + root2.kanji).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 4: Ga Construction
+  const firstPoolGa = [...JA_MODIFIERS, ...JA_ROOTS];
+  for (const first of firstPoolGa) {
+    for (const second of JA_GA_SUFFIXES) {
+      set.add((first.kanji + 'ヶ' + second.kanji).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 5: No Construction
+  for (const first of [...JA_NUMBERS, ...JA_DIRECTIONS, ...JA_ROOTS]) {
+    for (const second of JA_NO_SUFFIXES) {
+      set.add((first.kanji + '之' + second.kanji).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 6a: 3-Part Settlement Compound
+  const prefix3 = [...JA_PREFIXES, ...JA_DIRECTIONS, ...JA_MODIFIERS];
+  const core3 = [...JA_ON_COMPONENTS, ...JA_ROOTS];
+  const validSuffixes3 = [...JA_ON_COMPONENTS, ...JA_ROOTS].filter(c => {
+    if (['市', '区', '県', '都', '府', '郡'].includes(c.kanji)) return false;
+    if (['港', '津', '城', '館', '町', '村', '宿', '駅', '山', '島', '崎', '原', '野', '川', '浦', '浜', '江', '泉', '田', '橋'].includes(c.kanji)) return true;
+    return false;
+  });
+
+  for (const pre of prefix3) {
+    for (const core of core3) {
+      for (const suffix of validSuffixes3) {
+        if (pre.kanji === core.kanji || core.kanji === suffix.kanji || pre.kanji === suffix.kanji) continue;
+        set.add((pre.kanji + core.kanji + suffix.kanji).trim().toLowerCase());
+      }
+    }
+  }
+
+  // Pattern 6b: On-yomi Compound
+  for (const pre of JA_ON_COMPONENTS) {
+    for (const suf of JA_ON_COMPONENTS) {
+      if (pre.kanji === suf.kanji) continue;
+      set.add((pre.kanji + suf.kanji).trim().toLowerCase());
+    }
+  }
+
+  return set.size;
 }
 
 export const generateJapanesePlace = (): GeneratedResult => {

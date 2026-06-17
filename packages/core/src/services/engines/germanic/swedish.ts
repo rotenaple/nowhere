@@ -5,19 +5,93 @@ import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
 const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
 
 export const getSwedishCapacity = () => {
-  const roots = GERMANIC_DATA.filter(c => c.sv && c.type === 'root');
-  const suffixes = GERMANIC_DATA.filter(c => c.sv && c.type === 'suffix');
-  
-  // Combine adjectives and noun_prefixes
+  const set = new Set<string>();
+  const getPool = (t: string) => GERMANIC_DATA.filter(c => c.sv && c.type === t);
+  const roots = getPool('root');
+  const suffixes = getPool('suffix');
   const prefixes = GERMANIC_DATA.filter(c => c.sv && (c.type === 'adjective' || c.type === 'noun_prefix'));
+  const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
+  const getData = (entry: any) => {
+    if (!entry) return { val: "", gender: undefined };
+    return typeof entry === 'string' ? { val: entry, gender: undefined } : { val: entry[0], gender: entry[1] };
+  };
 
-  // 1. Prefix + Suffix
-  const c1 = prefixes.length * suffixes.length;
-  // 2. Root + Suffix
-  const c2 = roots.length * suffixes.length;
-  // 3. Root + Root
-  const c3 = roots.length * roots.length;
-  return c1 + c2 + c3;
+  // Pattern 1: Prefix/Adjective + Suffix
+  for (const pre of prefixes) {
+    for (const suf of suffixes) {
+      set.add((getVal(pre.sv) + getVal(suf.sv).toLowerCase()).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 2: Root + Suffix
+  for (const root of roots) {
+    for (const suf of suffixes) {
+      const rData = getData(root.sv);
+      const sVal = getVal(suf.sv);
+
+      const connectors = [""];
+      if (!suf.tags?.includes('no_conn') && !rData.val.endsWith('s')) {
+        connectors.push("s");
+      }
+
+      for (const connector of connectors) {
+        set.add((rData.val + connector + sVal.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  // Pattern 3: Adjective + Root
+  for (const pre of prefixes) {
+    for (const root of roots) {
+      const rData = getData(root.sv);
+      let p = getVal(pre.sv);
+
+      if (pre.type === 'adjective') {
+        // Compound Form
+        let inflectedP = p;
+        if (rData.gender === 'n') {
+          if (['y', 'å'].includes(p.slice(-1))) {
+            if (p.endsWith('å')) inflectedP += 'tt';
+            else inflectedP += 't';
+          } else if (!p.endsWith('t')) {
+            inflectedP += 't';
+          }
+        }
+        set.add((inflectedP + rData.val.toLowerCase()).trim().toLowerCase());
+
+        // Definite Form (Separate)
+        let defP = p;
+        if (defP.endsWith('al')) {
+          defP = defP.slice(0, -2) + 'la';
+        } else if (!defP.endsWith('a')) {
+          defP += 'a';
+        }
+        set.add(`${defP} ${rData.val}`.trim().toLowerCase());
+      } else {
+        // Noun Prefixes
+        set.add((p + rData.val.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  // Pattern 4: Root + Root
+  for (const root1 of roots) {
+    for (const root2 of roots) {
+      const v1 = getVal(root1.sv);
+      const v2 = getVal(root2.sv);
+
+      const connectors = [""];
+      if (!['s', 'x'].includes(v1.slice(-1))) {
+        connectors.push("s");
+      }
+
+      for (const connector of connectors) {
+        set.add((v1 + connector + v2.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  return set.size;
 }
 
 const getData = (entry: any) => {

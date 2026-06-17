@@ -8,10 +8,29 @@ import {
 } from "../dictionaries/englishDict";
 
 export const getEnglishCapacity = (style: 'modern' | 'old' | 'mixed') => {
-  // 8 prefixes + 1 no-prefix = 9 permutations per root-suffix pair
-  const oldCapacity = EN_ROOTS_ANGLO.length * EN_SUFFIXES_ANGLO.length * 9;
+  if (style === 'old') {
+    const set = new Set<string>();
+    const prefixes = ['North', 'South', 'East', 'West', 'Great', 'Little', 'New', 'Old'];
+    for (const root of EN_ROOTS_ANGLO) {
+      for (const suffix of EN_SUFFIXES_ANGLO) {
+        if (root.toLowerCase().endsWith(suffix.toLowerCase())) {
+          set.add(root.trim().toLowerCase());
+        } else {
+          const hasS = !root.endsWith('s');
+          const connectors = hasS ? ["", "s"] : [""];
+          const prefixOptions = ["", ...prefixes];
+          for (const conn of connectors) {
+            for (const pre of prefixOptions) {
+              const name = pre ? `${pre} ${root}${conn}${suffix}` : `${root}${conn}${suffix}`;
+              set.add(name.trim().toLowerCase());
+            }
+          }
+        }
+      }
+    }
+    return set.size;
+  }
 
-  if (style === 'old') return oldCapacity;
   if (style === 'mixed') return "Infinite";
 
   // Phonetic Mode is effectively infinite

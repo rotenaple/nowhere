@@ -23,7 +23,123 @@ const getChar = (component: ChineseComponent, mode: 'cn' | 'tw' | 'hk'): string 
 export const getChineseCapacity = (romanization: 'cn' | 'tw' | 'hk') => {
   let region: RegionCode = romanization === 'hk' ? 'hk' : romanization === 'tw' ? 'tw' : 'cn';
   const pool = filterComponents(ZH_COMPONENTS, region);
-  return Math.pow(pool.length, 2);
+
+  const getChar = (component: ChineseComponent): string => {
+    if (region === 'cn' && component.hans) return component.hans;
+    return component.han;
+  };
+
+  const getCompPool = (types: ComponentType[], categories: SemanticCategory[] | null = null, specificChars: string[] | null = null) => {
+    let candidates = pool.filter(c => types.includes(c.type));
+    if (specificChars) {
+      candidates = candidates.filter(c => specificChars.includes(c.han));
+    } else {
+      if (types.includes('adj_physical')) {
+        candidates = candidates.filter(c => c.han !== '陽' && c.han !== '陰');
+      }
+    }
+    if (categories) {
+      candidates = candidates.filter(c => c.category && categories.includes(c.category));
+    }
+    return candidates;
+  };
+
+  const set = new Set<string>();
+
+  // Pattern 1: Relative/Directional
+  const heads1 = getCompPool(['nature_head'], ['land', 'water']);
+  for (const head of heads1) {
+    // Branch 1: dir
+    const dirPool = getCompPool(['direction']).filter(c => c.han !== head.han);
+    for (const dir of dirPool) {
+      const s = getChar(head) + getChar(dir);
+      if (new Set(s).size === s.length) set.add(s);
+    }
+    // Branch 2: yinYang
+    const yyPool = getCompPool(['adj_physical'], null, ['陽', '陰']);
+    for (const yy of yyPool) {
+      const s = getChar(head) + getChar(yy);
+      if (new Set(s).size === s.length) set.add(s);
+    }
+  }
+
+  // Pattern 2: Descriptive
+  const modsCol = getCompPool(['color']);
+  const headsCol = getCompPool(['nature_head', 'civic_built', 'civic_suffix']);
+  for (const mod of modsCol) {
+    for (const head of headsCol) {
+      const s = getChar(mod) + getChar(head);
+      if (new Set(s).size === s.length) set.add(s);
+    }
+  }
+
+  const modsNum = getCompPool(['number']);
+  const headsNum = getCompPool(['nature_head'], ['land', 'water']);
+  for (const mod of modsNum) {
+    for (const head of headsNum) {
+      const s = getChar(mod) + getChar(head);
+      if (new Set(s).size === s.length) set.add(s);
+    }
+  }
+
+  const modsPhys = getCompPool(['adj_physical']);
+  const headsPhys = getCompPool(['nature_head', 'civic_built', 'civic_suffix']);
+  for (const mod of modsPhys) {
+    for (const head of headsPhys) {
+      const s = getChar(mod) + getChar(head);
+      if (new Set(s).size === s.length) set.add(s);
+    }
+  }
+
+  // Pattern 3a: Complex Semantic
+  const nouns = getCompPool(['noun_concrete']);
+  for (const noun of nouns) {
+    let headCategories: SemanticCategory[] = ['land', 'water'];
+    if (noun.category === 'animal') headCategories = ['land', 'water', 'infra'];
+    else if (noun.category === 'plant') headCategories = ['land', 'water'];
+    else if (noun.category === 'mineral') headCategories = ['land', 'infra'];
+    else if (noun.category === 'celestial') headCategories = ['land', 'infra', 'water'];
+
+    const heads = getCompPool(['nature_head', 'civic_built', 'civic_suffix'], headCategories);
+    for (const head of heads) {
+      // 3-char sub-branch: noun.han.length === 1
+      if (noun.han.length === 1) {
+        const prefixes = getCompPool(['color', 'direction', 'adj_physical']).filter(c => c.han !== noun.han && c.han !== head.han);
+        for (const pre of prefixes) {
+          const s = getChar(pre) + getChar(noun) + getChar(head);
+          if (new Set(s).size === s.length) set.add(s);
+        }
+      }
+      // 2-char sub-branch
+      const s = getChar(noun) + getChar(head);
+      if (new Set(s).size === s.length) set.add(s);
+    }
+  }
+
+  // Pattern 3b: Complex Descriptive
+  const mods3b = getCompPool(['color', 'adj_physical', 'number', 'direction']);
+  const nature3b = getCompPool(['nature_head'], ['land', 'water']);
+  const suffix3b = getCompPool(['civic_suffix', 'civic_built']);
+  for (const mod of mods3b) {
+    for (const nat of nature3b) {
+      for (const suf of suffix3b) {
+        const s = getChar(mod) + getChar(nat) + getChar(suf);
+        if (new Set(s).size === s.length) set.add(s);
+      }
+    }
+  }
+
+  // Pattern 4: Elegant Civic
+  const elegants = getCompPool(['adj_elegant']);
+  const suffixes4 = getCompPool(['civic_suffix', 'civic_built', 'nature_head']);
+  for (const el of elegants) {
+    for (const suf of suffixes4) {
+      const s = getChar(el) + getChar(suf);
+      if (new Set(s).size === s.length) set.add(s);
+    }
+  }
+
+  return set.size;
 }
 
 const getStructure = (region: RegionCode): { parts: ChineseComponent[], rule: string } => {

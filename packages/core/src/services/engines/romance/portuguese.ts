@@ -6,16 +6,68 @@ const getPool = (types: string[]) =>
   ROMANCE_DATA.filter(c => c.pt && types.includes(c.type));
 
 export const getPortugueseCapacity = () => {
-  const recipe1 = getPool(['prefix']).length * getPool(['abstract', 'bio_fauna', 'bio_flora']).length; 
-  
+  const set = new Set<string>();
+
+  const getPtAdj = (entry: any, gender: string) => {
+    const val = getRomData(entry).val;
+    if (gender === 'f') {
+      if (val.endsWith('o')) return val.slice(0, -1) + 'a';
+      if (val === 'Bom') return 'Boa';
+    }
+    return val;
+  };
+
+  // 1. Prefix + Noun (San Patterns)
+  const prefixes = getPool(['prefix']);
+  const targetPool = getPool(['abstract', 'bio_fauna', 'bio_flora']);
+  for (const prefixObj of prefixes) {
+    for (const rootObj of targetPool) {
+      const rData = getRomData(rootObj.pt);
+      const gender = rData.gender || 'm';
+      let p = getRomData(prefixObj.pt).val;
+      if (gender === 'f') {
+        if (p === 'Santo') p = 'Santa';
+        if (p === 'São') p = 'Santa';
+      } else {
+        if (p === 'Santo') {
+          const startsWithVowel = ['A','E','I','O','U'].includes(rData.val.charAt(0).toUpperCase());
+          p = startsWithVowel ? 'Santo' : 'São';
+        }
+      }
+      set.add((p + " " + rData.val).trim().toLowerCase());
+    }
+  }
+
+  // 2. Noun + Adjective
   const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
-  const allAdjs = getPool(['adj_geo', 'adj_color', 'adj_quality']);
-  const recipe2 = nouns.length * allAdjs.length;
-  
-  const allTails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
-  const recipe3 = nouns.length * allTails.length;
-  
-  return recipe1 + recipe2 + recipe3;
+  const adjectives = getPool(['adj_geo', 'adj_color', 'adj_quality']);
+  for (const nounObj of nouns) {
+    for (const adjObj of adjectives) {
+      const nData = getRomData(nounObj.pt);
+      const gender = nData.gender || 'm';
+      const adj = getPtAdj(adjObj.pt, gender);
+      set.add((nData.val + " " + adj).trim().toLowerCase());
+    }
+  }
+
+  // 3. Composite (de)
+  const heads = getPool(['geo_major', 'settlement']);
+  const tails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  for (const headObj of heads) {
+    for (const tailObj of tails) {
+      const h = getRomData(headObj.pt).val;
+      const tData = getRomData(tailObj.pt);
+      const tGender = tData.gender || 'm';
+      const useArticle = !tailObj.tags?.includes('no_saint');
+      let connector = 'de';
+      if (useArticle) {
+        connector = (tGender === 'f') ? 'da' : 'do';
+      }
+      set.add((h + " " + connector + " " + tData.val).trim().toLowerCase());
+    }
+  }
+
+  return set.size;
 }
 
 export const generatePortuguesePlace = (): GeneratedResult => {

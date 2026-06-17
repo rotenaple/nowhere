@@ -9,14 +9,91 @@ const getData = (entry: any) => {
 };
 
 export const getDutchCapacity = () => {
-  const roots = GERMANIC_DATA.filter(c => c.nl && c.type === 'root');
-  const suffixes = GERMANIC_DATA.filter(c => c.nl && c.type === 'suffix');
+  const set = new Set<string>();
+  const getPool = (t: string) => GERMANIC_DATA.filter(c => c.nl && c.type === t);
+  const roots = getPool('root');
+  const suffixes = getPool('suffix');
   const prefixes = GERMANIC_DATA.filter(c => c.nl && (c.type === 'adjective' || c.type === 'noun_prefix'));
+  const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
+  const getData = (entry: any) => {
+    if (!entry) return { val: "", gender: undefined };
+    return typeof entry === 'string' ? { val: entry, gender: undefined } : { val: entry[0], gender: entry[1] };
+  };
 
-  const c1 = prefixes.length * suffixes.length;
-  const c2 = roots.length * suffixes.length;
-  const c3 = roots.length * roots.length;
-  return c1 + c2 + c3;
+  // 1. Prefix + Root
+  for (const pre of prefixes) {
+    for (const root of roots) {
+      let p = getVal(pre.nl);
+      const rData = getData(root.nl);
+      const r = rData.val;
+
+      if (pre.type === 'adjective' && ['Nieuw', 'Oud', 'Groot', 'Klein', 'Hoog', 'Laag'].includes(pre.def)) {
+        if (rData.gender === 'n') {
+          // Uninflected option
+          set.add(`${p}-${r}`.trim().toLowerCase());
+        }
+        // Inflected option
+        let inflectedP = p;
+        if (p.endsWith('oot')) inflectedP = p.replace('oot', 'ote');
+        else if (p.endsWith('ood')) inflectedP = p.replace('ood', 'ode');
+        else inflectedP += 'e';
+
+        set.add(`${inflectedP} ${r}`.trim().toLowerCase());
+      } else {
+        set.add((p + r.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  // 2. Root + Suffix
+  for (const root of roots) {
+    for (const suf of suffixes) {
+      let r = getVal(root.nl);
+      let s = getVal(suf.nl);
+
+      if (r.toLowerCase().includes(s.toLowerCase())) continue;
+
+      const connectors = [""];
+      if (['veen', 'berg', 'dam', 'dijk', 'woud'].includes(s)) {
+        if (!['s', 'n'].includes(r.slice(-1))) {
+          connectors.push("s");
+        }
+      }
+
+      for (const connector of connectors) {
+        set.add((r + connector + s).trim().toLowerCase());
+      }
+    }
+  }
+
+  // 3. 's- [Genitive Root]
+  const genitives = ['Heeren', 'Graven', 'Hertogen', 'Papen', 'Vrouwen', 'Princen', 'Konings', 'Monniken'];
+  for (const root of genitives) {
+    for (const suf of suffixes) {
+      set.add((`'s-${root}` + getVal(suf.nl)).trim().toLowerCase());
+    }
+  }
+
+  // 4. Root + Root
+  for (const root1 of roots) {
+    for (const root2 of roots) {
+      const v1 = getVal(root1.nl);
+      const v2 = getVal(root2.nl);
+
+      if (v1 === v2) continue;
+
+      const glues = [""];
+      if (!v1.endsWith('s')) {
+        glues.push("s");
+      }
+
+      for (const glue of glues) {
+        set.add((v1 + glue + v2.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  return set.size;
 }
 
 export const generateDutchPlace = (): GeneratedResult => {

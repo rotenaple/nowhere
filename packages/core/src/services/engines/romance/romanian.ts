@@ -35,16 +35,59 @@ export const getRoAdj = (entry: RomanceEntry | undefined): { m: string, f: strin
 };
 
 export const getRomanianCapacity = () => {
-  const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
-  const allAdjs = getPool(['adj_geo', 'adj_color', 'adj_quality']);
-  const allTails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
-  const suffixes = getPool(['suffix']);
+  const set = new Set<string>();
 
-  const c1 = nouns.length * allAdjs.length; 
-  const c2 = nouns.length * suffixes.length;
-  const c3 = nouns.length * allTails.length; 
-  
-  return c1 + c2 + c3;
+  const getRoAdj = (entry: any, gender: string) => {
+    const val = getRomData(entry).val;
+    if (gender === 'm') return val;
+    let f = "";
+    if (val.endsWith('u') && !val.endsWith('au')) {
+        f = val.slice(0, -1) + 'ă';
+    } else if (val.endsWith('or')) {
+        f = val + 'e';
+    } else {
+        f = val + 'ă';
+    }
+    return f;
+  };
+
+  const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
+
+  // 1. Root + Adjective
+  const adjectives = getPool(['adj_geo', 'adj_color', 'adj_quality']);
+  for (const nounObj of nouns) {
+    for (const adjObj of adjectives) {
+      const nData = getRomData(nounObj.ro);
+      const gender = nData.gender || 'm';
+      const adj = getRoAdj(adjObj.ro, gender);
+      set.add((nData.val + " " + adj).trim().toLowerCase());
+    }
+  }
+
+  // 2. Root + Suffix
+  const suffixes = getPool(['suffix']);
+  for (const rootObj of nouns) {
+    for (const suffixObj of suffixes) {
+      let base = getRomData(rootObj.ro).val;
+      const sVal = getRomData(suffixObj.ro).val;
+      if (['a','e','i','o','u','ă'].includes(base.slice(-1).toLowerCase()) && ['a','e','i','o','u','ă'].includes(sVal.charAt(0).toLowerCase())) {
+        base = base.slice(0, -1);
+      }
+      set.add((base + sVal).trim().toLowerCase());
+    }
+  }
+
+  // 3. Root + de + Tail
+  const tails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  for (const headObj of nouns) {
+    for (const tailObj of tails) {
+      const h = getRomData(headObj.ro).val;
+      const t = getRomData(tailObj.ro).val;
+      set.add((h + " de " + t).trim().toLowerCase());
+    }
+  }
+
+  return set.size;
 }
 
 export const generateRomanianPlace = (): GeneratedResult => {

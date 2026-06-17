@@ -5,20 +5,67 @@ import {
 } from "../dictionaries/koreanDict";
 
 export const getKoreanCapacity = () => {
-  // 1. Adj/Nature/Abstract + Noun
-  const heads = KO_ADJECTIVES.length + KO_NOUNS_SINO.filter(x => ['nature', 'abstract'].includes(x.type)).length;
-  const tails = KO_NOUNS_SINO.filter(x => ['geo', 'settlement'].includes(x.type)).length;
-  const c1 = heads * tails;
-  
-  // 2. Base + Suffix
-  const c2 = (c1) * KO_SUFFIXES.length;
-  
-  // 3. Native
-  const nDesc = KO_NATIVE.filter(x => ['native_desc', 'native_geo'].includes(x.type)).length;
-  const nGeo = KO_NATIVE.filter(x => x.type === 'native_geo').length;
-  const c3 = nDesc * nGeo;
-  
-  return c1 + c2 + c3;
+  const set = new Set<string>();
+  const getPool = (arr: any[], types: string[]) => arr.filter(x => types.includes(x.type));
+
+  // Recipe 1: Descriptive Compound
+  const p1Pool = getPool(KO_ADJECTIVES, ['direction', 'color', 'quality']).concat(getPool(KO_NOUNS_SINO, ['nature', 'abstract']));
+  const p2Pool = getPool(KO_NOUNS_SINO, ['geo', 'settlement']);
+  for (const p1 of p1Pool) {
+    for (const p2 of p2Pool) {
+      // 2-syllable
+      set.add(p1.hangul + p2.hangul);
+      // 3-syllable
+      const midPool = getPool(KO_ADJECTIVES, ['quality', 'color']);
+      for (const mid of midPool) {
+        set.add(p1.hangul + mid.hangul + p2.hangul);
+      }
+    }
+  }
+
+  // Recipe 2: Administrative Suffix
+  const suffixes = getPool(KO_SUFFIXES, ['suffix']);
+  // Sub-branch A: [Nature/Abstract/Geo] + [Geo/Settlement]
+  const r1PoolA = getPool(KO_NOUNS_SINO, ['nature', 'abstract', 'geo']);
+  const r2PoolA = getPool(KO_NOUNS_SINO, ['geo', 'settlement']);
+  for (const r1 of r1PoolA) {
+    for (const r2 of r2PoolA) {
+      for (const suffix of suffixes) {
+        set.add(r1.hangul + r2.hangul + suffix.hangul);
+      }
+    }
+  }
+  // Sub-branch B: [Adj] + [Noun]
+  const r1PoolB = getPool(KO_ADJECTIVES, ['direction', 'quality', 'color']);
+  const r2PoolB = getPool(KO_NOUNS_SINO, ['geo', 'settlement']);
+  for (const r1 of r1PoolB) {
+    for (const r2 of r2PoolB) {
+      for (const suffix of suffixes) {
+        set.add(r1.hangul + r2.hangul + suffix.hangul);
+      }
+    }
+  }
+
+  // Recipe 3: Native Korean Name
+  const nativePool = getPool(KO_NATIVE, ['native_desc', 'native_geo']);
+  const nativeGeoPool = getPool(KO_NATIVE, ['native_geo']);
+  for (const p1 of nativePool) {
+    for (const p2 of nativeGeoPool) {
+      if (p1.rom === p2.rom) continue;
+      set.add(p1.hangul + p2.hangul);
+    }
+  }
+
+  // Recipe 4: Numeric Compound
+  const numPool = KO_NUMBERS;
+  const rootPool = getPool(KO_NOUNS_SINO, ['settlement', 'nature', 'geo']);
+  for (const num of numPool) {
+    for (const root of rootPool) {
+      set.add(num.hangul + root.hangul);
+    }
+  }
+
+  return set.size;
 }
 
 export const generateKoreanPlace = (): GeneratedResult => {

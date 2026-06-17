@@ -6,11 +6,48 @@ import {
 } from "../dictionaries/irishDict";
 
 export const getIrishCapacity = () => {
+  const set = new Set<string>();
+
+  const lenite = (word: string): string => {
+    const consonants = "bcdfgmpst";
+    const first = word.charAt(0).toLowerCase();
+    if (consonants.includes(first) && word.charAt(1) !== 'h') {
+      return word.charAt(0) + 'h' + word.slice(1);
+    }
+    return word;
+  };
+
+  const femininePrefixes = ['Cill', 'Carraig', 'Inis', 'Coill', 'Maigh', 'Rinn'];
+
   // 1. Prefix + Root
-  const c1 = GA_PREFIXES.length * GA_ROOTS.length;
-  // 2. Prefix + Root + Adjective
-  const c2 = GA_PREFIXES.length * GA_ROOTS.length * GA_ADJECTIVES.length;
-  return c1 + c2;
+  for (const pre of GA_PREFIXES) {
+    for (const root of GA_ROOTS) {
+      let r = root;
+      if (femininePrefixes.includes(pre)) {
+        r = lenite(r);
+      }
+      set.add(pre + " " + r);
+    }
+  }
+
+  // 2. Prefix + Root + Adjective / Prefix + Adjective
+  for (const pre of GA_PREFIXES) {
+    for (const adj of GA_ADJECTIVES) {
+      let a = adj;
+      if (femininePrefixes.includes(pre)) {
+        a = lenite(a);
+      }
+      // Branch A: Prefix + Adjective
+      set.add(pre + " " + a);
+
+      // Branch B: Prefix + Root + Adjective
+      for (const root of GA_ROOTS) {
+        set.add(pre + " " + root + " " + a);
+      }
+    }
+  }
+
+  return set.size;
 }
 
 // Basic lenition helper (séimhiú)

@@ -30,16 +30,77 @@ const getHeadsForStyle = (style: string): ArabicComponent[] => {
 export const getArabicCapacity = (style: 'standard' | 'egyptian' | 'levantine' | 'gulf' | 'maghrebi' = 'standard') => {
   const validHeads = getHeadsForStyle(style);
 
-  // 1. Al-[Root] (Does not depend on heads)
-  const c1 = AR_ROOTS.length;
-  // 2. [Head] [Root] (Idafa)
-  const c2 = validHeads.length * AR_ROOTS.length;
-  // 3. [Head] [Adjective]
-  const c3 = validHeads.length * AR_ADJECTIVES.length;
-  // 4. [Root] [Adjective] (Does not depend on heads)
-  const c4 = AR_ROOTS.length * AR_ADJECTIVES.length;
-  
-  return c1 + c2 + c3 + c4;
+  const getDefiniteArticle = (word: any, s: string) => {
+    let rom = 'Al-';
+    if (s === 'egyptian') rom = 'El-';
+    if (word.sun) {
+      const firstCharRom = word.rom.charAt(0).toLowerCase();
+      let assimilation = firstCharRom;
+      if (word.rom.toLowerCase().startsWith('sh')) assimilation = 'sh';
+      else if (word.rom.toLowerCase().startsWith('th')) assimilation = 'th';
+      else if (word.rom.toLowerCase().startsWith('dh')) assimilation = 'dh';
+      if (s !== 'egyptian') {
+        rom = `A${assimilation}-`;
+      }
+    }
+    return { ar: 'ال', rom };
+  };
+
+  const inflectAdjective = (adj: any, nounGender: 'm' | 'f') => {
+    if (nounGender === 'm') return { ar: adj.ar, rom: adj.rom };
+    let ar = adj.ar + 'ة';
+    let rom = adj.rom;
+    if (rom.endsWith('i')) rom += 'yya';
+    else rom += 'a';
+    return { ar, rom };
+  };
+
+  const set = new Set<string>();
+
+  // Pattern 1: [Head] [Root]
+  for (const head of validHeads) {
+    for (const root of AR_ROOTS) {
+      const article = getDefiniteArticle(root, style);
+      set.add((head.rom + " " + article.rom + root.rom).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 2: Al-[Root]
+  for (const root of AR_ROOTS) {
+    const article = getDefiniteArticle(root, style);
+    set.add((article.rom + root.rom).trim().toLowerCase());
+  }
+
+  // Pattern 3: [Head] [Adjective]
+  for (const head of validHeads) {
+    for (const adj of AR_ADJECTIVES) {
+      const inf = inflectAdjective(adj, head.gender || 'm');
+      // Indefinite
+      set.add((head.rom + " " + inf.rom).trim().toLowerCase());
+      // Definite
+      const headFirstChar = head.rom.charAt(0).toLowerCase();
+      const headSun = ['t','th','d','dh','r','z','s','sh','n'].includes(headFirstChar);
+      let artHeadStr = 'Al-';
+      if (style === 'egyptian') artHeadStr = 'El-';
+      if (headSun && style !== 'egyptian') {
+        artHeadStr = `A${headFirstChar}-`;
+      }
+      const artAdj = getDefiniteArticle({ ...adj, ...inf }, style);
+      set.add((artHeadStr + head.rom + " " + artAdj.rom + inf.rom).trim().toLowerCase());
+    }
+  }
+
+  // Pattern 4: [Root] [Adjective]
+  for (const root of AR_ROOTS) {
+    for (const adj of AR_ADJECTIVES) {
+      const inf = inflectAdjective(adj, root.gender || 'm');
+      const artRoot = getDefiniteArticle(root, style);
+      const artAdj = getDefiniteArticle({ ...adj, ...inf }, style);
+      set.add((artRoot.rom + root.rom + " " + artAdj.rom + inf.rom).trim().toLowerCase());
+    }
+  }
+
+  return set.size;
 }
 
 const getDefiniteArticle = (word: ArabicComponent, style: string): { ar: string, rom: string } => {

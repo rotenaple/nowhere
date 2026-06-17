@@ -5,9 +5,59 @@ import {
 } from "../dictionaries/vietnameseDict";
 
 export const getVietnameseCapacity = () => {
-  const heads = VN_HEADS.length;
-  const tails = VN_ROOTS_NATIVE.length + VN_ROOTS_SINO.length + VN_ADJECTIVES.length;
-  return heads * tails * 2; // Rough estimate including compounds
+  const set = new Set<string>();
+  const getPool = (arr: any[], types: string[]) => arr.filter(x => types.includes(x.type));
+
+  // Recipe 1: Sino-Vietnamese Compound
+  const r1Pool = getPool(VN_ROOTS_SINO, ['abstract', 'geo_head', 'color', 'quality']);
+  const r2Pool = getPool(VN_ROOTS_SINO, ['abstract', 'nature', 'geo_head']);
+  for (const r1 of r1Pool) {
+    for (const r2 of r2Pool) {
+      if (r1.word === r2.word) continue;
+      set.add(r1.word + " " + r2.word);
+    }
+  }
+
+  // Recipe 2: Geographic Head + Descriptive Tail
+  const heads2 = VN_HEADS.filter(x => x.type === 'geo_head');
+  const tailPool2 = [
+    ...getPool(VN_ROOTS_NATIVE, ['nature']),
+    ...getPool(VN_ADJECTIVES, ['color', 'quality']),
+    ...getPool(VN_ROOTS_SINO, ['nature', 'abstract'])
+  ];
+  for (const head of heads2) {
+    for (const tail of tailPool2) {
+      set.add(head.word + " " + tail.word);
+    }
+  }
+
+  // Recipe 3: Settlement + Specific Tail
+  const heads3 = VN_HEADS.filter(x => x.type === 'settlement');
+  const tailPool3 = [
+    ...VN_DIRECTIONS,
+    ...VN_NUMBERS,
+    ...getPool(VN_ADJECTIVES, ['quality']),
+    ...getPool(VN_ROOTS_NATIVE, ['nature'])
+  ];
+  for (const head of heads3) {
+    for (const tail of tailPool3) {
+      set.add(head.word + " " + tail.word);
+    }
+  }
+
+  // Recipe 4: 3-Word Descriptive
+  const heads4 = VN_HEADS.filter(x => x.type === 'geo_head');
+  const midPool4 = getPool(VN_ROOTS_NATIVE, ['nature']);
+  const tailPool4 = getPool(VN_ADJECTIVES, ['color', 'quality']);
+  for (const head of heads4) {
+    for (const mid of midPool4) {
+      for (const tail of tailPool4) {
+        set.add(head.word + " " + mid.word + " " + tail.word);
+      }
+    }
+  }
+
+  return set.size;
 }
 
 export const generateVietnamesePlace = (): GeneratedResult => {

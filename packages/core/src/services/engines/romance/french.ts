@@ -6,18 +6,125 @@ const getPool = (types: string[]) =>
   ROMANCE_DATA.filter(c => c.fr && types.includes(c.type));
 
 export const getFrenchCapacity = () => {
-  const prefixes = getPool(['prefix']);
-  const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
-  const allAdjs = getPool(['adj_geo', 'adj_color', 'adj_quality']);
-  const allTails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
-  const suffixes = getPool(['suffix']);
+  const set = new Set<string>();
 
-  const c1 = prefixes.length * nouns.length;
-  const c2 = nouns.length * suffixes.length;
-  const c3 = nouns.length * allAdjs.length;
-  const c4 = nouns.length * allTails.length;
-  
-  return c1 + c2 + c3 + c4;
+  // 1. Saint-X / Prefix-X
+  const prefixes = getPool(['prefix']);
+  for (const prefixObj of prefixes) {
+    const isSaintPrefix = ['San', 'Santa', 'Notre', 'Dame'].includes(prefixObj.def);
+    const rootPool = isSaintPrefix 
+      ? ROMANCE_DATA.filter(c => c.fr && c.tags?.includes('saint_ok'))
+      : getPool(['settlement', 'geo_major', 'bio_flora']);
+    
+    for (const rootObj of rootPool) {
+      const rData = getRomData(rootObj.fr);
+      let rootVal = rData.val;
+      const gender = rData.gender || 'm';
+      
+      let p = "";
+      const prefixEntry = prefixObj.fr;
+      if (Array.isArray(prefixEntry) && prefixEntry.length === 2 && prefixEntry[1].length > 1) {
+        p = (gender === 'f') ? prefixEntry[1] : prefixEntry[0];
+      } else {
+        p = getRomData(prefixEntry).val;
+        if (gender === 'f') {
+          if (p === 'Le') p = 'La';
+          if (p === 'Saint') p = 'Sainte';
+          if (p === 'Beau') p = 'Belle';
+          if (p === 'Vieux') p = 'Vieille';
+        } else {
+          if (p === 'La') p = 'Le';
+          if (p === 'Sainte') p = 'Saint';
+        }
+      }
+
+      const possibleRoots = [rootVal];
+      if (prefixObj.tags?.includes('plural')) {
+        let plural = rootVal;
+        if (plural.endsWith('eau') || plural.endsWith('eu')) plural += 'x';
+        else if (!['s', 'x', 'z'].includes(plural.slice(-1))) plural += 's';
+        possibleRoots.push(plural);
+      }
+
+      for (const rVal of possibleRoots) {
+        const firstChar = rVal.charAt(0).toUpperCase();
+        let word = "";
+        if (['A','E','I','O','U','Y','É','È'].includes(firstChar) && (p === 'Le' || p === 'La')) {
+          word = `L'${rVal}`;
+        } else {
+          word = `${p}-${rVal}`;
+        }
+        set.add(word.trim().toLowerCase());
+      }
+    }
+  }
+
+  // 2. Root + Adjective
+  const rootsPattern2 = getPool(['geo_major', 'geo_minor', 'settlement']);
+  for (const rootObj of rootsPattern2) {
+    let adjTypes = ['adj_quality', 'adj_color'];
+    if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
+    const adjPool = getPool(adjTypes);
+    for (const adjObj of adjPool) {
+      const rData = getRomData(rootObj.fr);
+      let r = rData.val;
+      const gender = rData.gender || 'm';
+      const aData = getFrAdj(adjObj.fr);
+      let a = (gender === 'f') ? aData.f : aData.m;
+      
+      let word = adjObj.tags?.includes('pre') ? `${a}-${r}` : `${r}-${a}`;
+      set.add(word.trim().toLowerCase());
+    }
+  }
+
+  // 3. Composite (de)
+  const heads = getPool(['geo_major', 'settlement']);
+  const tails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  for (const headObj of heads) {
+    for (const tailObj of tails) {
+      let h = getRomData(headObj.fr).val;
+      const tData = getRomData(tailObj.fr);
+      let t = tData.val;
+      const tGender = tData.gender || 'm';
+
+      const useArticle = ['bio_fauna', 'bio_flora', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type);
+      let link = "-de-";
+      if (useArticle) {
+        const startsWithVowel = ['A','E','I','O','U','Y','É','È'].includes(t.charAt(0).toUpperCase());
+        if (startsWithVowel) {
+          link = "-de-l'";
+        } else if (tailObj.tags?.includes('plural')) {
+          link = "-des-";
+        } else if (tGender === 'f') {
+          link = "-de-la-";
+        } else {
+          link = "-du-";
+        }
+      } else {
+        const startsWithVowel = ['A','E','I','O','U','Y','É','È'].includes(t.charAt(0).toUpperCase());
+        if (startsWithVowel) {
+          link = "-d'";
+        }
+      }
+      set.add((h + link + t).trim().toLowerCase());
+    }
+  }
+
+  // 4. Root + Suffix
+  const rootsPattern4 = getPool(['settlement', 'bio_flora', 'geo_major']);
+  const suffixes = getPool(['suffix']);
+  for (const rootObj of rootsPattern4) {
+    for (const suffixObj of suffixes) {
+      let base = getRomData(rootObj.fr).val.toLowerCase();
+      const sVal = getRomData(suffixObj.fr).val;
+      if (['a','e','i','o','u','y'].includes(base.slice(-1)) && ['a','e','i','o','u','y'].includes(sVal.charAt(0))) {
+        base = base.slice(0, -1);
+      }
+      set.add((base + sVal).trim().toLowerCase());
+    }
+  }
+
+  return set.size;
 }
 
 // Helper to extract French Adjective data specifically

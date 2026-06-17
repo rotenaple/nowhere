@@ -3,17 +3,13 @@ import { getRandomElement } from "../utils";
 import { AUSTRONESIAN_DATA } from "../dictionaries/austronesianDict";
 
 export const getIndonesianCapacity = (variant: 'id' | 'ms' | 'jv') => {
-  // Filter pool based on variant to get accurate counts
   const getPool = (t: string) => AUSTRONESIAN_DATA.filter(c => {
     if (c.type !== t) return false;
     if (variant === 'jv') {
         return c.lang === 'jv' || c.lang === 'id' || c.lang === undefined;
     }
-    // For MS/ID, exclude items specifically marked for the other
-    // e.g. if variant is 'ms', exclude 'id' and 'jv'.
     if (variant === 'ms' && (c.lang === 'id' || c.lang === 'jv')) return false;
     if (variant === 'id' && (c.lang === 'ms' || c.lang === 'jv')) return false;
-    
     return true;
   });
 
@@ -22,15 +18,35 @@ export const getIndonesianCapacity = (variant: 'id' | 'ms' | 'jv') => {
   const adjectives = getPool('adjective');
   const suffixes = getPool('suffix');
   
-  // Standard ID/MS patterns
-  const c1 = prefixes.length * roots.length;
-  const c2 = prefixes.length * roots.length * adjectives.length;
-  const c3 = roots.length * suffixes.length;
-  
-  // Javanese compounding (Root + Root) increases capacity significantly
-  const c4 = variant === 'jv' ? roots.length * roots.length : 0;
+  const set = new Set<string>();
 
-  return c1 + c2 + c3 + c4;
+  // 1. Prefix + Root / Prefix + Root + Adjective
+  for (const pre of prefixes) {
+    for (const root of roots) {
+      set.add((pre.val + root.val.toLowerCase()).trim().toLowerCase());
+      for (const adj of adjectives) {
+        set.add((pre.val + root.val.toLowerCase() + " " + adj.val).trim().toLowerCase());
+      }
+    }
+  }
+
+  // 2. Root + Suffix
+  for (const root of roots) {
+    for (const suf of suffixes) {
+      set.add((root.val + suf.val).trim().toLowerCase());
+    }
+  }
+
+  // 3. Javanese compounding (Root + Root)
+  if (variant === 'jv') {
+    for (const root1 of roots) {
+      for (const root2 of roots) {
+        set.add((root1.val + root2.val).trim().toLowerCase());
+      }
+    }
+  }
+
+  return set.size;
 }
 
 // Helper: In Javanese toponyms, 'a' often becomes 'o' (e.g. Sura -> Suro, Karta -> Kerto)

@@ -5,20 +5,102 @@ import { GERMANIC_DATA } from "../../dictionaries/germanicDict";
 const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
 
 export const getGermanCapacity = () => {
-  const roots = GERMANIC_DATA.filter(c => c.de && c.type === 'root');
-  const suffixes = GERMANIC_DATA.filter(c => c.de && c.type === 'suffix');
-  const connectors = GERMANIC_DATA.filter(c => c.de && c.type === 'connector');
-  
-  // Combine adjectives and noun_prefixes
-  const prefixes = GERMANIC_DATA.filter(c => c.de && (c.type === 'adjective' || c.type === 'noun_prefix'));
+  const set = new Set<string>();
+  const getPool = (t: string) => GERMANIC_DATA.filter(c => c.de && c.type === t);
+  const roots = getPool('root');
+  const suffixes = getPool('suffix');
+  const prefixes = [...getPool('adjective'), ...getPool('noun_prefix')];
 
-  // 1. Prefix/Adj + Suffix/Root
-  const c1 = prefixes.length * (suffixes.length + roots.length);
-  // 2. Root + Suffix
-  const c2 = roots.length * suffixes.length * (connectors.length + 1);
-  // 3. Root + Root
-  const c3 = roots.length * roots.length;
-  return c1 + c2 + c3;
+  const getData = (entry: any) => {
+    if (!entry) return { val: "", gender: undefined };
+    return typeof entry === 'string' ? { val: entry, gender: undefined } : { val: entry[0], gender: entry[1] };
+  };
+  const getVal = (entry: any): string => typeof entry === 'string' ? entry : (entry ? entry[0] : "");
+
+  // Pattern 1: Adjective/Prefix + Root/Suffix
+  for (const pre of prefixes) {
+    for (const attachToRoot of [true, false]) {
+      const secondPartPool = attachToRoot ? roots : suffixes;
+      for (const secondPart of secondPartPool) {
+        const rData = getData(secondPart.de);
+        let adj = getVal(pre.de);
+        let noun = rData.val;
+        
+        const possibleAdjs = [adj];
+        if (pre.type === 'adjective') {
+          if (pre.tags?.includes('irreg_h') && adj === 'Hoch') {
+            possibleAdjs.push('Hohen');
+          } else if (pre.tags?.includes('weak_en')) {
+            const inflected = adj.endsWith('ß') ? adj + 'en' : adj + 'en';
+            possibleAdjs.push(inflected);
+          }
+        }
+
+        for (const a of possibleAdjs) {
+          const w = attachToRoot ? (a + noun.toLowerCase()) : (a + noun);
+          set.add(w.trim().toLowerCase());
+        }
+      }
+    }
+  }
+
+  // Pattern 2: Compound Noun + Suffix
+  for (const root of roots) {
+    for (const suf of suffixes) {
+      const rData = getData(root.de);
+      const rVal = rData.val;
+      const sVal = getVal(suf.de);
+      if (rVal.toLowerCase() === sVal.toLowerCase()) continue;
+
+      const connectors = [""];
+      if (!suf.tags?.includes('no_conn')) {
+        if (rData.gender === 'f') {
+          if (rVal.endsWith('e')) connectors.push('n');
+          else if (rVal.endsWith('ung') || rVal.endsWith('heit')) connectors.push('s');
+        } else {
+          if (!['s', 'z', 'x', 'ß'].includes(rVal.slice(-1))) {
+            connectors.push('s');
+          }
+        }
+      }
+
+      for (let conn of connectors) {
+        if (conn === 's' && sVal.toLowerCase().startsWith('s')) {
+          conn = "";
+        }
+        set.add((rVal + conn + sVal).trim().toLowerCase());
+      }
+    }
+  }
+
+  // Pattern 3: Root + Root
+  for (const root1 of roots) {
+    for (const root2 of roots) {
+      const d1 = getData(root1.de);
+      const d2 = getData(root2.de);
+      if (d1.val === d2.val) continue;
+
+      const glues = [""];
+      if (!root2.tags?.includes('no_conn')) {
+        if (d1.gender === 'f') {
+          if (d1.val.endsWith('e')) glues.push('n');
+        } else {
+          if (!['s', 'z', 'x', 'ß'].includes(d1.val.slice(-1))) {
+            glues.push('s');
+          }
+        }
+      }
+
+      for (let glue of glues) {
+        if (glue === 's' && d2.val.toLowerCase().startsWith('s')) {
+          glue = "";
+        }
+        set.add((d1.val + glue + d2.val.toLowerCase()).trim().toLowerCase());
+      }
+    }
+  }
+
+  return set.size;
 }
 
 const getData = (entry: any) => {

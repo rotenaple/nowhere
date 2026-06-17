@@ -6,18 +6,123 @@ const getPool = (types: string[]) =>
   ROMANCE_DATA.filter(c => c.it && types.includes(c.type));
 
 export const getItalianCapacity = () => {
+  const set = new Set<string>();
+
+  const getItAdj = (entry: any): { m: string, f: string } => {
+    if (!entry) return { m: '', f: '' };
+    const val = typeof entry === 'string' ? entry : entry[0];
+    if (val.endsWith('o')) return { m: val, f: val.slice(0, -1) + 'a' };
+    return { m: val, f: val };
+  };
+
+  // 1. Saint Prefix
   const prefixes = getPool(['prefix']);
+  for (const prefixObj of prefixes) {
+    const isSaintPrefix = ['San', 'Santa', 'Notre', 'Dame'].includes(prefixObj.def);
+    const rootPool = isSaintPrefix 
+      ? ROMANCE_DATA.filter(c => c.it && c.tags?.includes('saint_ok'))
+      : getPool(['settlement', 'geo_major', 'bio_flora']);
+    
+    for (const rootObj of rootPool) {
+      const rData = getRomData(rootObj.it);
+      let rootVal = rData.val;
+      const gender = rData.gender || 'm';
+
+      let p = "";
+      const prefixEntry = prefixObj.it;
+      if (Array.isArray(prefixEntry) && prefixEntry.length === 2 && prefixEntry[1].length > 1) {
+        p = (gender === 'f') ? prefixEntry[1] : prefixEntry[0];
+      } else {
+        p = getRomData(prefixEntry).val;
+        if (gender === 'f') {
+          if (p === 'Le') p = 'La';
+          if (p === 'Saint') p = 'Santa';
+          if (p === 'Beau') p = 'Bella';
+          if (p === 'Vieux') p = 'Vecchia';
+        } else {
+          if (p === 'La') p = 'Il';
+          if (p === 'Santa') p = 'San';
+        }
+      }
+
+      const firstChar = rootVal.charAt(0).toUpperCase();
+      let word = "";
+      if (['A','E','I','O','U','Y'].includes(firstChar) && (p === 'Il' || p === 'La' || p === 'Santa')) {
+        if (p === 'Santa' || p === 'La') p = "L'";
+        else if (p === 'Il') p = "L'";
+        word = `${p}${rootVal}`;
+      } else {
+        word = `${p} ${rootVal}`;
+      }
+      set.add(word.trim().toLowerCase());
+    }
+  }
+
+  // 2. Root + Adjective
   const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
-  const allAdjs = getPool(['adj_geo', 'adj_color', 'adj_quality']);
-  const allTails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  for (const rootObj of nouns) {
+    let adjTypes = ['adj_quality', 'adj_color'];
+    if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
+    const adjPool = getPool(adjTypes);
+    for (const adjObj of adjPool) {
+      const rData = getRomData(rootObj.it);
+      const gender = rData.gender || 'm';
+      const aData = getItAdj(adjObj.it);
+      const a = (gender === 'f') ? aData.f : aData.m;
+      
+      let word = adjObj.tags?.includes('pre') ? `${a} ${rData.val}` : `${rData.val} ${a}`;
+      set.add(word.trim().toLowerCase());
+    }
+  }
+
+  // 3. Composite (di)
+  const heads = getPool(['geo_major', 'settlement']);
+  const tails = getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']);
+  for (const headObj of heads) {
+    for (const tailObj of tails) {
+      const h = getRomData(headObj.it).val;
+      const tData = getRomData(tailObj.it);
+      const t = tData.val;
+      const tGender = tData.gender || 'm';
+
+      const useArticle = ['bio_fauna', 'bio_flora', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type);
+      let link = " di ";
+      if (useArticle) {
+        const startsWithVowel = ['A','E','I','O','U','Y'].includes(t.charAt(0).toUpperCase());
+        if (startsWithVowel) {
+          link = " dell'";
+        } else if (tailObj.tags?.includes('plural')) {
+          link = " dei ";
+        } else if (tGender === 'f') {
+          link = " della ";
+        } else {
+          link = " del ";
+        }
+      } else {
+        const startsWithVowel = ['A','E','I','O','U','Y'].includes(t.charAt(0).toUpperCase());
+        if (startsWithVowel) {
+          link = " d'";
+        }
+      }
+      set.add((h + link + t).trim().toLowerCase());
+    }
+  }
+
+  // 4. Root + Suffix
+  const roots = getPool(['settlement', 'bio_flora', 'geo_major']);
   const suffixes = getPool(['suffix']);
+  for (const rootObj of roots) {
+    for (const suffixObj of suffixes) {
+      let base = getRomData(rootObj.it).val.toLowerCase();
+      const sVal = getRomData(suffixObj.it).val;
+      if (['a','e','i','o','u'].includes(base.slice(-1)) && ['a','e','i','o','u'].includes(sVal.charAt(0))) {
+        base = base.slice(0, -1);
+      }
+      set.add((base + sVal).trim().toLowerCase());
+    }
+  }
 
-  const c1 = prefixes.length * nouns.length;
-  const c2 = nouns.length * allAdjs.length;
-  const c3 = nouns.length * allTails.length;
-  const c4 = nouns.length * suffixes.length;
-
-  return c1 + c2 + c3 + c4;
+  return set.size;
 }
 
 export const generateItalianPlace = (): GeneratedResult => {
