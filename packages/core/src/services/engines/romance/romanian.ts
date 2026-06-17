@@ -1,9 +1,38 @@
 import { GeneratedResult } from "../../../types";
 import { getRandomElement, transliterateRomanianToAscii } from "../../utils";
-import { ROMANCE_DATA, getRomData } from "../../dictionaries/romanceDict";
+import { ROMANCE_DATA, getRomData, RomanceEntry } from "../../dictionaries/romanceDict";
 
 const getPool = (types: string[]) => 
   ROMANCE_DATA.filter(c => c.ro && types.includes(c.type));
+
+// Helper to extract Romanian Adjective data specifically
+export const getRoAdj = (entry: RomanceEntry | undefined): { m: string, f: string } => {
+  if (!entry) return { m: '', f: '' };
+  
+  if (Array.isArray(entry) && entry.length === 2) {
+      const second = entry[1];
+      if (second === 'm' || second === 'f' || second === 'n') {
+          const val = entry[0];
+          return { m: val, f: (val.endsWith('e') || val.endsWith('ă')) ? val : val + 'ă' };
+      }
+      return { m: entry[0], f: second };
+  }
+  
+  const val = typeof entry === 'string' ? entry : entry[0];
+  let f = "";
+
+  if (val.endsWith('e') || val.endsWith('ă')) {
+      f = val;
+  } else if (val.endsWith('u') && !val.endsWith('iu')) {
+      f = val.slice(0, -1) + 'ă';
+  } else if (val.endsWith('iu')) {
+      f = val.slice(0, -2) + 'ie';
+  } else {
+      f = val + 'ă';
+  }
+
+  return { m: val, f };
+};
 
 export const getRomanianCapacity = () => {
   const nouns = getPool(['geo_major', 'geo_minor', 'settlement']);
@@ -39,23 +68,10 @@ export const generateRomanianPlace = (): GeneratedResult => {
       
       const rData = getRomData(rootObj.ro);
       let r = rData.val;
-      let a = getRomData(adjObj.ro).val;
-      
       const gender = rData.gender || 'n';
-
-      if (gender === 'f') {
-          if (a === 'Vechi') a = 'Veche'; // Fix for old
-          else if (a.endsWith('u') && !a.endsWith('iu')) {
-              if (a === 'Roșu') a = 'Roșie'; 
-              else a = a.slice(0, -1) + 'ă'; 
-          }
-          else if (a.endsWith('iu')) {
-              a = a.slice(0, -2) + 'ie';
-          }
-          else if (!a.endsWith('e') && !a.endsWith('ă')) {
-              a += 'ă';
-          }
-      }
+      
+      const aData = getRoAdj(adjObj.ro);
+      let a = (gender === 'f') ? aData.f : aData.m;
       
       word = `${r} ${a}`;
   }

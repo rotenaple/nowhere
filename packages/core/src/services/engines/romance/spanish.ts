@@ -117,8 +117,8 @@ export const generateSpanishPlace = (): GeneratedResult => {
     }
 
     let connector = 'de';
-    // Use article for concrete nouns, usually skip for abstract/proper-sounding ones
-    const useArticle = ['bio_fauna', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type) || Math.random() > 0.6;
+    // Use article for all nouns/adjectives except those tagged with 'no_saint' (materials/weather)
+    const useArticle = !tailObj.tags?.includes('no_saint');
     
     if (useArticle) {
         if (tGender === 'f') connector = 'de la';

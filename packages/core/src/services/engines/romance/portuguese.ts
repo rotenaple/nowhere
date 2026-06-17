@@ -103,7 +103,8 @@ export const generatePortuguesePlace = (): GeneratedResult => {
       const tData = getRomData(tailObj.pt);
       
       let connector = 'de';
-      const useArticle = ['bio_fauna', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type) || Math.random() < 0.7;
+      // Use article for all nouns/adjectives except those tagged with 'no_saint' (materials/weather)
+      const useArticle = !tailObj.tags?.includes('no_saint');
       
       if (useArticle) {
           if (tData.gender === 'f') connector = 'da';

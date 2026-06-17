@@ -54,21 +54,15 @@ export const generateIrishPlace = (): GeneratedResult => {
     // Adjectives are lenited after feminine nouns
     const femininePrefixes = ['Cill', 'Carraig', 'Inis', 'Coill', 'Maigh', 'Rinn'];
     if (femininePrefixes.includes(pre)) {
-        // Root is the noun here, usually genitive, but let's assume simple structure pre+noun+adj
-        // Actually structure is usually [Toponym] [Name/Qualifier]. 
-        // If Qualifier is Adj, it agrees.
-        // Let's do Prefix + Adjective (e.g. An Baile Nua)
-        if (Math.random() < 0.4) {
-             word = `${pre} ${adj}`; // Baile Mór
-             components.push(`[prefix: "${pre}"]`, `[adjective: "${adj}"]`);
-        } else {
-             // Prefix + Root + Adj
-             word = `${pre} ${root} ${adj}`;
-             components.push(`[prefix: "${pre}"]`, `[root: "${root}"]`, `[adjective: "${adj}"]`);
-        }
+        adj = lenite(adj);
+    }
+
+    if (Math.random() < 0.4) {
+         word = `${pre} ${adj}`;
+         components.push(`[prefix: "${pre}"]`, `[adjective: "${adj}"]`);
     } else {
-         word = `${pre} ${root}`;
-         components.push(`[prefix: "${pre}"]`, `[root: "${root}"]`);
+         word = `${pre} ${root} ${adj}`;
+         components.push(`[prefix: "${pre}"]`, `[root: "${root}"]`, `[adjective: "${adj}"]`);
     }
   }
 
