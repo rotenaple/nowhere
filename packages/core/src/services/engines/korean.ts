@@ -24,6 +24,8 @@ export const getKoreanCapacity = () => {
 export const generateKoreanPlace = (): GeneratedResult => {
   let word = "";
   let ascii = "";
+  let rule = "";
+  let components: string[] = [];
   const roll = Math.random();
 
   const getPool = (arr: KoreanComponent[], types: string[]) => 
@@ -31,6 +33,7 @@ export const generateKoreanPlace = (): GeneratedResult => {
 
   // --- RECIPE 1: Descriptive Compound (e.g. Nam-san, Song-do, Ryong-san) ---
   if (roll < 0.40) {
+    rule = "Descriptive Compound";
     // EXPANSION: Allow Nature (Pine, Dragon) and Abstract (Peace) as heads
     const p1 = getRandomElement(
         getPool(KO_ADJECTIVES, ['direction', 'color', 'quality'])
@@ -44,27 +47,32 @@ export const generateKoreanPlace = (): GeneratedResult => {
        const mid = getRandomElement(getPool(KO_ADJECTIVES, ['quality', 'color'])); 
        word = p1.hangul + mid.hangul + p2.hangul;
        ascii = p1.rom + mid.rom.toLowerCase() + p2.rom.toLowerCase();
+       components.push(JSON.stringify(p1));
     } else {
        word = p1.hangul + p2.hangul;
        ascii = p1.rom + p2.rom.toLowerCase();
+       components.push(JSON.stringify(p1));
     }
   }
 
   // --- RECIPE 2: Administrative Suffix (e.g. Gangnam-gu) ---
   else if (roll < 0.70) {
+    rule = "Administrative Suffix";
     let baseHangul = "";
     let baseRom = "";
+    let r1: KoreanComponent;
+    let r2: KoreanComponent;
     
     if (Math.random() < 0.4) {
         // 2-Syllable Base: [Nature/Abstract] + [Geo/Settlement]
-        const r1 = getRandomElement(getPool(KO_NOUNS_SINO, ['nature', 'abstract', 'geo']));
-        const r2 = getRandomElement(getPool(KO_NOUNS_SINO, ['geo', 'settlement']));
+        r1 = getRandomElement(getPool(KO_NOUNS_SINO, ['nature', 'abstract', 'geo']));
+        r2 = getRandomElement(getPool(KO_NOUNS_SINO, ['geo', 'settlement']));
         baseHangul = r1.hangul + r2.hangul;
         baseRom = r1.rom + r2.rom.toLowerCase();
     } else {
         // 2-Syllable Base: [Adj] + [Noun]
-        const r1 = getRandomElement(getPool(KO_ADJECTIVES, ['direction', 'quality', 'color']));
-        const r2 = getRandomElement(getPool(KO_NOUNS_SINO, ['geo', 'settlement']));
+        r1 = getRandomElement(getPool(KO_ADJECTIVES, ['direction', 'quality', 'color']));
+        r2 = getRandomElement(getPool(KO_NOUNS_SINO, ['geo', 'settlement']));
         baseHangul = r1.hangul + r2.hangul;
         baseRom = r1.rom + r2.rom.toLowerCase();
     }
@@ -72,10 +80,12 @@ export const generateKoreanPlace = (): GeneratedResult => {
     const suffix = getRandomElement(getPool(KO_SUFFIXES, ['suffix']));
     word = baseHangul + suffix.hangul;
     ascii = baseRom + '-' + suffix.rom;
+    components.push(JSON.stringify(r1));
   }
 
   // --- RECIPE 3: Native Korean Names ---
   else if (roll < 0.90) {
+    rule = "Native Korean Name";
     const p1 = getRandomElement(getPool(KO_NATIVE, ['native_desc', 'native_geo']));
     const p2 = getRandomElement(getPool(KO_NATIVE, ['native_geo']));
     
@@ -83,18 +93,21 @@ export const generateKoreanPlace = (): GeneratedResult => {
 
     word = p1.hangul + p2.hangul;
     ascii = p1.rom + p2.rom.toLowerCase();
+    components.push(JSON.stringify(p1));
   }
 
   // --- RECIPE 4: Numeric ---
   else {
+    rule = "Numeric Compound";
     const num = getRandomElement(KO_NUMBERS);
     // EXPANSION: Numbers can apply to Settlements too (e.g. "Three Bridges")
     const root = getRandomElement(getPool(KO_NOUNS_SINO, ['settlement', 'nature', 'geo']));
     
     word = num.hangul + root.hangul;
     ascii = num.rom + root.rom.toLowerCase();
+    components.push(JSON.stringify(num));
   }
 
   ascii = ascii.charAt(0).toUpperCase() + ascii.slice(1);
-  return { word, ascii };
+  return { word, ascii, generationRules: [rule], dictionaryComponents: components };
 };

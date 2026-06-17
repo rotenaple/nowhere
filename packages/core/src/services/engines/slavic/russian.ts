@@ -15,6 +15,8 @@ export const getRussianCapacity = () => {
 export const generateRussianPlace = (): GeneratedResult => {
   let wordAscii = "";
   let wordCyrillic = "";
+  let rule = "";
+  let components: string[] = [];
 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.ru) && c.type === t);
   const adjectives = getPool('adjective');
@@ -26,6 +28,7 @@ export const generateRussianPlace = (): GeneratedResult => {
 
   // 1. Adjective + Noun (or Derived Noun)
   if (typeRoll < 0.5) {
+      rule = "Adjective + Noun";
       const selectedAdj = getRandomElement(adjectives);
       const selectedRootComponent = getRandomElement(rootsAndStems);
       let isDerived = false;
@@ -63,9 +66,12 @@ export const generateRussianPlace = (): GeneratedResult => {
 
       wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
       wordAscii = `${inflectedAdjRom} ${finalNounRom}`;
+      components.push(JSON.stringify(selectedAdj));
+      if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix
   else if (typeRoll < 0.85) {
+      rule = "Root + Suffix";
       const selectedRoot = getRandomElement(rootsAndStems);
       const selectedSuffix = getRandomElement(suffixes);
       
@@ -85,9 +91,11 @@ export const generateRussianPlace = (): GeneratedResult => {
       
       wordCyrillic = baseSrc + suffixInfo.src;
       wordAscii = baseRom + suffixInfo.rom;
+      components.push(JSON.stringify(selectedRoot));
   }
   // 3. Base + "na" + River (Hyphenated)
   else {
+      rule = "Base + River Locative";
       const baseRootComponent = getRandomElement(rootsAndStems);
       const selectedRiver = getRandomElement(riversLoc);
       
@@ -114,7 +122,13 @@ export const generateRussianPlace = (): GeneratedResult => {
       wordCyrillic = `${baseSrc}-на-${riverInfo.src}`; 
       const riverRom = riverInfo.rom || transliterateRussianToAscii(riverInfo.src);
       wordAscii = `${baseRom}-na-${riverRom}`;
+      components.push(JSON.stringify(baseRootComponent));
   }
 
-  return { word: capitalizeSlavicName(wordCyrillic, 'ru'), ascii: capitalizeSlavicName(wordAscii, 'ru') };
+  return { 
+    word: capitalizeSlavicName(wordCyrillic, 'ru'), 
+    ascii: capitalizeSlavicName(wordAscii, 'ru'),
+    generationRules: [rule],
+    dictionaryComponents: components
+  };
 };

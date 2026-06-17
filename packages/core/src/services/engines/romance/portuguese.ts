@@ -20,14 +20,18 @@ export const getPortugueseCapacity = () => {
 
 export const generatePortuguesePlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   const roll = Math.random();
   
   // 1. Saint / Prefix Pattern
   if (roll < 0.25) {
+      rule = "Saint / Prefix Pattern";
       const useSaint = Math.random() < 0.5;
       
       if (useSaint) {
         const saintTarget = getRandomElement(getPool(['bio_fauna', 'bio_flora', 'abstract']));
+        components.push(JSON.stringify(saintTarget));
         const tData = getRomData(saintTarget.pt);
         const prefix = (tData.gender === 'f') ? 'Santa' : 'São';
         word = `${prefix} ${tData.val}`;
@@ -39,10 +43,11 @@ export const generatePortuguesePlace = (): GeneratedResult => {
         if (Math.random() < 0.6 && commonPrefixRoots.length > 0) {
              const rootAsPrefix = getRandomElement(commonPrefixRoots);
              p = getRomData(rootAsPrefix.pt).val;
-        }
+         }
         
         // Combine with a noun or an adjective
         const tailObj = getRandomElement(getPool(['adj_quality', 'adj_color', 'bio_flora', 'settlement']));
+        components.push(JSON.stringify(prefixObj));
         const tData = getRomData(tailObj.pt);
         let t = tData.val;
 
@@ -59,12 +64,14 @@ export const generatePortuguesePlace = (): GeneratedResult => {
   
   // 2. Root + Adjective
   else if (roll < 0.60) {
+      rule = "Root + Adjective";
       const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
       
       // EXPANSION: Universal Adjectives
       let adjTypes = ['adj_quality', 'adj_color'];
       if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
       const adjObj = getRandomElement(getPool(adjTypes));
+      components.push(JSON.stringify(rootObj));
       
       const rData = getRomData(rootObj.pt);
       let r = rData.val;
@@ -85,9 +92,11 @@ export const generatePortuguesePlace = (): GeneratedResult => {
   
   // 3. Composite (De)
   else {
+      rule = "Composite (De)";
       const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
       // EXPANSION: Universal Tails
       const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
+      components.push(JSON.stringify(headObj));
       
       const hData = getRomData(headObj.pt);
       const tData = getRomData(tailObj.pt);
@@ -104,5 +113,5 @@ export const generatePortuguesePlace = (): GeneratedResult => {
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliteratePortugueseToAscii(word) };
+  return { word: word, ascii: transliteratePortugueseToAscii(word), generationRules: [rule], dictionaryComponents: components };
 };

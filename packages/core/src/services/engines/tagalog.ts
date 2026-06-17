@@ -44,6 +44,8 @@ export const getTagalogCapacity = () => {
 
 export const generateTagalogPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   const type = Math.random();
 
   // ==========================================
@@ -51,6 +53,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
   // e.g., Mabato (Stony), Maynila (Has Indigo), Kabite (Hook-place)
   // ==========================================
   if (type < 0.20) {
+    rule = "Native Prefix";
     const pre = getRandomElement(TL_PREFIXES);
     
     // Logic: Prefixes usually attach to Nature, Geo, or Objects. 
@@ -72,7 +75,8 @@ export const generateTagalogPlace = (): GeneratedResult => {
        else word = `${p}${r.toLowerCase()}`; // Maynila
     } else {
        word = p + r.toLowerCase();
-    }
+     }
+    components.push(JSON.stringify(pre), JSON.stringify(root));
   } 
   
   // ==========================================
@@ -80,6 +84,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
   // e.g., Batangas (Batang + as), Bulacan (Bulak + an)
   // ==========================================
   else if (type < 0.40) {
+    rule = "Native Locative Suffix";
     // Suffixes work best on Nature (Bamboo-place), Objects (Salt-bed), or Geo.
     const root = getRandomElement(getTagalogPool(['nature', 'object', 'geo']));
     const suf = getRandomElement(TL_SUFFIXES);
@@ -106,6 +111,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
     }
 
     word = r + s;
+    components.push(JSON.stringify(root), JSON.stringify(suf));
   }
   
   // ==========================================
@@ -113,19 +119,23 @@ export const generateTagalogPlace = (): GeneratedResult => {
   // e.g., San Pedro, Villa Real, Puerto Princesa
   // ==========================================
   else if (type < 0.60) {
+    rule = "Spanish Colonial";
     // 3a. Saints (San/Santa + Name/Abstract/Bio)
     if (Math.random() < 0.3) {
         let saintTail = "";
         let targetGender = 'm';
+        let tailObj: any;
 
         if (Math.random() < 0.5) {
             saintTail = getRandomElement(PH_HEROES); // San Rizal (Fictionalized)
+            tailObj = saintTail;
         } else {
             // Pick concepts (Peace, Cross) or Nature (Rose, Lily)
             const obj = getRandomElement(getRomancePool(['abstract', 'bio_flora', 'bio_fauna'])); 
             const data = getRomData(obj.es);
             saintTail = data.val;
             targetGender = data.gender || 'm';
+            tailObj = obj;
         }
 
         let prefix = (targetGender === 'f') ? 'Santa' : 'San';
@@ -134,6 +144,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
             prefix = 'Santo';
         }
         word = `${prefix} ${saintTail}`;
+        components.push(JSON.stringify(prefix), JSON.stringify(tailObj));
     }
     
     // 3b. Civic/Geo + Adjective/Noun (Villa Nueva, Puerto Galera)
@@ -163,6 +174,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
             } else {
                 word = `${headVal} ${adj}`;
             }
+            components.push(JSON.stringify(headObj), JSON.stringify(adjObj));
         } else {
             // Noun + de + Noun (Puerto de la Cruz, Valle del Rio)
             // Logic: Settlement of [Saint/Hero/Nature]
@@ -174,6 +186,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
             else connector = 'del'; 
 
             word = `${headVal} ${connector} ${tailData.val}`;
+            components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
         }
     }
   }
@@ -183,6 +196,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
   // e.g., Bagong Silang, Luntian Bukid
   // ==========================================
   else if (type < 0.80) {
+    rule = "Descriptive Native";
     // Logic: Match adjectives to appropriate roots.
     const root = getRandomElement(TL_ROOTS.filter(r => !r.es));
     
@@ -204,6 +218,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
     }
     
     word = `${a}${linker}${root.val}`;
+    components.push(JSON.stringify(adj), JSON.stringify(root));
   }
 
   // ==========================================
@@ -211,6 +226,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
   // e.g., Balintawak, Tagaytay (Reduplication)
   // ==========================================
   else {
+    rule = "Native Compound";
     // Compound logic: Usually [Nature]+[Geo] or [Geo]+[Nature]
     // e.g. Batong Malake (Big Stone), Tubig Asin (Salt Water)
     
@@ -221,6 +237,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
         // Reduplication (Tawi-Tawi) - Valid for almost any short root
         if (Math.random() < 0.25 && r1.val.length <= 6) {
             word = `${r1.val}-${r1.val.toLowerCase()}`;
+            components.push(JSON.stringify(r1), JSON.stringify(r1));
         }
         else return generateTagalogPlace(); 
     } else {
@@ -242,6 +259,7 @@ export const generateTagalogPlace = (): GeneratedResult => {
             // Separate words: "Tubig Asin"
             word = `${part1} ${r2.val}`; // Keep Case for second word if separate
         }
+        components.push(JSON.stringify(r1), JSON.stringify(r2));
     }
   }
 
@@ -249,5 +267,5 @@ export const generateTagalogPlace = (): GeneratedResult => {
   word = word.charAt(0).toUpperCase() + word.slice(1);
   const ascii = normalizeSpanish(word);
   
-  return { word: word, ascii: ascii };
+  return { word: word, ascii: ascii, generationRules: [rule], dictionaryComponents: components };
 }

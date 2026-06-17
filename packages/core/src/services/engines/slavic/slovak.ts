@@ -14,6 +14,8 @@ export const getSlovakCapacity = () => {
 
 export const generateSlovakPlace = (): GeneratedResult => {
   let wordSrc = "";
+  let rule = "";
+  let components: string[] = [];
 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.sk) && c.type === t);
   const rootsAndStems = [...getPool('root'), ...getPool('stem'), ...getPool('river')];
@@ -25,6 +27,7 @@ export const generateSlovakPlace = (): GeneratedResult => {
   
   // 1. Adjective + Noun (or Derived Noun)
   if (typeRoll < 0.35) {
+    rule = "Adjective + Noun";
     const selectedAdj = getRandomElement(adjectives);
     const selectedRootComponent = getRandomElement(rootsAndStems);
     
@@ -54,9 +57,12 @@ export const generateSlovakPlace = (): GeneratedResult => {
     }
 
     wordSrc = `${inflectedAdjSrc} ${finalNounSrc}`;
+    components.push(JSON.stringify(selectedAdj));
+    if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix 
   else if (typeRoll < 0.65) {
+    rule = "Root + Suffix";
     const selectedRoot = getRandomElement(rootsAndStems);
     const selectedSuffix = getRandomElement(suffixes);
     
@@ -71,9 +77,11 @@ export const generateSlovakPlace = (): GeneratedResult => {
         baseSrc = baseSrc.slice(0, -1);
     }
     wordSrc = baseSrc + suffixInfo.src;
+    components.push(JSON.stringify(selectedRoot));
   }
   // 3. Adjective + (Root + Suffix) - Explicit Path
   else if (typeRoll < 0.85) {
+    rule = "Adjective + (Root + Suffix)";
     const selectedAdj = getRandomElement(adjectives);
     const selectedRootComponent = getRandomElement(rootsAndStems);
     const selectedSuffix = getRandomElement(suffixes);
@@ -95,9 +103,11 @@ export const generateSlovakPlace = (): GeneratedResult => {
     derivedNounSrc += suffixInfo.src;
 
     wordSrc = `${inflectedAdjSrc} ${derivedNounSrc}`;
+    components.push(JSON.stringify(selectedAdj));
   }
   // 4. [Base] nad [River]
   else {
+    rule = "[Base] nad [River]";
     const baseRootComponent = getRandomElement(rootsAndStems);
     const selectedRiver = getRandomElement(riversLoc);
     
@@ -118,9 +128,10 @@ export const generateSlovakPlace = (): GeneratedResult => {
     
     const riverInfo = getSlavicData(selectedRiver.sk!);
     wordSrc = `${baseSrc} nad ${riverInfo.src}`;
+    components.push(JSON.stringify(baseRootComponent));
   }
 
   const wordAscii = transliterateSlovakToAscii(wordSrc);
 
-  return { word: capitalizeSlavicName(wordSrc, 'sk'), ascii: capitalizeSlavicName(wordAscii, 'sk') };
+  return { word: capitalizeSlavicName(wordSrc, 'sk'), ascii: capitalizeSlavicName(wordAscii, 'sk'), generationRules: [rule], dictionaryComponents: components };
 };

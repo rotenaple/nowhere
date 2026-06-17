@@ -21,6 +21,8 @@ export const getDutchCapacity = () => {
 
 export const generateDutchPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   
   const getPool = (t: string) => GERMANIC_DATA.filter(c => c.nl && c.type === t);
   const roots = getPool('root');
@@ -29,6 +31,7 @@ export const generateDutchPlace = (): GeneratedResult => {
 
   // 1. Prefix + Root/Suffix
   if (type < 0.35) {
+    rule = "Prefix + Root/Suffix";
     // FIX: Combine pools
     const prePool = [...getPool('adjective'), ...getPool('noun_prefix')];
     const pre = getRandomElement(prePool);
@@ -38,6 +41,7 @@ export const generateDutchPlace = (): GeneratedResult => {
     let rData = getData(root.nl);
     let r = rData.val;
     
+    components.push(JSON.stringify(pre));
     // Adjective inflection logic
     if (pre.type === 'adjective' && ['Nieuw', 'Oud', 'Groot', 'Klein', 'Hoog', 'Laag'].includes(pre.def)) {
         // If Neuter, 50% chance to keep it uninflected (Groot-Ammers)
@@ -58,6 +62,7 @@ export const generateDutchPlace = (): GeneratedResult => {
   }
   // 2. Root + Suffix
   else if (type < 0.70) {
+    rule = "Root + Suffix";
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
@@ -71,17 +76,23 @@ export const generateDutchPlace = (): GeneratedResult => {
         if (!['s', 'n'].includes(r.slice(-1)) && Math.random() < 0.2) connector = "s";
     }
 
+    components.push(JSON.stringify(root));
+    if (connector) components.push(`[connector: "${connector}"]`);
+    components.push(JSON.stringify(suf));
     word = r + connector + s;
   }
   // 3. 's- [Genitive Root]
   else if (type < 0.75) {
+      rule = "'s- [Genitive Root]";
       const genitives = ['Heeren', 'Graven', 'Hertogen', 'Papen', 'Vrouwen', 'Princen', 'Konings', 'Monniken'];
       const root = getRandomElement(genitives);
       const suf = getRandomElement(getPool('suffix'));
+      components.push(JSON.stringify(suf));
       word = `'s-${root}${getVal(suf.nl)}`;
   }
   // 4. Root + Root
   else {
+    rule = "Root + Root";
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
     
@@ -93,9 +104,12 @@ export const generateDutchPlace = (): GeneratedResult => {
     let glue = "";
     if (Math.random() < 0.3 && !v1.endsWith('s')) glue = "s";
     
+    components.push(JSON.stringify(root1));
+    if (glue) components.push(`[connector: "${glue}"]`);
+    components.push(JSON.stringify(root2));
     word = v1 + glue + v2.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateDutchToAscii(word) };
+  return { word: word, ascii: transliterateDutchToAscii(word), generationRules: [rule], dictionaryComponents: components };
 }

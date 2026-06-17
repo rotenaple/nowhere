@@ -26,7 +26,7 @@ export const getChineseCapacity = (romanization: 'cn' | 'tw' | 'hk') => {
   return Math.pow(pool.length, 2);
 }
 
-const getStructure = (region: RegionCode): ChineseComponent[] => {
+const getStructure = (region: RegionCode): { parts: ChineseComponent[], rule: string } => {
   const pool = filterComponents(ZH_COMPONENTS, region);
 
   const getComp = (
@@ -58,11 +58,13 @@ const getStructure = (region: RegionCode): ChineseComponent[] => {
 
   const roll = Math.random();
   let parts: ChineseComponent[] = [];
+  let rule = "";
 
   // === 1. The Geo-Directional/Relative (2 chars) ===
   // 15% Chance
   // Pattern: [River/Mtn] + [East/West/South/North/Yang/Yin] 
   if (roll < 0.15) {
+    rule = "Relative/Directional";
     const head = getComp(['nature_head'], ['land', 'water']);
     
     if (Math.random() < 0.5) {
@@ -78,6 +80,7 @@ const getStructure = (region: RegionCode): ChineseComponent[] => {
   // 15% Chance
   // Pattern: [Color/Adj/Number] + [Head]
   else if (roll < 0.30) {
+    rule = "Descriptive";
     const subRoll = Math.random();
     let mod: ChineseComponent;
     let head: ChineseComponent;
@@ -102,6 +105,7 @@ const getStructure = (region: RegionCode): ChineseComponent[] => {
 
     // A. Complex Semantic: [Prefix] + [Noun] + [Head]
     if (subRoll < 0.6) {
+        rule = "Complex Semantic";
         const noun = getComp(['noun_concrete']);
         let headCategories: SemanticCategory[] = ['land', 'water']; 
 
@@ -124,6 +128,7 @@ const getStructure = (region: RegionCode): ChineseComponent[] => {
     // B. Complex Descriptive: [Mod] + [Nature] + [Suffix]
     // e.g. White Mountain Village
     else {
+        rule = "Complex Descriptive";
         const mod = getComp(['color', 'adj_physical', 'number', 'direction']);
         const nature = getComp(['nature_head'], ['land', 'water']);
         const suffix = getComp(['civic_suffix', 'civic_built']);
@@ -134,6 +139,7 @@ const getStructure = (region: RegionCode): ChineseComponent[] => {
   // === 4. Elegant Civic (2 chars) ===
   // 10% Chance
   else {
+    rule = "Elegant Civic";
     const elegant = getComp(['adj_elegant']);
     const suffix = getComp(['civic_suffix', 'civic_built', 'nature_head']);
     parts = [elegant, suffix];
@@ -150,7 +156,7 @@ const getStructure = (region: RegionCode): ChineseComponent[] => {
     return getStructure(region);
   }
 
-  return parts;
+  return { parts, rule };
 };
 
 const formatChineseName = (parts: ChineseComponent[], mode: 'cn' | 'tw' | 'hk'): GeneratedResult => {
@@ -196,6 +202,8 @@ export const generateChinesePlace = (mode: 'cn' | 'tw' | 'hk'): GeneratedResult 
   if (mode === 'hk') region = 'hk';
   if (mode === 'tw') region = 'tw';
 
-  const parts = getStructure(region);
-  return formatChineseName(parts, mode);
+  const { parts, rule } = getStructure(region);
+  const formatted = formatChineseName(parts, mode);
+  const components = parts.map(p => JSON.stringify(p));
+  return { ...formatted, generationRules: [rule], dictionaryComponents: components };
 };

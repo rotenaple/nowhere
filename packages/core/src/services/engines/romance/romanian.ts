@@ -20,10 +20,13 @@ export const getRomanianCapacity = () => {
 
 export const generateRomanianPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   const roll = Math.random();
   
   // 1. Root + Adjective
   if (roll < 0.40) {
+      rule = "Root + Adjective";
       const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
       
       // EXPANSION: Allow Color/Quality on Settlements too
@@ -32,6 +35,7 @@ export const generateRomanianPlace = (): GeneratedResult => {
           adjTypes.push('adj_geo');
       }
       const adjObj = getRandomElement(getPool(adjTypes));
+      components.push(JSON.stringify(rootObj));
       
       const rData = getRomData(rootObj.ro);
       let r = rData.val;
@@ -58,9 +62,11 @@ export const generateRomanianPlace = (): GeneratedResult => {
   
   // 2. Root + Suffix
   else if (roll < 0.70) {
+      rule = "Root + Suffix";
       // EXPANSION: Allow suffixing Geo Major
       const rootObj = getRandomElement(getPool(['settlement', 'geo_minor', 'bio_flora', 'geo_major']));
       const suffixObj = getRandomElement(getPool(['suffix']));
+      components.push(JSON.stringify(rootObj));
       
       let base = getRomData(rootObj.ro).val;
       const sVal = getRomData(suffixObj.ro).val;
@@ -74,9 +80,11 @@ export const generateRomanianPlace = (): GeneratedResult => {
   
   // 3. Composite (The X of Y)
   else {
+      rule = "Composite (de)";
       const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
       // EXPANSION: Universal Tails
       const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
+      components.push(JSON.stringify(headObj));
       
       const hData = getRomData(headObj.ro);
       let head = hData.val;
@@ -102,5 +110,5 @@ export const generateRomanianPlace = (): GeneratedResult => {
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateRomanianToAscii(word) };
+  return { word: word, ascii: transliterateRomanianToAscii(word), generationRules: [rule], dictionaryComponents: components };
 };

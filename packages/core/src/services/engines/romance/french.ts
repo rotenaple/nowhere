@@ -47,12 +47,16 @@ export const getFrAdj = (entry: RomanceEntry | undefined): { m: string, f: strin
 
 export const generateFrenchPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   const roll = Math.random();
 
   // 1. Saint-X / Prefix-X
   if (roll < 0.20) {
+    rule = "Saint-X / Prefix-X";
     const prefixObj = getRandomElement(getPool(['prefix']));
     const rootObj = getRandomElement(getPool(['settlement', 'geo_major', 'bio_flora']));
+    components.push(JSON.stringify(prefixObj));
     
     const rData = getRomData(rootObj.fr);
     let rootVal = rData.val;
@@ -94,12 +98,14 @@ export const generateFrenchPlace = (): GeneratedResult => {
   
   // 2. Root + Adjective
   else if (roll < 0.60) {
+      rule = "Root + Adjective";
       const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
       
       // EXPANSION: Universal Adjectives
       let adjTypes = ['adj_quality', 'adj_color'];
       if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
       const adjObj = getRandomElement(getPool(adjTypes));
+      components.push(JSON.stringify(rootObj));
       
       const rData = getRomData(rootObj.fr);
       let r = rData.val;
@@ -117,9 +123,11 @@ export const generateFrenchPlace = (): GeneratedResult => {
   
   // 3. Composite (de)
   else if (roll < 0.85) {
+    rule = "Composite (de)";
     const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
     // EXPANSION: Universal Tails
     const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
+    components.push(JSON.stringify(headObj));
     
     let h = getRomData(headObj.fr).val;
     let t = getRomData(tailObj.fr).val;
@@ -135,9 +143,11 @@ export const generateFrenchPlace = (): GeneratedResult => {
   
   // 4. Root + Suffix
   else {
+    rule = "Root + Suffix";
     // EXPANSION: Allow Geo Major suffixing
     const rootObj = getRandomElement(getPool(['settlement', 'bio_flora', 'geo_major']));
     const suffixObj = getRandomElement(getPool(['suffix']));
+    components.push(JSON.stringify(rootObj));
     
     let base = getRomData(rootObj.fr).val.toLowerCase();
     const sVal = getRomData(suffixObj.fr).val;
@@ -149,5 +159,5 @@ export const generateFrenchPlace = (): GeneratedResult => {
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateFrenchToAscii(word) };
+  return { word: word, ascii: transliterateFrenchToAscii(word), generationRules: [rule], dictionaryComponents: components };
 };

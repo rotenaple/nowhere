@@ -19,6 +19,8 @@ export const getBulgarianCapacity = () => {
 export const generateBulgarianPlace = (): GeneratedResult => {
   let wordAscii = "";
   let wordCyrillic = "";
+  let rule = "";
+  let components: string[] = [];
 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.bg) && c.type === t);
   const adjectives = getPool('adjective');
@@ -30,6 +32,7 @@ export const generateBulgarianPlace = (): GeneratedResult => {
   
   // 1. Adjective + Noun (or Derived Noun)
   if (typeRoll < 0.45) {
+      rule = "Adjective + Noun";
       const selectedAdj = getRandomElement(adjectives);
       const selectedRootComponent = getRandomElement(rootsAndStems);
       let isDerived = false;
@@ -68,9 +71,12 @@ export const generateBulgarianPlace = (): GeneratedResult => {
 
       wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
       wordAscii = `${inflectedAdjRom} ${finalNounRom}`;
+      components.push(JSON.stringify(selectedAdj));
+      if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix
   else if (typeRoll < 0.75) {
+      rule = "Root + Suffix";
       const selectedRoot = getRandomElement(rootsAndStems);
       const selectedSuffix = getRandomElement(suffixes);
       
@@ -90,9 +96,11 @@ export const generateBulgarianPlace = (): GeneratedResult => {
 
       wordCyrillic = baseSrc + suffixInfo.src;
       wordAscii = baseRom + suffixInfo.rom;
+      components.push(JSON.stringify(selectedRoot));
   }
   // 3. Base + "na" + River
   else {
+      rule = "Base + River Locative";
       const baseRootComponent = getRandomElement(rootsAndStems);
       const selectedRiver = getRandomElement(riversLoc);
 
@@ -118,9 +126,10 @@ export const generateBulgarianPlace = (): GeneratedResult => {
       const riverInfo = getSlavicData(selectedRiver.bg!);
       wordCyrillic = `${basePartSrc} на ${riverInfo.src}`;
       wordAscii = `${basePartRom} na ${riverInfo.rom || transliterateBulgarianToAscii(riverInfo.src)}`; 
+      components.push(JSON.stringify(baseRootComponent));
   }
 
   if (!wordAscii || wordAscii.includes('undefined')) wordAscii = transliterateBulgarianToAscii(wordCyrillic);
 
-  return { word: capitalizeSlavicName(wordCyrillic, 'bg'), ascii: capitalizeSlavicName(wordAscii, 'bg') };
+  return { word: capitalizeSlavicName(wordCyrillic, 'bg'), ascii: capitalizeSlavicName(wordAscii, 'bg'), generationRules: [rule], dictionaryComponents: components };
 };

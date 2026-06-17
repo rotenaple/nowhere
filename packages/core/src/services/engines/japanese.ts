@@ -58,6 +58,7 @@ export const getJapaneseCapacity = () => {
 export const generateJapanesePlace = (): GeneratedResult => {
 
   const type = Math.random();
+  let components: string[] = [];
 
   // Pattern 1: [Direction/Prefix] + [Root] (e.g., Kita-Kyushu, Shin-Yokohama, Higashi-Murayama)
   if (type < 0.15) {
@@ -68,8 +69,9 @@ export const generateJapanesePlace = (): GeneratedResult => {
     const word = pre.kanji + root.kanji;
     // Often hyphenated in romanization if it's a major prefix
     const ascii = pre.romaji + root.romaji;
+    components.push(JSON.stringify(pre));
 
-    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1) };
+    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Direction/Prefix + Root"], dictionaryComponents: components };
   }
 
   // Pattern 2: [Modifier] + [Root] (e.g. Oomori, Akasaka) - KUN READINGS (Wago)
@@ -86,7 +88,8 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = mod.kanji + root.kanji;
     const ascii = mod.romaji + finalRomaji;
-    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1) };
+    components.push(JSON.stringify(mod));
+    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Modifier + Root"], dictionaryComponents: components };
   }
 
   // Pattern 3: [Root] + [Root] (Compound) - KUN READINGS (Wago)
@@ -105,7 +108,8 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = root1.kanji + root2.kanji;
     const ascii = root1.romaji + finalRomaji2;
-    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1) };
+    components.push(JSON.stringify(root1));
+    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Root + Root (Compound)"], dictionaryComponents: components };
   }
 
   // Pattern 4: "Ga" Construction (e.g. Jiyugaoka, Sekigahara)
@@ -115,7 +119,8 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = first.kanji + 'ヶ' + second.kanji;
     const ascii = first.romaji + 'ga' + second.romaji;
-    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1) };
+    components.push(JSON.stringify(first));
+    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["Ga Construction"], dictionaryComponents: components };
   }
 
   // Pattern 5: "No" Construction (e.g. Ichinomiya, Nakanoshima)
@@ -126,7 +131,8 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = first.kanji + '之' + second.kanji;
     const ascii = first.romaji + 'no' + second.romaji;
-    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1) };
+    components.push(JSON.stringify(first));
+    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["No Construction"], dictionaryComponents: components };
   }
 
   // Pattern 6: On-yomi Compound (e.g. Tokyo, Kyoto, Sapporo-style phonetic)
@@ -173,8 +179,9 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
       const word = prefix.kanji + core.kanji + suffix.kanji;
       const ascii = pRom + cRom + sRom;
+      components.push(JSON.stringify(prefix));
 
-      return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1) };
+      return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["3-Part Settlement Compound"], dictionaryComponents: components };
     }
 
     // Sokuon between the two on-components
@@ -184,6 +191,7 @@ export const generateJapanesePlace = (): GeneratedResult => {
 
     const word = pre.kanji + suf.kanji;
     const ascii = firstRomaji + secondRomaji;
-    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1) };
+    components.push(JSON.stringify(pre));
+    return { word, ascii: ascii.charAt(0).toUpperCase() + ascii.slice(1), generationRules: ["On-yomi Compound"], dictionaryComponents: components };
   }
 };

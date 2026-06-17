@@ -38,6 +38,8 @@ export interface PlaceName {
 export interface GeneratedResult {
   word: string;
   ascii: string;
+  generationRules?: string[];
+  dictionaryComponents?: string[];
 }
 
 export type GenerationParams = {

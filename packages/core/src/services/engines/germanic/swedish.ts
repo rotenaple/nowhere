@@ -27,6 +27,8 @@ const getData = (entry: any) => {
 
 export const generateSwedishPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   
   const getPool = (t: string) => GERMANIC_DATA.filter(c => c.sv && c.type === t);
   const roots = getPool('root');
@@ -35,16 +37,20 @@ export const generateSwedishPlace = (): GeneratedResult => {
 
   // Pattern 1: Prefix/Adjective + Suffix (e.g., Storvik)
   if (type < 0.30) {
+    rule = "Prefix/Adjective + Suffix";
     const prePool = [...getPool('adjective'), ...getPool('noun_prefix')];
     const pre = getRandomElement(prePool);
     const suf = getRandomElement(getPool('suffix'));
     
+    components.push(JSON.stringify(pre));
+
     // Adjectives usually fuse with suffixes without 't' inflection
     word = getVal(pre.sv) + getVal(suf.sv).toLowerCase();
   }
   
   // Pattern 2: Root + Suffix
   else if (type < 0.70) {
+    rule = "Root + Suffix";
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     const rData = getData(root.sv);
@@ -58,16 +64,23 @@ export const generateSwedishPlace = (): GeneratedResult => {
        if (Math.random() < 0.3) connector = 's'; 
     }
     
+    components.push(JSON.stringify(root));
+    if (connector) components.push(`[connector: "${connector}"]`);
+    components.push(JSON.stringify(suf));
+
     word = rData.val + connector + sVal.toLowerCase();
   }
   
   // Pattern 3: Adjective + Root 
   else if (type < 0.85) {
+      rule = "Adjective + Root";
       const pre = getRandomElement([...getPool('adjective'), ...getPool('noun_prefix')]);
       const root = getRandomElement(roots);
       
       const rData = getData(root.sv); 
       let p = getVal(pre.sv);
+
+      components.push(JSON.stringify(pre));
       
       // LOGIC: Neuter inflection only applies if it is truly an Adjective
       if (pre.type === 'adjective') {
@@ -96,7 +109,7 @@ export const generateSwedishPlace = (): GeneratedResult => {
                
                word = `${defP} ${rData.val}`;
           } else {
-              word = p + rData.val.toLowerCase();
+               word = p + rData.val.toLowerCase();
           }
       } 
       // Noun Prefixes (Kungs-, Sankt-)
@@ -107,6 +120,7 @@ export const generateSwedishPlace = (): GeneratedResult => {
   
   // Pattern 4: Root + Root
   else {
+    rule = "Root + Root";
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
     const v1 = getVal(root1.sv);
@@ -115,9 +129,13 @@ export const generateSwedishPlace = (): GeneratedResult => {
     let connector = "";
     if (Math.random() < 0.25 && !['s', 'x'].includes(v1.slice(-1))) connector = "s";
     
+    components.push(JSON.stringify(root1));
+    if (connector) components.push(`[connector: "${connector}"]`);
+    components.push(JSON.stringify(root2));
+
     word = v1 + connector + v2.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateSwedishToAscii(word) };
+  return { word: word, ascii: transliterateSwedishToAscii(word), generationRules: [rule], dictionaryComponents: components };
 };

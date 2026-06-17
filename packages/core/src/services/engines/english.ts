@@ -40,28 +40,33 @@ const generateEnglishRoot = (isTerminal: boolean): string => {
   return root;
 }
 
-const generateStrictAngloPlace = (): string => {
+const generateStrictAngloPlace = (): { name: string, components: string[] } => {
   const root = getRandomElement(EN_ROOTS_ANGLO);
   const suffix = getRandomElement(EN_SUFFIXES_ANGLO);
+  const components = [`[root: "${root}"]`, `[suffix: "${suffix}"]`];
 
-  if (root.toLowerCase().endsWith(suffix.toLowerCase())) return root;
+  if (root.toLowerCase().endsWith(suffix.toLowerCase())) return { name: root, components: [`[root: "${root}"]`] };
 
   let connector = "";
-  if (Math.random() < 0.1 && !root.endsWith('s')) connector = "s";
+  if (Math.random() < 0.1 && !root.endsWith('s')) {
+    connector = "s";
+    components.push(`[connector: "${connector}"]`);
+  }
 
   if (Math.random() < 0.15) {
     const prefix = getRandomElement(['North', 'South', 'East', 'West', 'Great', 'Little', 'New', 'Old']);
-    return `${prefix} ${root}${connector}${suffix}`;
+    components.unshift(`[prefix: "${prefix}"]`);
+    return { name: `${prefix} ${root}${connector}${suffix}`, components };
   }
 
-  return root + connector + suffix;
+  return { name: root + connector + suffix, components };
 }
 
 export const generateEnglishPlace = (style: 'modern' | 'old' | 'mixed' = 'modern'): GeneratedResult => {
   // Place Mode Logic
   if (style === 'old') {
-    const name = generateStrictAngloPlace();
-    return { word: name, ascii: name };
+    const { name, components } = generateStrictAngloPlace();
+    return { word: name, ascii: name, generationRules: ["Strict Anglo Place"], dictionaryComponents: components };
   }
 
   const sylCount = getTargetSyllableCount();
@@ -70,23 +75,34 @@ export const generateEnglishPlace = (style: 'modern' | 'old' | 'mixed' = 'modern
   // Retry loop for Phonotactic Quality Control
   for (let i = 0; i < 10; i++) {
     let candidate = "";
+    let rules = [];
+    let components: string[] = [];
 
     if (!hasSuffix) {
       let root = generateEnglishRoot(true);
+      components.push(`[syllable: "${root}"]`);
       if (sylCount > 1) {
-        root += generateEnglishRoot(true).toLowerCase();
+        let secondRoot = generateEnglishRoot(true);
+        root += secondRoot.toLowerCase();
+        components.push(`[syllable: "${secondRoot}"]`);
       }
       candidate = root.charAt(0).toUpperCase() + root.slice(1);
+      rules.push("Phonotactic root");
     } else {
       let root = generateEnglishRoot(false);
+      components.push(`[syllable: "${root}"]`);
       if (sylCount > 2) {
-        root += generateEnglishRoot(false).toLowerCase();
+        let secondRoot = generateEnglishRoot(false);
+        root += secondRoot.toLowerCase();
+        components.push(`[syllable: "${secondRoot}"]`);
       }
 
       const suffix = getRandomElement(EN_SUFFIXES_PHONETIC);
+      components.push(`[suffix: "${suffix}"]`);
       candidate = root + suffix;
       candidate = candidate.replace(/(.)\1{2,}/g, '$1$1');
       candidate = candidate.charAt(0).toUpperCase() + candidate.slice(1);
+      rules.push("Phonotactic root + suffix");
     }
 
     // PHONOTACTIC FILTER
@@ -101,9 +117,9 @@ export const generateEnglishPlace = (style: 'modern' | 'old' | 'mixed' = 'modern
 
     if (BAD_CLUSTERS.test(check)) continue;
 
-    return { word: candidate, ascii: candidate };
+    return { word: candidate, ascii: candidate, generationRules: rules, dictionaryComponents: components };
   }
 
   // Fallback if retries fail
-  return { word: "Westford", ascii: "Westford" };
+  return { word: "Westford", ascii: "Westford", generationRules: ["Fallback"], dictionaryComponents: [`[prefix: "West"]`, `[suffix: "ford"]`] };
 };

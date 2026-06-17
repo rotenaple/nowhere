@@ -84,18 +84,22 @@ const inflectAdjective = (adj: ArabicComponent, nounGender: 'm' | 'f'): { ar: st
 export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine' | 'gulf' | 'maghrebi' = 'standard'): GeneratedResult => {
   let wordAr = "";
   let wordRom = "";
+  let components: string[] = [];
 
   // Get the filtered pool based on the requested style
   const heads = getHeadsForStyle(style);
 
   // === PLACE MODE ===
   const type = Math.random();
+  let rule = "";
 
   // Pattern 1: [Head] [Root] (Idafa Construction - Genitive)
   // e.g. Sharm El-Sheikh, Kafr El-Sheikh, Deir Al-Balah
   if (type < 0.40) {
+    rule = "[Head] [Root] (Idafa)";
     const head = getRandomElement(heads);
     const root = getRandomElement(AR_ROOTS);
+    components.push(JSON.stringify(head));
     const article = getDefiniteArticle(root, style); 
     
     wordAr = `${head.ar} ${article.ar}${root.ar}`;
@@ -105,7 +109,9 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   // Pattern 2: Al-[Root] (Definite Noun)
   // e.g. Al-Riyadh, Al-Manamah, Al-Fayyum
   else if (type < 0.60) {
+    rule = "Al-[Root] (Definite Noun)";
     const root = getRandomElement(AR_ROOTS);
+    components.push(JSON.stringify(root));
     const article = getDefiniteArticle(root, style);
     wordAr = article.ar + root.ar;
     wordRom = article.rom + root.rom;
@@ -114,8 +120,10 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   // Pattern 3: [Head] [Adjective] (Noun-Adjective)
   // e.g. Bahr Ahmar (Red Sea), Al-Madina Al-Munawwarah
   else if (type < 0.80) {
+    rule = "[Head] [Adjective]";
     const head = getRandomElement(heads);
     const adj = getRandomElement(AR_ADJECTIVES);
+    components.push(JSON.stringify(head));
     
     // Agreement
     const inflectedAdj = inflectAdjective(adj, head.gender || 'm');
@@ -149,8 +157,10 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
   // Pattern 4: [Root] + [Adjective] 
   // e.g. Riyadh Al-Khabra
   else {
+    rule = "[Root] [Adjective]";
     const root = getRandomElement(AR_ROOTS);
     const adj = getRandomElement(AR_ADJECTIVES);
+    components.push(JSON.stringify(root));
     const inflectedAdj = inflectAdjective(adj, root.gender || 'm');
     
     const artRoot = getDefiniteArticle(root, style);
@@ -160,5 +170,5 @@ export const generateArabicPlace = (style: 'standard' | 'egyptian' | 'levantine'
     wordRom = `${artRoot.rom}${root.rom} ${artAdj.rom}${inflectedAdj.rom}`;
   }
 
-  return { word: wordAr, ascii: wordRom };
+  return { word: wordAr, ascii: wordRom, generationRules: [rule], dictionaryComponents: components };
 };

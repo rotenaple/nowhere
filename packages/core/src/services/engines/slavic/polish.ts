@@ -14,6 +14,8 @@ export const getPolishCapacity = () => {
 
 export const generatePolishPlace = (): GeneratedResult => {
   let wordSrc = ""; 
+  let rule = "";
+  let components: string[] = [];
 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.pl) && c.type === t);
   const rootsAndStems = [...getPool('root'), ...getPool('stem'), ...getPool('river')];
@@ -52,13 +54,16 @@ export const generatePolishPlace = (): GeneratedResult => {
         derivedNounSrc = derivedNounSrc.slice(0, -1);
     }
     
+    components.push(JSON.stringify(selectedAdj));
     // Separate: [Adj] [Derived Noun]
     if (Math.random() < 0.6) { 
+        rule = "Adjective + Noun";
         derivedNounSrc += suffixInfo.src;
         wordSrc = `${inflectedAdjSrc} ${derivedNounSrc}`;
     } 
     // Compound: (Białystok style)
     else { 
+        rule = "Compound Noun";
         let adjStem = getSlavicData(selectedAdj.pl).src.slice(0, -1); // Now-, Star-
         let connector = 'o'; 
         if (adjStem.endsWith('iał') || adjStem.endsWith('yst')) connector = 'y'; 
@@ -74,6 +79,7 @@ export const generatePolishPlace = (): GeneratedResult => {
   }
   // 2. Root + Suffix
   else if (typeRoll < 0.8) {
+    rule = "Root + Suffix";
     const selectedRoot = getRandomElement(rootsAndStems);
     const selectedSuffix = getRandomElement(suffixes);
     
@@ -88,9 +94,11 @@ export const generatePolishPlace = (): GeneratedResult => {
         baseSrc = baseSrc.slice(0, -1);
     }
     wordSrc = baseSrc + suffixInfo.src;
+    components.push(JSON.stringify(selectedRoot));
   }
   // 3. Base + nad + River (Instrumental)
   else {
+    rule = "Base + River Locative";
     const baseRootComponent = getRandomElement(rootsAndStems);
     const selectedRiver = getRandomElement(riversLoc);
     
@@ -98,10 +106,16 @@ export const generatePolishPlace = (): GeneratedResult => {
     const riverInfo = getSlavicData(selectedRiver.pl!);
     
     wordSrc = `${rootInfo.src} nad ${riverInfo.src}`;
+    components.push(JSON.stringify(baseRootComponent));
   }
 
   wordSrc = wordSrc.replace(/(.)\1+/g, '$1'); // De-dupe
   const wordAscii = transliteratePolishToAscii(wordSrc);
   
-  return { word: capitalizeSlavicName(wordSrc, 'pl'), ascii: capitalizeSlavicName(wordAscii, 'pl') };
+  return { 
+    word: capitalizeSlavicName(wordSrc, 'pl'), 
+    ascii: capitalizeSlavicName(wordAscii, 'pl'),
+    generationRules: [rule],
+    dictionaryComponents: components
+  };
 };

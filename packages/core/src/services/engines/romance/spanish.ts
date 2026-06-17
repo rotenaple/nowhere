@@ -30,6 +30,8 @@ export const getSpanishCapacity = () => {
 
 export const generateSpanishPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   const roll = Math.random();
 
   // Helper for gender agreement
@@ -49,7 +51,9 @@ export const generateSpanishPlace = (): GeneratedResult => {
 
   // --- RECIPE 1: The "San" Pattern ---
   if (roll < 0.15) {
+    rule = 'The "San" Pattern';
     const target = getRandomElement(getPool(['bio_fauna', 'bio_flora', 'abstract'])); 
+    components.push(JSON.stringify(target));
     const tData = getRomData(target.es);
     
     let prefix = (tData.gender === 'f') ? 'Santa' : 'San';
@@ -61,6 +65,7 @@ export const generateSpanishPlace = (): GeneratedResult => {
 
   // --- RECIPE 2: Geo/Settlement + Universal Adjective ---
   else if (roll < 0.50) {
+    rule = 'Geo/Settlement + Universal Adjective';
     const nounObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
     const nData = getRomData(nounObj.es);
     const nGender = nData.gender || 'm';
@@ -73,6 +78,7 @@ export const generateSpanishPlace = (): GeneratedResult => {
     
     const adjObj = getRandomElement(getPool(adjTypes));
     let adj = formatAdjective(nGender, adjObj);
+    components.push(JSON.stringify(nounObj));
 
     if (adjObj.tags?.includes('pre')) {
         if (adj === 'Grande' || adj === 'Grandes') adj = 'Gran'; 
@@ -87,9 +93,11 @@ export const generateSpanishPlace = (): GeneratedResult => {
 
   // --- RECIPE 3: The "De" Construction (Universal Tail) ---
   else if (roll < 0.85) {
+    rule = 'The "De" Construction';
     const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
     // EXPANSION: Tail can be almost anything now (City of the Mountain, Bridge of the King)
     const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
+    components.push(JSON.stringify(headObj));
     
     const h = getRomData(headObj.es).val;
     const tData = getRomData(tailObj.es);
@@ -109,9 +117,11 @@ export const generateSpanishPlace = (): GeneratedResult => {
 
   // --- RECIPE 4: Suffix Modification ---
   else {
+    rule = 'Suffix Modification';
     // EXPANSION: Allow suffixing Geo Majors (Montana -> Montanilla)
     const rootObj = getRandomElement(getPool(['bio_flora', 'geo_minor', 'settlement', 'geo_major']));
     const suffixObj = getRandomElement(getPool(['suffix']));
+    components.push(JSON.stringify(rootObj));
     
     let base = getRomData(rootObj.es).val;
     const sVal = getRomData(suffixObj.es).val;
@@ -131,5 +141,5 @@ export const generateSpanishPlace = (): GeneratedResult => {
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
   const ascii = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  return { word, ascii };
+  return { word, ascii, generationRules: [rule], dictionaryComponents: components };
 };

@@ -28,6 +28,8 @@ const getData = (entry: any) => {
 
 export const generateGermanPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   
   const getPool = (t: string) => GERMANIC_DATA.filter(c => c.de && c.type === t);
   const roots = getPool('root');
@@ -36,6 +38,7 @@ export const generateGermanPlace = (): GeneratedResult => {
 
   // Pattern 1: Adjective/Prefix + Root/Suffix
   if (type < 0.35) {
+    rule = "Adjective/Prefix + Root/Suffix";
     // Merge pools: 'adjective' and 'noun_prefix'
     const prePool = [...getPool('adjective'), ...getPool('noun_prefix')];
     const pre = getRandomElement(prePool);
@@ -47,6 +50,8 @@ export const generateGermanPlace = (): GeneratedResult => {
     const rData = getData(secondPart.de);
     let adj = getVal(pre.de);
     let noun = rData.val;
+
+    components.push(JSON.stringify(pre));
 
     // LOGIC: Only inflect if type is explicitly 'adjective'
     if (pre.type === 'adjective') {
@@ -74,6 +79,7 @@ export const generateGermanPlace = (): GeneratedResult => {
   
   // Pattern 2: Compound Noun + Connector + Suffix
   else if (type < 0.75) {
+    rule = "Compound Noun + Suffix";
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
@@ -104,11 +110,16 @@ export const generateGermanPlace = (): GeneratedResult => {
         connector = "";
     }
 
+    components.push(JSON.stringify(root));
+    if (connector) components.push(`[connector: "${connector}"]`);
+    components.push(JSON.stringify(suf));
+
     word = rVal + connector + sVal;
   }
   
   // Pattern 3: Root + Root
   else {
+    rule = "Root + Root";
     const root1 = getRandomElement(roots);
     const root2 = getRandomElement(roots);
     const d1 = getData(root1.de);
@@ -129,9 +140,13 @@ export const generateGermanPlace = (): GeneratedResult => {
     
     if (glue === 's' && d2.val.toLowerCase().startsWith('s')) glue = "";
 
+    components.push(JSON.stringify(root1));
+    if (glue) components.push(`[connector: "${glue}"]`);
+    components.push(JSON.stringify(root2));
+
     word = d1.val + glue + d2.val.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateGermanToAscii(word) };
+  return { word: word, ascii: transliterateGermanToAscii(word), generationRules: [rule], dictionaryComponents: components };
 };

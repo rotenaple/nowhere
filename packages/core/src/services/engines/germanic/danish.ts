@@ -17,6 +17,8 @@ export const getDanishCapacity = () => {
 
 export const generateDanishPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   
   const getPool = (t: string) => GERMANIC_DATA.filter(c => c.da && c.type === t);
   const roots = getPool('root');
@@ -25,6 +27,7 @@ export const generateDanishPlace = (): GeneratedResult => {
 
   // 1. Prefix + Root
   if (type < 0.35) {
+    rule = "Prefix + Root";
     // FIX: Combine both new types into one pool
     const prePool = [...getPool('adjective'), ...getPool('noun_prefix')];
     const pre = getRandomElement(prePool);
@@ -33,6 +36,7 @@ export const generateDanishPlace = (): GeneratedResult => {
     let p = getVal(pre.da);
     let r = getVal(root.da);
     
+    components.push(JSON.stringify(pre));
     // Adjective Inflection Logic
     if (pre.type === 'adjective') {
         // Stor -> Store, Lil -> Lille usually for definite forms
@@ -40,6 +44,7 @@ export const generateDanishPlace = (): GeneratedResult => {
         if (p === 'Lille') p = 'Lille'; 
         if (p === 'Ny') p = 'Ny'; 
         if (p === 'Gammel') p = 'Gammel'; 
+ 
 
         // Often compound, sometimes separate
         if (['Store', 'Lille', 'Gammel'].includes(p) && Math.random() < 0.5) {
@@ -54,6 +59,7 @@ export const generateDanishPlace = (): GeneratedResult => {
   }
   // 2. Root + Suffix
   else if (type < 0.75) {
+    rule = "Root + Suffix";
     const root = getRandomElement(roots);
     const suf = getRandomElement(getPool('suffix'));
     
@@ -71,10 +77,14 @@ export const generateDanishPlace = (): GeneratedResult => {
         r = r.slice(0, -1);
     }
 
+    components.push(JSON.stringify(root));
+    if (glue) components.push(`[connector: "${glue}"]`);
+    components.push(JSON.stringify(suf));
     word = r + glue + s;
   }
   // 3. Root + Root
   else {
+    rule = "Root + Root";
     const r1 = getRandomElement(roots);
     const r2 = getRandomElement(roots);
     
@@ -87,9 +97,12 @@ export const generateDanishPlace = (): GeneratedResult => {
     if (Math.random() < 0.3 && !v1.endsWith('s')) glue = "s";
     if (Math.random() < 0.1) glue = "e";
 
+    components.push(JSON.stringify(r1));
+    if (glue) components.push(`[connector: "${glue}"]`);
+    components.push(JSON.stringify(r2));
     word = v1 + glue + v2.toLowerCase();
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateDanishToAscii(word) };
+  return { word: word, ascii: transliterateDanishToAscii(word), generationRules: [rule], dictionaryComponents: components };
 }

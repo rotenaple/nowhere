@@ -27,13 +27,14 @@ import { generateUkrainianPlace } from './engines/slavic/ukrainian';
 import { generateCzechPlace } from './engines/slavic/czech';
 import { generateSlovakPlace } from './engines/slavic/slovak';
 import { generateBulgarianPlace } from './engines/slavic/bulgarian';
+import { GeneratedResult } from '../types';
 import { generateArabicPlace } from './engines/arabic';
 
 const SEP = '-'.repeat(64);
 
 type EngineSpec = {
   name: string;
-  gen: () => { word: string; ascii: string };
+  gen: () => GeneratedResult;
   langCodes: string[];
   note?: string;
 };
@@ -88,6 +89,12 @@ for (const eng of ENGINES) {
     totalSamples++;
 
     console.log(`  Sample ${sample + 1}:  "${raw.word}"  ascii="${raw.ascii}"`);
+    if (raw.generationRules && raw.generationRules.length > 0) {
+      console.log(`    Generation rules: ${raw.generationRules.join(', ')}`);
+    }
+    if (raw.dictionaryComponents && raw.dictionaryComponents.length > 0) {
+      console.log(`    Selected components: ${raw.dictionaryComponents.join(', ')}`);
+    }
 
     for (const langCode of eng.langCodes) {
       let found = 0;

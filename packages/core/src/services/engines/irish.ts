@@ -25,10 +25,13 @@ const lenite = (word: string): string => {
 
 export const generateIrishPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
 
   const type = Math.random();
   // 1. Prefix + Root (e.g. Baile Átha)
   if (type < 0.60) {
+    rule = "Prefix + Root";
     const pre = getRandomElement(GA_PREFIXES);
     let root = getRandomElement(GA_ROOTS);
     
@@ -39,9 +42,11 @@ export const generateIrishPlace = (): GeneratedResult => {
     }
 
     word = `${pre} ${root}`;
+    components.push(`[prefix: "${pre}"]`, `[root: "${root}"]`);
   }
   // 2. Prefix + Root + Adjective (e.g. Baile Átha Cliath - well that's not adj, but e.g. Carraig Dubh)
   else {
+    rule = "Prefix + Root + Adjective";
     const pre = getRandomElement(GA_PREFIXES);
     const root = getRandomElement(GA_ROOTS); // Usually noun
     let adj = getRandomElement(GA_ADJECTIVES);
@@ -55,17 +60,20 @@ export const generateIrishPlace = (): GeneratedResult => {
         // Let's do Prefix + Adjective (e.g. An Baile Nua)
         if (Math.random() < 0.4) {
              word = `${pre} ${adj}`; // Baile Mór
+             components.push(`[prefix: "${pre}"]`, `[adjective: "${adj}"]`);
         } else {
              // Prefix + Root + Adj
              word = `${pre} ${root} ${adj}`;
+             components.push(`[prefix: "${pre}"]`, `[root: "${root}"]`, `[adjective: "${adj}"]`);
         }
     } else {
          word = `${pre} ${root}`;
+         components.push(`[prefix: "${pre}"]`, `[root: "${root}"]`);
     }
   }
 
   // Cleanup spaces
   word = word.trim();
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: transliterateIrishToAscii(word) };
+  return { word: word, ascii: transliterateIrishToAscii(word), generationRules: [rule], dictionaryComponents: components };
 };

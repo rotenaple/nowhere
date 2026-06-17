@@ -15,6 +15,8 @@ export const getUkrainianCapacity = () => {
 export const generateUkrainianPlace = (): GeneratedResult => {
   let wordAscii = "";
   let wordCyrillic = "";
+  let rule = "";
+  let components: string[] = [];
 
   const getPool = (t: string) => SLAVIC_DATA.filter(c => hasLanguageEntry(c.uk) && c.type === t);
   const adjectives = getPool('adjective');
@@ -26,6 +28,7 @@ export const generateUkrainianPlace = (): GeneratedResult => {
 
   // 1. Adjective + Noun (or Derived Noun)
   if (typeRoll < 0.45) {
+      rule = "Adjective + Noun";
       const selectedAdj = getRandomElement(adjectives);
       const selectedRootComponent = getRandomElement(rootsAndStems);
       let isDerived = false;
@@ -61,9 +64,12 @@ export const generateUkrainianPlace = (): GeneratedResult => {
 
       wordCyrillic = `${inflectedAdjSrc} ${finalNounSrc}`;
       wordAscii = `${inflectedAdjRom} ${finalNounRom}`;
+      components.push(JSON.stringify(selectedAdj));
+      if (selectedSuffix) components.push(JSON.stringify(selectedSuffix));
   }
   // 2. Root + Suffix
   else if (typeRoll < 0.75) { 
+      rule = "Root + Suffix";
       const selectedRoot = getRandomElement(rootsAndStems);
       const selectedSuffix = getRandomElement(suffixes);
       
@@ -83,9 +89,11 @@ export const generateUkrainianPlace = (): GeneratedResult => {
 
       wordCyrillic = baseSrc + suffixInfo.src;
       wordAscii = baseRom + suffixInfo.rom;
+      components.push(JSON.stringify(selectedRoot));
   }
   // 3. Base + "nad/po" + River
   else {
+      rule = "Base + River Locative";
       const baseRootComponent = getRandomElement(rootsAndStems);
       const selectedRiver = getRandomElement(riversLoc);
       
@@ -114,7 +122,13 @@ export const generateUkrainianPlace = (): GeneratedResult => {
       
       const riverRom = riverInfo.rom || transliterateUkrainianToAscii(riverInfo.src);
       wordAscii = `${basePartRom} na ${riverRom}`;
+      components.push(JSON.stringify(baseRootComponent));
   }
 
-  return { word: capitalizeSlavicName(wordCyrillic, 'uk'), ascii: capitalizeSlavicName(wordAscii, 'uk') };
+  return { 
+    word: capitalizeSlavicName(wordCyrillic, 'uk'), 
+    ascii: capitalizeSlavicName(wordAscii, 'uk'),
+    generationRules: [rule],
+    dictionaryComponents: components
+  };
 };

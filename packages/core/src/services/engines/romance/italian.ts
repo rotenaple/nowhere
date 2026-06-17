@@ -22,6 +22,8 @@ export const getItalianCapacity = () => {
 
 export const generateItalianPlace = (): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
   const roll = Math.random();
 
   const formatAdj = (adj: string, gender: string) => {
@@ -38,9 +40,11 @@ export const generateItalianPlace = (): GeneratedResult => {
 
   // 1. San / Castel / Prefix Pattern
   if (roll < 0.25) {
+      rule = "San / Castel / Prefix Pattern";
       if (Math.random() < 0.5) {
           // Saint
           const target = getRandomElement(getPool(['bio_fauna', 'abstract', 'bio_flora']));
+          components.push(JSON.stringify(target));
           const tData = getRomData(target.it);
           
           let prefix = 'San';
@@ -56,6 +60,7 @@ export const generateItalianPlace = (): GeneratedResult => {
           // Common prefixes
           const prefixObj = getRandomElement(getPool(['prefix']));
           const rootObj = getRandomElement(getPool(['settlement', 'geo_major']));
+          components.push(JSON.stringify(prefixObj));
           
           let p = getRomData(prefixObj.it).val;
           let r = getRomData(rootObj.it).val;
@@ -66,12 +71,14 @@ export const generateItalianPlace = (): GeneratedResult => {
   
   // 2. Root + Adjective
   else if (roll < 0.55) {
+    rule = "Root + Adjective";
     const rootObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement']));
     
     // EXPANSION: Universal Adjectives
     let adjTypes = ['adj_quality', 'adj_color'];
     if (['geo_major', 'geo_minor'].includes(rootObj.type)) adjTypes.push('adj_geo');
     const adjObj = getRandomElement(getPool(adjTypes));
+    components.push(JSON.stringify(rootObj));
     
     const rData = getRomData(rootObj.it);
     let r = rData.val;
@@ -93,9 +100,11 @@ export const generateItalianPlace = (): GeneratedResult => {
   
   // 3. Root + Suffix
   else if (roll < 0.75) {
+    rule = "Root + Suffix";
     // EXPANSION: Allow suffixing Geo Major
     const rootObj = getRandomElement(getPool(['geo_minor', 'settlement', 'bio_flora', 'geo_major']));
     const suffixObj = getRandomElement(getPool(['suffix']));
+    components.push(JSON.stringify(rootObj));
     
     let base = getRomData(rootObj.it).val;
     const sVal = getRomData(suffixObj.it).val;
@@ -108,9 +117,11 @@ export const generateItalianPlace = (): GeneratedResult => {
   
   // 4. "Di" Construction
   else {
+    rule = "Di Construction";
     const headObj = getRandomElement(getPool(['geo_major', 'settlement']));
     // EXPANSION: Universal Tails
     const tailObj = getRandomElement(getPool(['geo_major', 'geo_minor', 'settlement', 'bio_fauna', 'bio_flora', 'abstract']));
+    components.push(JSON.stringify(headObj));
     
     let h = getRomData(headObj.it).val;
     const tData = getRomData(tailObj.it);
@@ -142,5 +153,5 @@ export const generateItalianPlace = (): GeneratedResult => {
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
   const ascii = word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, "");
-  return { word, ascii };
+  return { word, ascii, generationRules: [rule], dictionaryComponents: components };
 };

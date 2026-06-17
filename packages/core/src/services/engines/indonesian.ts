@@ -1,4 +1,3 @@
-
 import { GeneratedResult } from "../../types";
 import { getRandomElement } from "../utils";
 import { AUSTRONESIAN_DATA } from "../dictionaries/austronesianDict";
@@ -42,6 +41,8 @@ const javanize = (str: string): string => {
 
 export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedResult => {
   let word = "";
+  let rule = "";
+  let components: string[] = [];
 
   // Helper to filter by language preference
   const getPool = (t: string) => AUSTRONESIAN_DATA.filter(c => {
@@ -68,6 +69,7 @@ export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedR
       
       // Pattern JV-1: [Sanskrit/Jav Root] + [Sanskrit/Jav Root] (Compound)
       if (type < 0.5) {
+          rule = "Javanese Root + Root (Compound)";
           const jvRoots = AUSTRONESIAN_DATA.filter(c => c.lang === 'jv' && (c.type === 'root' || c.type === 'suffix'));
           
           const r1 = getRandomElement(jvRoots.length > 0 ? jvRoots : roots);
@@ -77,11 +79,13 @@ export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedR
           
           // Apply javanize to ensure correct vowel harmony (e.g. Sura -> Suro)
           word = javanize(r1.val) + javanize(r2.val.toLowerCase());
-          
+          components.push(JSON.stringify(r1), JSON.stringify(r2));
       } 
       // Pattern JV-2: [Geographic Prefix] + [Root/Adj]
       else if (type < 0.8) {
-          const pre = getRandomElement(prefixes).val; 
+          rule = "Javanese Prefix + Root/Adj";
+          const preObj = getRandomElement(prefixes);
+          const pre = preObj.val; 
           const tail = getRandomElement([...roots, ...adjectives]);
           let tailStr = tail.val;
           
@@ -95,17 +99,22 @@ export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedR
           } else {
               word = `${pre} ${tailStr}`;
           }
+          components.push(JSON.stringify(preObj), JSON.stringify(tail));
       }
       // Pattern JV-3: Root + Suffix
       else {
-          const r = getRandomElement(roots).val;
-          const s = getRandomElement(suffixes).val;
+          rule = "Javanese Root + Suffix";
+          const rObj = getRandomElement(roots);
+          const r = rObj.val;
+          const sObj = getRandomElement(suffixes);
+          const s = sObj.val;
           let stem = javanize(r);
           word = stem + s;
+          components.push(JSON.stringify(rObj), JSON.stringify(sObj));
       }
       
       word = word.charAt(0).toUpperCase() + word.slice(1);
-      return { word, ascii: word };
+      return { word, ascii: word, generationRules: [rule], dictionaryComponents: components };
   }
 
   // === PLACE MODE: STANDARD ID/MS ===
@@ -113,25 +122,36 @@ export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedR
 
   // Pattern 1: Geographic Prefix + Root
   if (type < 0.40) {
-    const pre = getRandomElement(prefixes).val;
-    const root = getRandomElement(roots).val;
+    rule = "Geographic Prefix + Root";
+    const preObj = getRandomElement(prefixes);
+    const pre = preObj.val;
+    const rootObj = getRandomElement(roots);
+    const root = rootObj.val;
     word = `${pre} ${root}`;
+    components.push(JSON.stringify(preObj), JSON.stringify(rootObj));
   }
   // Pattern 2: Geographic Prefix + Root + Adjective
   else if (type < 0.65) {
-    const pre = getRandomElement(prefixes).val;
-    const root = getRandomElement(roots).val;
-    const adj = getRandomElement(adjectives).val;
+    rule = "Geographic Prefix + Root + Adjective";
+    const preObj = getRandomElement(prefixes);
+    const pre = preObj.val;
+    const rootObj = getRandomElement(roots);
+    const root = rootObj.val;
+    const adjObj = getRandomElement(adjectives);
+    const adj = adjObj.val;
     word = `${pre} ${root} ${adj}`;
+    components.push(JSON.stringify(preObj), JSON.stringify(rootObj), JSON.stringify(adjObj));
   }
   // Pattern 3: Compound / Suffix
   else if (type < 0.85) {
+    rule = "Compound / Suffix";
     const validSuffixes = variant === 'ms' 
         ? suffixes.filter(s => ['jaya', 'pura', 'perdana', 'utamay'].includes(s.val) || Math.random() < 0.1)
         : suffixes;
     
     if (validSuffixes.length > 0) {
-        const suf = getRandomElement(validSuffixes).val;
+        const sufObj = getRandomElement(validSuffixes);
+        const suf = sufObj.val;
         const sanskritRoots = ['Suka', 'Jaya', 'Maha', 'Tri', 'Panca', 'Adi', 'Wana', 'Giri', 'Tirta', 'Batu', 'Kali'];
         let stem = Math.random() < 0.5 ? getRandomElement(sanskritRoots) : getRandomElement(roots).val;
         
@@ -145,19 +165,27 @@ export const generateIndonesianPlace = (variant: 'id' | 'ms' | 'jv'): GeneratedR
         }
         
         word = stem + suf;
+        components.push(JSON.stringify(stem), JSON.stringify(sufObj));
     } else {
-        const pre = getRandomElement(prefixes).val;
-        const root = getRandomElement(roots).val;
+        const preObj = getRandomElement(prefixes);
+        const pre = preObj.val;
+        const rootObj = getRandomElement(roots);
+        const root = rootObj.val;
         word = `${pre} ${root}`;
+        components.push(JSON.stringify(preObj), JSON.stringify(rootObj));
     }
   }
   // Pattern 4: Root + Adjective
   else {
-    const root = getRandomElement(roots).val;
-    const adj = getRandomElement(adjectives).val;
+    rule = "Root + Adjective";
+    const rootObj = getRandomElement(roots);
+    const root = rootObj.val;
+    const adjObj = getRandomElement(adjectives);
+    const adj = adjObj.val;
     word = `${root} ${adj}`;
+    components.push(JSON.stringify(rootObj), JSON.stringify(adjObj));
   }
 
   word = word.charAt(0).toUpperCase() + word.slice(1);
-  return { word: word, ascii: word };
+  return { word: word, ascii: word, generationRules: [rule], dictionaryComponents: components };
 };
