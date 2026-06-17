@@ -43,7 +43,8 @@ export const generateItalianPlace = (): GeneratedResult => {
       rule = "San / Castel / Prefix Pattern";
       if (Math.random() < 0.5) {
           // Saint
-          const target = getRandomElement(getPool(['bio_fauna', 'abstract', 'bio_flora']));
+          const saintPool = getPool(['bio_fauna', 'abstract', 'bio_flora']).filter(c => !c.tags?.includes('no_saint'));
+          const target = getRandomElement(saintPool);
           const tData = getRomData(target.it);
           
           let prefix = 'San';
