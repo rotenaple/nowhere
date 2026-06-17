@@ -13,11 +13,11 @@ export { generateNonceWords, debugGenerateNonceWords, getCapacity } from './serv
 export type { DebugGenerateResult } from './services/generator';
 
 export {
-  applyCorruption,
-  debugCorruption,
-  CORRUPTION_RULES,
-} from './services/corruption';
-export type { CorruptionRule, TraceEntry, CorruptionDebugResult } from './services/corruption';
+  applyOrthographicVariation,
+  debugOrthographicVariation,
+  ORTHOGRAPHIC_VARIATION_RULES,
+} from './services/orthographicVariation';
+export type { VariationRule, TraceEntry, VariationDebugResult } from './services/orthographicVariation';
 
 export {
   getRandomElement,

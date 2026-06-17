@@ -5,7 +5,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { debugCorruption } from './corruption';
+import { debugOrthographicVariation } from './orthographicVariation';
 import { generateEnglishPlace } from './engines/english';
 import { generateGermanPlace } from './engines/germanic/german';
 import { generateFrenchPlace } from './engines/romance/french';
@@ -117,14 +117,14 @@ for (const eng of ENGINES) {
     }
 
     for (const langCode of eng.langCodes) {
-      const testCr = debugCorruption(raw.word, raw.ascii, langCode, 1.0, 0);
+      const testCr = debugOrthographicVariation(raw.word, raw.ascii, langCode, 1.0, 0);
       if (testCr.rulesConsidered === 0) {
         lines.push(`  [${langCode}]: "${raw.word}"  ascii="${raw.ascii}" (No corruption rules implemented)`);
         continue;
       }
 
       const seed = sample;
-      const cr = debugCorruption(raw.word, raw.ascii, langCode, 1.0, seed);
+      const cr = debugOrthographicVariation(raw.word, raw.ascii, langCode, 1.0, seed);
       if (cr.trace.length > 0 && !(cr.word === raw.word && cr.ascii === raw.ascii)) {
         totalNamesWithCorruption++;
         lines.push(`  [${langCode}]: "${cr.word}"  ascii="${cr.ascii}" (seed=${seed})`);

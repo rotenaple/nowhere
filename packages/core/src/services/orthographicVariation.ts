@@ -34,7 +34,7 @@ const TRANSLITERATORS: Record<string, (word: string) => string> = {
   'bg': transliterateBulgarianToAscii,
 };
 
-export type CorruptionRule = {
+export type VariationRule = {
   find: RegExp;
   replace: string;
   weight: number;
@@ -50,7 +50,7 @@ export type TraceEntry = {
   after: string;
 };
 
-export type CorruptionDebugResult = {
+export type VariationDebugResult = {
   word: string;
   ascii: string;
   trace: TraceEntry[];
@@ -96,7 +96,7 @@ function mulberry32(seed: number): RandFn {
  *  - OE wīc → -wick (farm, Norse area) vs -wich (trading post, south/east)
  *  - OE geminate consonants simplified in some areas, retained in others
  */
-const ENGLISH_RULES: CorruptionRule[] = [
+const ENGLISH_RULES: VariationRule[] = [
 
   // ============================================================
   // 1. NORDIC/SAXON CONSONANT SPLIT
@@ -236,7 +236,7 @@ const ENGLISH_RULES: CorruptionRule[] = [
  * - Orthographic reforms (ss→ß, th→t, c→k, ph→f)
  * - Dialectal variants (-stein/-steyn, -bach/-bich, -au/-aue)
  */
-const GERMAN_RULES: CorruptionRule[] = [
+const GERMAN_RULES: VariationRule[] = [
   // Suffix alternations
   { find: /burg$/gi, replace: 'berg', weight: 0.08, desc: '-burg → -berg (historical variant)' },
   { find: /berg$/gi, replace: 'burg', weight: 0.06, desc: '-berg → -burg (reverse)' },
@@ -275,7 +275,7 @@ const GERMAN_RULES: CorruptionRule[] = [
  * - Orthographic standardization (c → k)
  * - Syncope (final -e loss)
  */
-const DUTCH_RULES: CorruptionRule[] = [
+const DUTCH_RULES: VariationRule[] = [
   { find: /dijk$/gi, replace: 'dyk', weight: 0.10, desc: '-dijk → -dyk (archaic spelling)' },
   { find: /ij/gi, replace: 'ei', weight: 0.12, desc: 'ij → ei (dialect)' },
   { find: /ei/gi, replace: 'ij', weight: 0.08, desc: 'ei → ij (reverse dialect)' },
@@ -296,7 +296,7 @@ const DUTCH_RULES: CorruptionRule[] = [
  * - Consonant cluster variation (ck/kk, tj/kj)
  * - Suffix variants (-viken/-vika)
  */
-const SWEDISH_RULES: CorruptionRule[] = [
+const SWEDISH_RULES: VariationRule[] = [
   { find: /köping$/gi, replace: 'köp', weight: 0.08, desc: '-köping → -köp (archaic)' },
   { find: /holm$/gi, replace: 'holme', weight: 0.06, desc: '-holm → -holme (older form)' },
   { find: /stad$/gi, replace: 'stä', weight: 0.06, desc: '-stad → -stä (reduced)' },
@@ -316,7 +316,7 @@ const SWEDISH_RULES: CorruptionRule[] = [
  * - Archaic preserved forms (reverse of 1948 reform)
  * - Older spelling variants (-ø→-øe, -lund→-lunne, -lev→-løv)
  */
-const DANISH_RULES: CorruptionRule[] = [
+const DANISH_RULES: VariationRule[] = [
   { find: /gaard$/gi, replace: 'gård', weight: 0.20, desc: '-gaard → -gård (1948 reform)' },
   { find: /gård$/gi, replace: 'gaard', weight: 0.12, desc: '-gård → -gaard (archaic preserved)' },
   { find: /aa/gi, replace: 'å', weight: 0.20, desc: '-aa → -å (1948 reform)' },
@@ -335,7 +335,7 @@ const DANISH_RULES: CorruptionRule[] = [
  * - Norman survivals (-eau→-el)
  * - Pluralization (-le→-les)
  */
-const FRENCH_RULES: CorruptionRule[] = [
+const FRENCH_RULES: VariationRule[] = [
   { find: /ville$/gi, replace: 'villa', weight: 0.10, desc: '-ville → -villa (variant)' },
   { find: /court$/gi, replace: 'cour', weight: 0.08, desc: '-court → -cour (reduced)' },
   { find: /ac$/gi, replace: 'at', weight: 0.06, desc: '-ac → -at (Occitan survival)' },
@@ -355,7 +355,7 @@ const FRENCH_RULES: CorruptionRule[] = [
  * - Dialectal sound changes (b↔v, c→z, ll→y)
  * - Accent omission/arbitrary addition
  */
-const SPANISH_RULES: CorruptionRule[] = [
+const SPANISH_RULES: VariationRule[] = [
   // Suffixes
   { find: /ez$/gi, replace: 'es', weight: 0.10, desc: '-ez → -es (simplified)' },
   { find: /ón$/gi, replace: 'on', weight: 0.10, desc: '-ón → -on (accent loss)' },
@@ -384,7 +384,7 @@ const SPANISH_RULES: CorruptionRule[] = [
  * - Suffix simplifications (-ggio→-gio, -zio→-ggio)
  * - Dialectal plural (-a→-e)
  */
-const ITALIAN_RULES: CorruptionRule[] = [
+const ITALIAN_RULES: VariationRule[] = [
   { find: /g(?=i)/gi, replace: 'gh', weight: 0.08, desc: 'g → gh before i (orthographic)' },
   { find: /c(?=i)/gi, replace: 'ch', weight: 0.08, desc: 'c → ch before i (orthographic)' },
   { find: /ggio$/gi, replace: 'gio', weight: 0.06, desc: '-ggio → -gio (simplified)' },
@@ -401,7 +401,7 @@ const ITALIAN_RULES: CorruptionRule[] = [
  * - Orthographic reforms (ss→ç, ph→f, y→i)
  * - Accent addition/removal
  */
-const PORTUGUESE_RULES: CorruptionRule[] = [
+const PORTUGUESE_RULES: VariationRule[] = [
   // Shared Romance
   { find: /ville$/gi, replace: 'villa', weight: 0.10, desc: '-ville → -villa (variant)' },
   { find: /opolis$/gi, replace: 'opole', weight: 0.10, desc: '-opolis → -opole (variant)' },
@@ -433,7 +433,7 @@ const PORTUGUESE_RULES: CorruptionRule[] = [
  * - Reduced forms (-ea→-e)
  * - Diacritic addition (s→ș, t→ț)
  */
-const ROMANIAN_RULES: CorruptionRule[] = [
+const ROMANIAN_RULES: VariationRule[] = [
   // Shared Romance
   { find: /ești$/gi, replace: 'esci', weight: 0.15, desc: '-ești → -esci (pre-reform Latin alphabet)' },
 
@@ -459,7 +459,7 @@ const ROMANIAN_RULES: CorruptionRule[] = [
  * - Soft/hard suffix variation (-ов→-ев)
  * - Palatalization (к→ч before front vowels)
  */
-const SLAVIC_RULES: CorruptionRule[] = [
+const SLAVIC_RULES: VariationRule[] = [
   { find: /град$/gi, replace: 'город', weight: 0.10, desc: '-град → -город (full vs clipped form)' },
   { find: /поль$/gi, replace: 'поле', weight: 0.08, desc: '-поль → -поле (full form)' },
   { find: /бург$/gi, replace: 'берг', weight: 0.06, desc: '-бург → -берг (Germanic loan variation)' },
@@ -477,7 +477,7 @@ const SLAVIC_RULES: CorruptionRule[] = [
  * - Archaic consonant rules (и→ы after ц)
  * - Infinitive clipping (-ться→-тся)
  */
-const RUSSIAN_RULES: CorruptionRule[] = [
+const RUSSIAN_RULES: VariationRule[] = [
   ...SLAVIC_RULES,
   { find: /аго$/gi, replace: 'ого', weight: 0.06, desc: '-аго → -ого (archaic)' },
   { find: /ый$/gi, replace: 'ой', weight: 0.08, desc: '-ый → -ой (variant)' },
@@ -495,7 +495,7 @@ const RUSSIAN_RULES: CorruptionRule[] = [
  * - Rare letter substitution (ґ→г)
  * - Palatalization (-ськ→-зьк)
  */
-const UKRAINIAN_RULES: CorruptionRule[] = [
+const UKRAINIAN_RULES: VariationRule[] = [
   ...SLAVIC_RULES,
   { find: /ий$/gi, replace: 'ій', weight: 0.10, desc: '-ий → -ій (orthography shift)' },
   { find: /ґ/gi, replace: 'г', weight: 0.08, desc: 'ґ → г (rare substitution)' },
@@ -511,7 +511,7 @@ const UKRAINIAN_RULES: CorruptionRule[] = [
  * - Nasal vowel older forms (ą→om, ę→em)
  * - Orthographic change (-ła→-la)
  */
-const POLISH_RULES: CorruptionRule[] = [
+const POLISH_RULES: VariationRule[] = [
   { find: /ów$/gi, replace: 'ow', weight: 0.15, desc: '-ów → -ow (older spelling)' },
   { find: /ów$/gi, replace: 'ovo', weight: 0.06, desc: '-ów → -ovo (dialect)' },
   { find: /rz/gi, replace: 'ż', weight: 0.06, desc: 'rz → ż (merger in speech)' },
@@ -531,7 +531,7 @@ const POLISH_RULES: CorruptionRule[] = [
  * - Feminine form (-ov→-ová)
  * - Germanized spelling in Silesia (ř→rz)
  */
-const CZECH_RULES: CorruptionRule[] = [
+const CZECH_RULES: VariationRule[] = [
   { find: /ov$/gi, replace: 'ův', weight: 0.08, desc: '-ov → -ův (possessive form shift)' },
   { find: /ice$/gi, replace: 'itz', weight: 0.10, desc: '-ice → -itz (German-influenced)' },
   { find: /ů/gi, replace: 'uo', weight: 0.08, desc: 'ů → uo (older Hus reform spelling)' },
@@ -546,7 +546,7 @@ const CZECH_RULES: CorruptionRule[] = [
  * - Standardization (ä→e)
  * - Older spelling (ô→uo)
  */
-const SLOVAK_RULES: CorruptionRule[] = [
+const SLOVAK_RULES: VariationRule[] = [
   { find: /ä/gi, replace: 'e', weight: 0.10, desc: 'ä → e (standard)' },
   { find: /ô/gi, replace: 'uo', weight: 0.08, desc: 'ô → uo (older spelling)' },
 ];
@@ -561,7 +561,7 @@ const SLOVAK_RULES: CorruptionRule[] = [
  * - Diminutive suffix shift (-ец→-ица)
  * - Yat variation (-ия→-ий, яд→ед)
  */
-const BULGARIAN_RULES: CorruptionRule[] = [
+const BULGARIAN_RULES: VariationRule[] = [
   ...SLAVIC_RULES,
   { find: /ъ/gi, replace: 'а', weight: 0.10, desc: 'ъ → а (Western dialect)' },
   { find: /ия$/gi, replace: 'ий', weight: 0.06, desc: '-ия → -ий (final yat variation)' },
@@ -578,7 +578,7 @@ const BULGARIAN_RULES: CorruptionRule[] = [
  * - Síneadh fada (accent) addition/removal
  * - Spelling simplification (ae→e)
  */
-const IRISH_RULES: CorruptionRule[] = [
+const IRISH_RULES: VariationRule[] = [
   { find: /bh/gi, replace: 'v', weight: 0.10, desc: 'bh → v (older Latin-influenced)' },
   { find: /mh/gi, replace: 'v', weight: 0.10, desc: 'mh → v (older Latin-influenced)' },
   { find: /ach$/gi, replace: 'agh', weight: 0.12, desc: '-ach → -agh (older spelling)' },
@@ -613,7 +613,7 @@ const IRISH_RULES: CorruptionRule[] = [
  *
  * Same orthography for word and ascii, so all rules affect both.
  */
-const INDONESIAN_RULES: CorruptionRule[] = [
+const INDONESIAN_RULES: VariationRule[] = [
   // 1972 spelling reform (forward)
   { find: /dj/gi, replace: 'j', weight: 0.20, desc: 'dj → j (1972 reform, Indonesian)' },
   { find: /oe/gi, replace: 'u', weight: 0.20, desc: 'oe → u (1972 reform)' },
@@ -649,7 +649,7 @@ const INDONESIAN_RULES: CorruptionRule[] = [
  *
  * Same orthography for word and ascii.
  */
-const TAGALOG_RULES: CorruptionRule[] = [
+const TAGALOG_RULES: VariationRule[] = [
   { find: /c/gi, replace: 'k', weight: 0.15, desc: 'c → k (indigenization)' },
   { find: /qu/gi, replace: 'k', weight: 0.12, desc: 'qu → k (indigenization)' },
   { find: /x/gi, replace: 'ks', weight: 0.08, desc: 'x → ks (Latinization)' },
@@ -674,11 +674,11 @@ const TAGALOG_RULES: CorruptionRule[] = [
  * Dialect-specific rules are in separate arrays per dialect code.
  * Common rules (short vowel deletion) apply to all dialects.
  */
-const ARABIC_COMMON_RULES: CorruptionRule[] = [
+const ARABIC_COMMON_RULES: VariationRule[] = [
   { find: /(?<=.)[aiu](?=.)/gi, replace: '', weight: 0.10, desc: 'short vowel deletion (casual)' },
 ];
 
-const ARABIC_EG_RULES: CorruptionRule[] = [
+const ARABIC_EG_RULES: VariationRule[] = [
   ...ARABIC_COMMON_RULES,
   { find: /q/gi, replace: "'", weight: 0.10, desc: 'q → hamza (Egyptian)' },
   { find: /j/gi, replace: 'g', weight: 0.12, desc: 'j → g (Egyptian)' },
@@ -692,7 +692,7 @@ const ARABIC_EG_RULES: CorruptionRule[] = [
   { find: /un$/gi, replace: 'en', weight: 0.08, desc: '-un → -en (casual, Egyptian)' },
 ];
 
-const ARABIC_LB_RULES: CorruptionRule[] = [
+const ARABIC_LB_RULES: VariationRule[] = [
   ...ARABIC_COMMON_RULES,
   { find: /q/gi, replace: 'g', weight: 0.15, desc: 'q → g (Levantine)' },
   { find: /q/gi, replace: "'", weight: 0.10, desc: 'q → hamza (Levantine)' },
@@ -705,7 +705,7 @@ const ARABIC_LB_RULES: CorruptionRule[] = [
   { find: /un$/gi, replace: 'en', weight: 0.08, desc: '-un → -en (casual, Levantine)' },
 ];
 
-const ARABIC_AE_RULES: CorruptionRule[] = [
+const ARABIC_AE_RULES: VariationRule[] = [
   ...ARABIC_COMMON_RULES,
   { find: /q/gi, replace: 'g', weight: 0.15, desc: 'q → g (Gulf)' },
   { find: /k/gi, replace: 'ch', weight: 0.08, desc: 'k → ch (Gulf)' },
@@ -714,13 +714,13 @@ const ARABIC_AE_RULES: CorruptionRule[] = [
   { find: /ā/gi, replace: 'ō', weight: 0.10, desc: 'ā → ō (Gulf)' },
 ];
 
-const ARABIC_MA_RULES: CorruptionRule[] = [
+const ARABIC_MA_RULES: VariationRule[] = [
   ...ARABIC_COMMON_RULES,
   { find: /q/gi, replace: 'g', weight: 0.15, desc: 'q → g (Maghrebi)' },
   { find: /ʿ/gi, replace: "'", weight: 0.08, desc: 'ʿ → hamza (Maghrebi)' },
 ];
 
-export const CORRUPTION_RULES: Record<string, CorruptionRule[]> = {
+export const ORTHOGRAPHIC_VARIATION_RULES: Record<string, VariationRule[]> = {
   'en-phon': ENGLISH_RULES,
   'en-ang': ENGLISH_RULES,
   'en': ENGLISH_RULES,
@@ -750,16 +750,16 @@ export const CORRUPTION_RULES: Record<string, CorruptionRule[]> = {
 };
 
 function selectActiveRules(
-  rules: CorruptionRule[],
-  corruption: number,
+  rules: VariationRule[],
+  variation: number,
   rand: RandFn
-): CorruptionRule[] {
-  return rules.filter(r => rand() < corruption * r.weight);
+): VariationRule[] {
+  return rules.filter(r => rand() < variation * r.weight);
 }
 
 function applyRulesWithTrace(
   token: string,
-  rules: CorruptionRule[],
+  rules: VariationRule[],
   lang: string
 ): { result: string; trace: TraceEntry[] } {
   const trace: TraceEntry[] = [];
@@ -789,7 +789,7 @@ function applyRulesWithTrace(
 
 function applyRulesNoTrace(
   token: string,
-  rules: CorruptionRule[]
+  rules: VariationRule[]
 ): string {
   let result = token.toLowerCase();
   let changed = false;
@@ -802,7 +802,7 @@ function applyRulesNoTrace(
   return result.charAt(0).toUpperCase() + result.slice(1).replace(/-([a-z])/g, (_, c) => '-' + c.toUpperCase());
 }
 
-function _applyCorruption(
+function _applyOrthographicVariation(
   word: string,
   ascii: string,
   lang: string,
@@ -810,15 +810,15 @@ function _applyCorruption(
   rand: RandFn,
   debug: boolean
 ): { word: string; ascii: string; trace: TraceEntry[] } {
-  const rules = CORRUPTION_RULES[lang];
+  const rules = ORTHOGRAPHIC_VARIATION_RULES[lang];
   if (!rules || corruption <= 0) return { word, ascii, trace: [] };
 
   const activeRules = selectActiveRules(rules, corruption, rand);
   if (activeRules.length === 0) return { word, ascii, trace: [] };
 
-  const asciiSafe = (r: CorruptionRule) => [...r.replace].every(c => c.charCodeAt(0) <= 127);
+  const asciiSafe = (r: VariationRule) => [...r.replace].every(c => c.charCodeAt(0) <= 127);
 
-  const applyTo = (text: string, trace: TraceEntry[], rules: CorruptionRule[]): string => {
+  const applyTo = (text: string, trace: TraceEntry[], rules: VariationRule[]): string => {
     const tokens = text.split(/(\s+)/);
     return tokens.map(t => {
       if (/^\s+$/.test(t)) return t;
@@ -858,27 +858,27 @@ function _applyCorruption(
   };
 }
 
-export const applyCorruption = (
+export const applyOrthographicVariation = (
   word: string,
   ascii: string,
   lang: string,
-  corruption: number
+  variation: number
 ): { word: string; ascii: string } => {
-  const result = _applyCorruption(word, ascii, lang, corruption, Math.random, false);
+  const result = _applyOrthographicVariation(word, ascii, lang, variation, Math.random, false);
   return { word: result.word, ascii: result.ascii };
 };
 
-export const debugCorruption = (
+export const debugOrthographicVariation = (
   word: string,
   ascii: string,
   lang: string,
-  corruption: number,
+  variation: number,
   seed?: number
-): CorruptionDebugResult => {
+): VariationDebugResult => {
   const actualSeed = seed ?? Date.now();
   const rand = mulberry32(actualSeed);
-  const rules = CORRUPTION_RULES[lang] ?? [];
-  const result = _applyCorruption(word, ascii, lang, corruption, rand, true);
+  const rules = ORTHOGRAPHIC_VARIATION_RULES[lang] ?? [];
+  const result = _applyOrthographicVariation(word, ascii, lang, variation, rand, true);
 
   return {
     word: result.word,
@@ -886,8 +886,8 @@ export const debugCorruption = (
     trace: result.trace,
     seed: actualSeed,
     lang,
-    corruption,
+    corruption: variation,
     rulesConsidered: rules.length,
-    rulesActive: rules.filter(r => corruption * r.weight > 0).length,
+    rulesActive: rules.filter(r => variation * r.weight > 0).length,
   };
 };

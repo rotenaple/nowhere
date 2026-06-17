@@ -1,7 +1,7 @@
 
 import { Language, PlaceName, GenerationParams, GeneratedResult } from "../types";
 import { weightedRandom } from "./utils";
-import { applyCorruption, debugCorruption, TraceEntry } from "./corruption";
+import { applyOrthographicVariation, debugOrthographicVariation, TraceEntry } from "./orthographicVariation";
 import { generateJapanesePlace, getJapaneseCapacity } from "./engines/japanese";
 import { generateEnglishPlace, getEnglishCapacity } from "./engines/english";
 import { generateGermanPlace, getGermanCapacity } from "./engines/germanic/german";
@@ -285,7 +285,7 @@ export const debugGenerateNonceWords = async (
     if (params.corruption > 0) {
       const langCode = displayLang;
       const sameOrthography = rawGenerated.word === rawGenerated.ascii;
-      const debugResult = debugCorruption(rawGenerated.word, rawGenerated.ascii, langCode, params.corruption, seed);
+      const debugResult = debugOrthographicVariation(rawGenerated.word, rawGenerated.ascii, langCode, params.corruption, seed);
       corrupted = {
         word: debugResult.word,
         ascii: sameOrthography ? debugResult.word : debugResult.ascii,
@@ -399,7 +399,7 @@ export const generateNonceWords = async (params: GenerationParams): Promise<Plac
 
     if (params.corruption > 0) {
       const langCode = displayLang;
-      const corrupted = applyCorruption(generated.word, generated.ascii, langCode, params.corruption);
+      const corrupted = applyOrthographicVariation(generated.word, generated.ascii, langCode, params.corruption);
       finalWord = corrupted.word;
       finalAscii = corrupted.ascii;
     }
