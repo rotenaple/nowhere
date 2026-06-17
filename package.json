@@ -16,6 +16,7 @@
     "deploy": "gh-pages -d packages/frontend/dist"
   },
   "devDependencies": {
+    "@types/node": "^25.9.3",
     "gh-pages": "^6.3.0",
     "typescript": "^5.6.2"
   }

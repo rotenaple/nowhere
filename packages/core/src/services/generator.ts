@@ -399,10 +399,9 @@ export const generateNonceWords = async (params: GenerationParams): Promise<Plac
 
     if (params.corruption > 0) {
       const langCode = displayLang;
-      const sameOrthography = generated.word === generated.ascii;
       const corrupted = applyCorruption(generated.word, generated.ascii, langCode, params.corruption);
       finalWord = corrupted.word;
-      finalAscii = sameOrthography ? corrupted.word : corrupted.ascii;
+      finalAscii = corrupted.ascii;
     }
 
     const len = finalAscii.length;

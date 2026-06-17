@@ -1,3 +1,39 @@
+import {
+  transliterateGermanToAscii,
+  transliterateDanishToAscii,
+  transliterateSwedishToAscii,
+  transliterateDutchToAscii,
+  transliterateFrenchToAscii,
+  transliteratePolishToAscii,
+  transliterateIrishToAscii,
+  transliterateCzechToAscii,
+  transliterateSlovakToAscii,
+  transliterateRussianToAscii,
+  transliterateUkrainianToAscii,
+  transliterateBulgarianToAscii,
+  transliteratePortugueseToAscii,
+  transliterateRomanianToAscii,
+} from './utils';
+
+const TRANSLITERATORS: Record<string, (word: string) => string> = {
+  'de': transliterateGermanToAscii,
+  'da': transliterateDanishToAscii,
+  'sv': transliterateSwedishToAscii,
+  'nl': transliterateDutchToAscii,
+  'fr': transliterateFrenchToAscii,
+  'es': (w) => w.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
+  'it': (w) => w.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/'/g, ""),
+  'pt': transliteratePortugueseToAscii,
+  'ro': transliterateRomanianToAscii,
+  'pl': transliteratePolishToAscii,
+  'ga': transliterateIrishToAscii,
+  'cs': transliterateCzechToAscii,
+  'sk': transliterateSlovakToAscii,
+  'ru': transliterateRussianToAscii,
+  'uk': transliterateUkrainianToAscii,
+  'bg': transliterateBulgarianToAscii,
+};
+
 export type CorruptionRule = {
   find: RegExp;
   replace: string;
@@ -797,9 +833,27 @@ function _applyCorruption(
 
   const trace: TraceEntry[] = [];
   const wordResult = applyTo(word, trace, activeRules);
+
+  const transliterator = TRANSLITERATORS[lang];
+  if (transliterator) {
+    return {
+      word: wordResult,
+      ascii: transliterator(wordResult),
+      trace,
+    };
+  }
+
+  if (word === ascii) {
+    return {
+      word: wordResult,
+      ascii: wordResult,
+      trace,
+    };
+  }
+
   return {
     word: wordResult,
-    ascii: word === ascii ? wordResult : applyTo(ascii, trace, activeRules.filter(asciiSafe)),
+    ascii: applyTo(ascii, [], activeRules.filter(asciiSafe)),
     trace,
   };
 }

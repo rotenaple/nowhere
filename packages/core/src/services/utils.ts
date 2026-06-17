@@ -105,7 +105,7 @@ export const transliterateRussianToAscii = (word: string): string => {
     'Ч':'Ch', 'Ш':'Sh', 'Щ':'Shch', 'Ъ':'', 'Ы':'Y', 'Ь':'', 'Э':'E', 'Ю':'Yu',
     'Я':'Ya'
   };
-  return word.split('').map(c => map[c] || c).join('');
+  return word.split('').map(c => map[c] ?? c).join('');
 };
 
 export const transliterateUkrainianToAscii = (word: string): string => {
@@ -121,7 +121,7 @@ export const transliterateUkrainianToAscii = (word: string): string => {
     'Ф':'F', 'Х':'Kh', 'Ц':'Ts', 'Ч':'Ch', 'Ш':'Sh', 'Щ':'Shch', 'Ь':'', 'Ю':'Yu',
     'Я':'Ya'
   };
-  return word.split('').map(c => map[c] || c).join('');
+  return word.split('').map(c => map[c] ?? c).join('');
 };
 
 export const transliterateBulgarianToAscii = (word: string): string => {
@@ -135,7 +135,7 @@ export const transliterateBulgarianToAscii = (word: string): string => {
     'П':'P', 'Р':'R', 'С':'S', 'Т':'T', 'У':'U', 'Ф':'F', 'Х':'H', 'Ц':'Ts',
     'Ч':'Ch', 'Ш':'Sh', 'Щ':'Sht', 'Ъ':'A', 'Ь':'Y', 'Ю':'Yu', 'Я':'Ya'
   };
-  return word.split('').map(c => map[c] || c).join('');
+  return word.split('').map(c => map[c] ?? c).join('');
 };
 
 export const transliteratePortugueseToAscii = (word: string): string => {
@@ -149,7 +149,7 @@ export const transliterateRomanianToAscii = (word: string): string => {
     'ă':'a', 'â':'a', 'î':'i', 'ș':'s', 'ț':'t',
     'Ă':'A', 'Â':'A', 'Î':'I', 'Ș':'S', 'Ț':'T'
   };
-  return word.split('').map(c => map[c] || c).join('');
+  return word.split('').map(c => map[c] ?? c).join('');
 };
 
 // ==========================================
