@@ -49,13 +49,14 @@ export const generateUkrainianPlace = (): GeneratedResult => {
 
       if (isDerived && selectedSuffix) {
           const suffixInfo = getSlavicData(selectedSuffix.uk!);
-          // Vowel Truncation
           const rootEndsInVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(finalNounSrc.slice(-1));
-          const suffixStartsVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(suffixInfo.src.charAt(0));
+          const rootEndsInSoft = ['ь','Ь'].includes(finalNounSrc.slice(-1));
 
           if (rootEndsInVowel) {
               finalNounSrc = finalNounSrc.slice(0, -1);
               finalNounRom = finalNounRom.slice(0, -1);
+          } else if (rootEndsInSoft) {
+              finalNounSrc = finalNounSrc.slice(0, -1);
           }
 
           finalNounSrc += suffixInfo.src;
@@ -80,10 +81,13 @@ export const generateUkrainianPlace = (): GeneratedResult => {
       let baseRom = rootInfo.rom!;
       
       const rootEndsInVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(baseSrc.slice(-1));
+      const rootEndsInSoft = ['ь','Ь'].includes(baseSrc.slice(-1));
 
       if (rootEndsInVowel) {
             baseSrc = baseSrc.slice(0, -1);
             baseRom = baseRom.slice(0, -1);
+      } else if (rootEndsInSoft) {
+            baseSrc = baseSrc.slice(0, -1);
       }
 
       wordCyrillic = baseSrc + suffixInfo.src;
@@ -106,10 +110,13 @@ export const generateUkrainianPlace = (): GeneratedResult => {
           const suffixInfo = getSlavicData(selectedSuffix.uk!);
 
           const rootEndsInVowel = ['а','е','є','и','і','ї','о','у','ю','я'].includes(basePartSrc.slice(-1));
+          const rootEndsInSoft = ['ь','Ь'].includes(basePartSrc.slice(-1));
 
           if (rootEndsInVowel) {
               basePartSrc = basePartSrc.slice(0, -1);
               basePartRom = basePartRom.slice(0, -1);
+          } else if (rootEndsInSoft) {
+              basePartSrc = basePartSrc.slice(0, -1);
           }
           basePartSrc += suffixInfo.src;
           basePartRom += suffixInfo.rom;

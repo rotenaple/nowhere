@@ -51,13 +51,14 @@ export const generateRussianPlace = (): GeneratedResult => {
 
       if (isDerived && selectedSuffix) {
           const suffixInfo = getSlavicData(selectedSuffix.ru!);
-          // Vowel Truncation
           const rootEndsInVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(finalNounSrc.slice(-1));
-          const suffixStartsVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(suffixInfo.src.charAt(0));
+          const rootEndsInSoftHard = ['ь','ъ','Ь','Ъ'].includes(finalNounSrc.slice(-1));
 
           if (rootEndsInVowel) {
             finalNounSrc = finalNounSrc.slice(0, -1);
             finalNounRom = finalNounRom.slice(0, -1);
+          } else if (rootEndsInSoftHard) {
+            finalNounSrc = finalNounSrc.slice(0, -1);
           }
 
           finalNounSrc += suffixInfo.src;
@@ -82,10 +83,13 @@ export const generateRussianPlace = (): GeneratedResult => {
       let baseRom = rootInfo.rom!;
       
       const rootEndsInVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(baseSrc.slice(-1));
+      const rootEndsInSoftHard = ['ь','ъ','Ь','Ъ'].includes(baseSrc.slice(-1));
 
       if (rootEndsInVowel) {
           baseSrc = baseSrc.slice(0, -1);
           baseRom = baseRom.slice(0, -1);
+      } else if (rootEndsInSoftHard) {
+          baseSrc = baseSrc.slice(0, -1);
       }
       
       wordCyrillic = baseSrc + suffixInfo.src;
@@ -110,9 +114,12 @@ export const generateRussianPlace = (): GeneratedResult => {
           suffixComp = getRandomElement(suffixes);
           const suffixInfo = getSlavicData(suffixComp.ru!);
           const rootEndsInVowel = ['а','о','е','ы','и','я','ё','э','ю','у'].includes(baseSrc.slice(-1));
+          const rootEndsInSoftHard = ['ь','ъ','Ь','Ъ'].includes(baseSrc.slice(-1));
           if (rootEndsInVowel) {
               baseSrc = baseSrc.slice(0, -1);
               baseRom = baseRom.slice(0, -1);
+          } else if (rootEndsInSoftHard) {
+              baseSrc = baseSrc.slice(0, -1);
           }
           baseSrc += suffixInfo.src;
           baseRom += suffixInfo.rom;

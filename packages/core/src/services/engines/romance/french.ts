@@ -130,15 +130,36 @@ export const generateFrenchPlace = (): GeneratedResult => {
     components.push(JSON.stringify(headObj), JSON.stringify(tailObj));
     
     let h = getRomData(headObj.fr).val;
-    let t = getRomData(tailObj.fr).val;
+    const tData = getRomData(tailObj.fr);
+    let t = tData.val;
+    const tGender = tData.gender || 'm';
     
     let link = "-de-";
+    const useArticle = ['bio_fauna', 'bio_flora', 'geo_minor', 'geo_major', 'settlement'].includes(tailObj.type);
     
-    if (['A','E','I','O','U','Y','É','È'].includes(t.charAt(0).toUpperCase())) {
-        link = "-d'";
-    } 
+    if (useArticle) {
+        const startsWithVowel = ['A','E','I','O','U','Y','É','È'].includes(t.charAt(0).toUpperCase());
+        if (startsWithVowel) {
+            link = "-de-l'";
+        } else if (tailObj.tags?.includes('plural')) {
+            link = "-des-";
+        } else if (tGender === 'f') {
+            link = "-de-la-";
+        } else {
+            link = "-du-";
+        }
+    } else {
+        const startsWithVowel = ['A','E','I','O','U','Y','É','È'].includes(t.charAt(0).toUpperCase());
+        if (startsWithVowel) {
+            link = "-d'";
+        }
+    }
     
-    word = h + link + t;
+    if (link.endsWith("'")) {
+        word = h + link + t;
+    } else {
+        word = h + link + t;
+    }
   }
   
   // 4. Root + Suffix

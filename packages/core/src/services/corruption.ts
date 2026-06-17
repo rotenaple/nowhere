@@ -853,7 +853,7 @@ function _applyCorruption(
 
   return {
     word: wordResult,
-    ascii: applyTo(ascii, [], activeRules.filter(asciiSafe)),
+    ascii: applyTo(ascii, trace, activeRules.filter(asciiSafe)),
     trace,
   };
 }
