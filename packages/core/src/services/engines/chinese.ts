@@ -298,8 +298,13 @@ const formatChineseName = (parts: ChineseComponent[], mode: 'cn' | 'tw' | 'hk'):
   let ascii = '';
 
   if (mode === 'cn') {
-    // Pinyin: No spaces
-    ascii = capitalize(nameParts.map(p => getComponentRomanization(p, 'cn')).join(''));
+    const parts = nameParts.map(p => getComponentRomanization(p, 'cn'));
+    let joined = parts[0] || '';
+    for (let i = 1; i < parts.length; i++) {
+      const p = parts[i];
+      joined += /^[aeo]/i.test(p) ? '-' + p : p;
+    }
+    ascii = capitalize(joined);
   } 
   else if (mode === 'tw') {
     // Wade-Giles: Hyphenated
